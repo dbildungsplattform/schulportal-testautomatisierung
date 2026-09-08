@@ -13,18 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LoeschungResponse } from './LoeschungResponse';
-import {
-    LoeschungResponseFromJSON,
-    LoeschungResponseFromJSONTyped,
-    LoeschungResponseToJSON,
-} from './LoeschungResponse';
 import type { PersonenInfoKontextOrganisationResponse } from './PersonenInfoKontextOrganisationResponse';
 import {
     PersonenInfoKontextOrganisationResponseFromJSON,
     PersonenInfoKontextOrganisationResponseFromJSONTyped,
     PersonenInfoKontextOrganisationResponseToJSON,
 } from './PersonenInfoKontextOrganisationResponse';
+import type { PersonenkontextResponseLoeschung } from './PersonenkontextResponseLoeschung';
+import {
+    PersonenkontextResponseLoeschungFromJSON,
+    PersonenkontextResponseLoeschungFromJSONTyped,
+    PersonenkontextResponseLoeschungToJSON,
+} from './PersonenkontextResponseLoeschung';
 
 /**
  * 
@@ -88,10 +88,10 @@ export interface PersonenInfoKontextResponse {
     sichtfreigabe: PersonenInfoKontextResponseSichtfreigabeEnum;
     /**
      * 
-     * @type {LoeschungResponse}
+     * @type {PersonenkontextResponseLoeschung}
      * @memberof PersonenInfoKontextResponse
      */
-    loeschung: LoeschungResponse | null;
+    loeschung: PersonenkontextResponseLoeschung | null;
     /**
      * 
      * @type {string}
@@ -175,7 +175,7 @@ export function PersonenInfoKontextResponseFromJSONTyped(json: any, ignoreDiscri
         'personenstatus': json['personenstatus'],
         'jahrgangsstufe': json['jahrgangsstufe'],
         'sichtfreigabe': json['sichtfreigabe'],
-        'loeschung': LoeschungResponseFromJSON(json['loeschung']),
+        'loeschung': PersonenkontextResponseLoeschungFromJSON(json['loeschung']),
         'revision': json['revision'],
     };
 }
@@ -198,7 +198,7 @@ export function PersonenInfoKontextResponseToJSON(value?: PersonenInfoKontextRes
         'personenstatus': value.personenstatus,
         'jahrgangsstufe': value.jahrgangsstufe,
         'sichtfreigabe': value.sichtfreigabe,
-        'loeschung': LoeschungResponseToJSON(value.loeschung),
+        'loeschung': PersonenkontextResponseLoeschungToJSON(value.loeschung),
         'revision': value.revision,
     };
 }

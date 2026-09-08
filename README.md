@@ -31,7 +31,6 @@ Das doc dann in die Datei base/api/openapispec.json einfügen (alles kopieren un
 
 `npm run generate-api`
 
-
 ### Tests lokal ausführen
 
 #### Alle Tests mit einer beliebigen URL ausführen
@@ -112,6 +111,53 @@ PWDEBUG=1 USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplatt
 ### Den letzten Report von der Testausführung öffnen:
 
 npx playwright show-report
+
+## AI Agents and MCP
+
+### Copilot Instructions
+
+The file `.github/copilot-instructions.md` in this repository is just a **placeholder**.
+A Symlink has been created to use AGENTS.md as routing entry point and should work on every other computer after cloning the repo.
+
+If the symlink should not work, re-create it with this command:
+```bash
+cd .github
+rm copilot-instructions.md
+ln -s ../AGENTS.md copilot-instructions.md
+```
+
+> **Why Symlink?** GitHub Copilot reads `.github/copilot-instructions.md` automatically.
+> `AGENTS.md` is used by the Copilot Coding Agent and CLI as entry point.
+> The Symlink ensures that both use the same file.
+
+### Agent routing
+`AGENTS.md` is the mandatory entry point for every AI coding session. It routes requests to specialized instruction files under `.github/instructions/`:
+
+| Topic | Instruction file |
+|---|---|
+| Playwright / E2E / Page Objects / Fixtures | `testing_agent.md` |
+| Frontend architecture reference (read-only for E2E authors) | `frontend_agent.md` |
+| Code review / refactoring | `review_agent.md` |
+| DevOps / CI / Docker / Helm / Workflows | `devops_agent.md` |
+| Cross-repo / workspace-wide stack | `basic_stack.md` |
+
+
+### Jira MCP server
+A Jira MCP server is configured in `.vscode/mcp.json` using [mcp-atlassian](https://github.com/sooperset/mcp-atlassian). It runs in read-only mode and gives Copilot direct access to ticket data without leaving the editor.
+
+Since the .vscode folder is ignored by Git, an example for the MCP config lies in `.mcp.json.example`. Copy this example to your .vscode folder.
+
+**Setup:**
+1. Create `.env.mcp` in the workspace root (ignored by Git).
+2. Populate it with Jira URL and your Jira PAT (Personal Access Token):
+  ```
+  JIRA_URL=https://jira.example.com
+  JIRA_PERSONAL_TOKEN=your_personal_access_token_here
+  ```
+3. Install `uvx` locally on your system, if not present.
+4. Start the MCP server
+
+**Usage:** In Agent mode only, reference a ticket by key (e.g. `SPSH-1234`) and Copilot will fetch the current ticket data via the MCP tool.
 
 ## Umgebungen
 

@@ -1,7 +1,15 @@
 import { expect, Page } from '@playwright/test';
 import { constructApi } from './apiFactory';
-import { ProviderApi } from './generated/apis/ProviderApi';
-import { ServiceProviderResponse } from './generated/models';
+import {
+  ProviderApi,
+  ProviderControllerCreateServiceProviderRequest,
+  ProviderControllerDeleteServiceProviderRequest,
+} from './generated/apis/ProviderApi';
+import {
+  CreateServiceProviderBodyParams,
+  CreateServiceProviderResponse,
+  ServiceProviderResponse,
+} from './generated/models';
 import { ApiResponse } from './generated/runtime';
 
 export interface ServiceProviderFromRolleResponse {
@@ -11,6 +19,43 @@ export interface ServiceProviderFromRolleResponse {
 
 export function constructProviderApi(page: Page): ProviderApi {
   return constructApi(page, ProviderApi);
+}
+
+export async function createServiceProvider(
+  page: Page,
+  createServiceProviderBodyParams: CreateServiceProviderBodyParams,
+): Promise<string> {
+  try {
+    const requestParameters: ProviderControllerCreateServiceProviderRequest = {
+      createServiceProviderBodyParams,
+    };
+
+    const providerApi: ProviderApi = constructProviderApi(page);
+    const response: ApiResponse<CreateServiceProviderResponse> =
+      await providerApi.providerControllerCreateServiceProviderRaw(requestParameters);
+    expect(response.raw.status).toBe(201);
+
+    const createdServiceProvider: CreateServiceProviderResponse = await response.value();
+    return createdServiceProvider.id;
+  } catch (error) {
+    console.error('[ERROR] createServiceProvider failed:', error);
+    throw error;
+  }
+}
+
+export async function deleteServiceProvider(page: Page, angebotId: string): Promise<void> {
+  try {
+    const requestParameters: ProviderControllerDeleteServiceProviderRequest = {
+      angebotId,
+    };
+
+    const providerApi: ProviderApi = constructProviderApi(page);
+    const response: ApiResponse<void> = await providerApi.providerControllerDeleteServiceProviderRaw(requestParameters);
+    expect(response.raw.status).toBe(204);
+  } catch (error) {
+    console.error('[ERROR] deleteServiceProvider failed:', error);
+    throw error;
+  }
 }
 
 export async function getServiceProviderId(

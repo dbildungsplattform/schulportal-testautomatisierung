@@ -20,6 +20,7 @@ apis/PersonenkontexteApi.ts
 apis/ProviderApi.ts
 apis/RolleApi.ts
 apis/StatusApi.ts
+apis/VidisApi.ts
 apis/index.ts
 index.ts
 models/ApplyRollenerweiterungBodyParams.ts
@@ -70,6 +71,7 @@ models/LockUserBodyParams.ts
 models/LoeschungResponse.ts
 models/ManageableServiceProviderListEntryResponse.ts
 models/ManageableServiceProviderResponse.ts
+models/ManageableServiceProviderSimpleListEntryResponse.ts
 models/MeldungResponse.ts
 models/OperationContext.ts
 models/OrganisationByIdBodyParams.ts
@@ -111,6 +113,7 @@ models/PersonenInfoKontextResponse.ts
 models/PersonendatensatzResponse.ts
 models/PersonendatensatzResponseAutomapper.ts
 models/PersonenkontextResponse.ts
+models/PersonenkontextResponseLoeschung.ts
 models/PersonenkontextRolleFieldsResponse.ts
 models/PersonenkontextWorkflowResponse.ts
 models/PersonenkontextdatensatzResponse.ts
@@ -121,6 +124,8 @@ models/ProviderControllerFindRollenerweiterungenByServiceProviderId200Response.t
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProviders200Response.ts
 models/ProviderControllerGetManageableServiceProviders200ResponseAllOf.ts
+models/ProviderControllerGetManageableServiceProvidersForOrganisationId200Response.ts
+models/ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseAllOf.ts
 models/RawPagedResponse.ts
 models/RolleRefResponse.ts
 models/RolleResponse.ts

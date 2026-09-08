@@ -8,7 +8,7 @@
         "backend": {
           "generatorName": "typescript-fetch",
           "output": "#{cwd}/base/api/generated",
-          "inputSpec": "#{cwd}/base/api/openapispec.json",
+          "inputSpec": "http://localhost:9090/docs-json",
           "additionalProperties": {
             "supportsES6": false,
             "npmVersion": "9.5.1",

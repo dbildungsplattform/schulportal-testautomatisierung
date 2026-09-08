@@ -43,6 +43,18 @@ export interface UpdateServiceProviderBodyParams {
      * @memberof UpdateServiceProviderBodyParams
      */
     logoId?: number | null;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateServiceProviderBodyParams
+     */
+    merkmale?: Array<UpdateServiceProviderBodyParamsMerkmaleEnum>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof UpdateServiceProviderBodyParams
+     */
+    rollenartenWhitelist?: Array<UpdateServiceProviderBodyParamsRollenartenWhitelistEnum>;
 }
 
 
@@ -57,6 +69,33 @@ export const UpdateServiceProviderBodyParamsKategorieEnum = {
     Hinweise: 'HINWEISE'
 } as const;
 export type UpdateServiceProviderBodyParamsKategorieEnum = typeof UpdateServiceProviderBodyParamsKategorieEnum[keyof typeof UpdateServiceProviderBodyParamsKategorieEnum];
+
+/**
+ * @export
+ */
+export const UpdateServiceProviderBodyParamsMerkmaleEnum = {
+    NachtraeglichZuweisbar: 'NACHTRAEGLICH_ZUWEISBAR',
+    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG',
+    AnbietenInSchulischerAngebotsverwaltung: 'ANBIETEN_IN_SCHULISCHER_ANGEBOTSVERWALTUNG',
+    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG'
+} as const;
+export type UpdateServiceProviderBodyParamsMerkmaleEnum = typeof UpdateServiceProviderBodyParamsMerkmaleEnum[keyof typeof UpdateServiceProviderBodyParamsMerkmaleEnum];
+
+/**
+ * @export
+ */
+export const UpdateServiceProviderBodyParamsRollenartenWhitelistEnum = {
+    Lern: 'LERN',
+    Lehr: 'LEHR',
+    Extern: 'EXTERN',
+    Orgadmin: 'ORGADMIN',
+    Leit: 'LEIT',
+    Sysadmin: 'SYSADMIN',
+    Sorgber: 'SORGBER',
+    Schb: 'SCHB',
+    Nlehr: 'NLEHR'
+} as const;
+export type UpdateServiceProviderBodyParamsRollenartenWhitelistEnum = typeof UpdateServiceProviderBodyParamsRollenartenWhitelistEnum[keyof typeof UpdateServiceProviderBodyParamsRollenartenWhitelistEnum];
 
 
 /**
@@ -82,6 +121,8 @@ export function UpdateServiceProviderBodyParamsFromJSONTyped(json: any, ignoreDi
         'url': !exists(json, 'url') ? undefined : json['url'],
         'kategorie': !exists(json, 'kategorie') ? undefined : json['kategorie'],
         'logoId': !exists(json, 'logoId') ? undefined : json['logoId'],
+        'merkmale': !exists(json, 'merkmale') ? undefined : json['merkmale'],
+        'rollenartenWhitelist': !exists(json, 'rollenartenWhitelist') ? undefined : json['rollenartenWhitelist'],
     };
 }
 
@@ -98,6 +139,8 @@ export function UpdateServiceProviderBodyParamsToJSON(value?: UpdateServiceProvi
         'url': value.url,
         'kategorie': value.kategorie,
         'logoId': value.logoId,
+        'merkmale': value.merkmale,
+        'rollenartenWhitelist': value.rollenartenWhitelist,
     };
 }
 

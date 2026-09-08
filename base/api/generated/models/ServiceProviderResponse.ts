@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { RollenArt } from './RollenArt';
+import {
+    RollenArtFromJSON,
+    RollenArtFromJSONTyped,
+    RollenArtToJSON,
+} from './RollenArt';
 import type { ServiceProviderKategorie } from './ServiceProviderKategorie';
 import {
     ServiceProviderKategorieFromJSON,
@@ -92,6 +98,12 @@ export interface ServiceProviderResponse {
      * @memberof ServiceProviderResponse
      */
     merkmale: Array<ServiceProviderMerkmal>;
+    /**
+     * 
+     * @type {Array<RollenArt>}
+     * @memberof ServiceProviderResponse
+     */
+    rollenartenWhitelist: Array<RollenArt>;
 }
 
 /**
@@ -106,6 +118,7 @@ export function instanceOfServiceProviderResponse(value: object): boolean {
     isInstance = isInstance && "hasLogo" in value;
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
+    isInstance = isInstance && "rollenartenWhitelist" in value;
 
     return isInstance;
 }
@@ -129,6 +142,7 @@ export function ServiceProviderResponseFromJSONTyped(json: any, ignoreDiscrimina
         'hasLogo': json['hasLogo'],
         'requires2fa': json['requires2fa'],
         'merkmale': ((json['merkmale'] as Array<any>).map(ServiceProviderMerkmalFromJSON)),
+        'rollenartenWhitelist': ((json['rollenartenWhitelist'] as Array<any>).map(RollenArtFromJSON)),
     };
 }
 
@@ -150,6 +164,7 @@ export function ServiceProviderResponseToJSON(value?: ServiceProviderResponse | 
         'hasLogo': value.hasLogo,
         'requires2fa': value.requires2fa,
         'merkmale': ((value.merkmale as Array<any>).map(ServiceProviderMerkmalToJSON)),
+        'rollenartenWhitelist': ((value.rollenartenWhitelist as Array<any>).map(RollenArtToJSON)),
     };
 }
 
