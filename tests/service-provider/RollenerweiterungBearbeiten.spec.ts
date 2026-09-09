@@ -1,8 +1,11 @@
 import { Page } from '@playwright/test';
-import { test } from '../../base/fixtures';
+import {
+  CreateServiceProviderBodyParamsKategorieEnum,
+  CreateServiceProviderBodyParamsMerkmaleEnum,
+} from '../../base/api/generated';
 import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import {
-  addSecondOrganisationToPerson,
+  addOrganisationenToPerson,
   createPerson,
   createPersonWithPersonenkontext,
   UserInfo,
@@ -13,10 +16,7 @@ import {
   RollenArt,
 } from '../../base/api/rolleApi';
 import { constructProviderApi, createServiceProvider, deleteServiceProvider } from '../../base/api/serviceProviderApi';
-import {
-  CreateServiceProviderBodyParamsKategorieEnum,
-  CreateServiceProviderBodyParamsMerkmaleEnum,
-} from '../../base/api/generated';
+import { test } from '../../base/fixtures';
 import { testschuleName } from '../../base/organisation';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
 import { DEV } from '../../base/tags';
@@ -78,11 +78,10 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     const zweiteSchuleName: string = generateSchulname();
     const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName);
 
-    await addSecondOrganisationToPerson(
+    await addOrganisationenToPerson(
       page,
       user.personId,
-      ersteSchuleId,
-      zweiteSchuleId,
+      [ersteSchuleId, zweiteSchuleId],
       user.rolleId,
     );
   }
