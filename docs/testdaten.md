@@ -33,7 +33,7 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 - `createPersonWithPersonenkontext(page, organisationName, rolleName, …)` – komfortabel: löst Organisation und Rolle per Name auf und legt die Person an.
 - `createRolleAndPersonWithPersonenkontext(page, organisationName, rollenArt, familienname, vorname, idSPs, rolleName, koPersNr?, klasseId?, merkmale?)` – legt **eine eigene Rolle** + Person an (Standardweg, wenn ein Test isolierte Rechte benötigt).
 - `createTeacherAndLogin(page)` – Convenience: Lehrkraft mit Email/Kalender/Adressbuch anlegen und direkt einloggen.
-- `addSecondOrganisationToPerson(page, personId, org1Id, org2Id, rolleId)` – fügt einer Person eine zweite Organisation hinzu.
+- `addOrganisationenToPerson(page, personId, organisationIds[], rolleId)` – fügt einer Person eine oder mehrere Organisationen mit derselben Rolle hinzu.
 - `setTimeLimitPersonenkontext(...)`, `lockPerson(...)`, `setInbetriebnahmePasswort(...)`, `removeAllPersonenkontexte(...)`, `getEmailByPersonId(...)`, `getPersonId(...)`, `deletePerson(...)`.
 
 ### Organisationen / Klassen ([base/api/organisationApi.ts](../base/api/organisationApi.ts))
@@ -135,7 +135,7 @@ Nutzt eine **bereits existierende** Rolle und Schule (per Name aufgelöst). Geei
 const primarySchuleId = await getOrganisationId(page, primarySchuleName);
 const secondSchuleId = await getOrganisationId(page, secondSchuleName);
 const rolleId = await getRolleId(page, rolle);
-await addSecondOrganisationToPerson(page, schuladmin.personId, primarySchuleId, secondSchuleId, rolleId);
+await addOrganisationenToPerson(page, schuladmin.personId, [primarySchuleId, secondSchuleId], rolleId);
 ```
 
 ### Beispiel 4: User mit konkreten Systemrechten + Login

@@ -99,6 +99,15 @@ export async function getKlasseId(page: Page, klassennname: string): Promise<str
   }
 }
 
+export async function getKlassenNamenBySchule(page: Page, schuleId: string): Promise<string[]> {
+  const klassen: OrganisationResponse[] = await getOrganisations(page, {
+    administriertVon: [schuleId],
+    typ: OrganisationsTyp.Klasse,
+    limit: 200,
+  });
+  return klassen.map((klasse: OrganisationResponse): string => klasse.name);
+}
+
 export async function createOrganisation(
   page: Page,
   params: OrganisationControllerCreateOrganisationRequest['createOrganisationBodyParams'],
