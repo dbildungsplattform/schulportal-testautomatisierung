@@ -15,7 +15,7 @@ export class FooterDataTablePage {
     this.comboboxAnzahlEintraege = page.locator('.v-data-table-footer__items-per-page .v-input');
 
     // Locator to identify the current page number
-    this.textAktuelleSeite = page.locator('.v-data-table-footer__page-text');
+    this.textAktuelleSeite = page.locator('.v-data-table-footer__info');
 
     // Locator to identify the last page
     this.textLetzteSeite = page.locator('.v-pagination__next button:not(.v-btn--disabled)');
