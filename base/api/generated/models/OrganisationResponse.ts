@@ -98,6 +98,12 @@ export interface OrganisationResponse {
      * @memberof OrganisationResponse
      */
     version: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof OrganisationResponse
+     */
+    emailAdress: string;
 }
 
 /**
@@ -116,6 +122,7 @@ export function instanceOfOrganisationResponse(value: object): boolean {
     isInstance = isInstance && "traegerschaft" in value;
     isInstance = isInstance && "itslearningEnabled" in value;
     isInstance = isInstance && "version" in value;
+    isInstance = isInstance && "emailAdress" in value;
 
     return isInstance;
 }
@@ -141,6 +148,7 @@ export function OrganisationResponseFromJSONTyped(json: any, ignoreDiscriminator
         'traegerschaft': TraegerschaftTypFromJSON(json['traegerschaft']),
         'itslearningEnabled': json['itslearningEnabled'],
         'version': json['version'],
+        'emailAdress': json['emailAdress'],
     };
 }
 
@@ -164,6 +172,7 @@ export function OrganisationResponseToJSON(value?: OrganisationResponse | null):
         'traegerschaft': TraegerschaftTypToJSON(value.traegerschaft),
         'itslearningEnabled': value.itslearningEnabled,
         'version': value.version,
+        'emailAdress': value.emailAdress,
     };
 }
 

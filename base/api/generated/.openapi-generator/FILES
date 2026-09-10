@@ -16,7 +16,6 @@ apis/PersonenApi.ts
 apis/PersonenFrontendApi.ts
 apis/PersonenInfoApi.ts
 apis/PersonenkontextApi.ts
-apis/PersonenkontexteApi.ts
 apis/ProviderApi.ts
 apis/RolleApi.ts
 apis/StatusApi.ts
@@ -51,7 +50,6 @@ models/DbiamPersonenkontextError.ts
 models/DbiamPersonenkontexteUpdateError.ts
 models/DbiamRolleError.ts
 models/DbiamUpdatePersonenkontexteBodyParams.ts
-models/DeleteRevisionBodyParams.ts
 models/EmailAddressStatus.ts
 models/EmailChangedBodyParams.ts
 models/FeatureFlagResponse.ts
@@ -88,7 +86,6 @@ models/PersonControllerFindPersonenkontexte200ResponseAllOf.ts
 models/PersonEmailResponse.ts
 models/PersonFrontendControllerFindPersons200Response.ts
 models/PersonFrontendControllerFindPersons200ResponseAllOf.ts
-models/PersonIdResponse.ts
 models/PersonInfoKontextErreichbarkeitResponseV1.ts
 models/PersonInfoKontextResponseV1.ts
 models/PersonInfoPersonNameResponseV1.ts
@@ -103,7 +100,6 @@ models/PersonNameParams.ts
 models/PersonNameResponse.ts
 models/PersonNestedInPersonInfoResponse.ts
 models/PersonResponse.ts
-models/PersonResponseAutomapper.ts
 models/PersonResponseEmail.ts
 models/PersonTimeLimitInfoResponse.ts
 models/PersonenInfoKontextGruppeResponseV1.ts
@@ -111,17 +107,17 @@ models/PersonenInfoKontextOrganisationResponse.ts
 models/PersonenInfoKontextOrganisationResponseV1.ts
 models/PersonenInfoKontextResponse.ts
 models/PersonendatensatzResponse.ts
-models/PersonendatensatzResponseAutomapper.ts
 models/PersonenkontextResponse.ts
 models/PersonenkontextResponseLoeschung.ts
 models/PersonenkontextRolleFieldsResponse.ts
 models/PersonenkontextWorkflowResponse.ts
-models/PersonenkontextdatensatzResponse.ts
 models/PersonenkontexteUpdateResponse.ts
 models/Personenstatus.ts
 models/PersonenuebersichtBodyParams.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200Response.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseAllOf.ts
+models/ProviderControllerGetManageableLandRootServiceProviders200Response.ts
+models/ProviderControllerGetManageableLandRootServiceProviders200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProviders200Response.ts
 models/ProviderControllerGetManageableServiceProviders200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProvidersForOrganisationId200Response.ts
@@ -143,6 +139,7 @@ models/ServiceProviderIdNameResponse.ts
 models/ServiceProviderKategorie.ts
 models/ServiceProviderMerkmal.ts
 models/ServiceProviderResponse.ts
+models/ServiceProviderSystem.ts
 models/ServiceProviderTarget.ts
 models/Sichtfreigabe.ts
 models/SortFieldPerson.ts
@@ -161,10 +158,12 @@ models/UserExeternalDataResponseOnlineDateiablage.ts
 models/UserExeternalDataResponseOpsh.ts
 models/UserExeternalDataResponseOpshPk.ts
 models/UserExeternalDataResponseVidis.ts
+models/UserExternalDataBodyParams.ts
 models/UserExternalDataResponse.ts
 models/UserExternalDataResponseIqshHelpdesk.ts
 models/UserExternalDataResponseIqshHelpdeskPk.ts
 models/UserExternalDataResponseOx.ts
+models/UserExternalDataResponsePolyteia.ts
 models/UserLockParams.ts
 models/UserinfoResponse.ts
 models/index.ts
