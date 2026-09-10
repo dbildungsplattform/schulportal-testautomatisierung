@@ -49,6 +49,12 @@ import {
     UserExternalDataResponseOxFromJSONTyped,
     UserExternalDataResponseOxToJSON,
 } from './UserExternalDataResponseOx';
+import type { UserExternalDataResponsePolyteia } from './UserExternalDataResponsePolyteia';
+import {
+    UserExternalDataResponsePolyteiaFromJSON,
+    UserExternalDataResponsePolyteiaFromJSONTyped,
+    UserExternalDataResponsePolyteiaToJSON,
+} from './UserExternalDataResponsePolyteia';
 
 /**
  * 
@@ -92,6 +98,12 @@ export interface UserExternalDataResponse {
      * @memberof UserExternalDataResponse
      */
     iqshHelpdesk: UserExternalDataResponseIqshHelpdesk;
+    /**
+     * 
+     * @type {UserExternalDataResponsePolyteia}
+     * @memberof UserExternalDataResponse
+     */
+    polyteia: UserExternalDataResponsePolyteia;
 }
 
 /**
@@ -104,6 +116,7 @@ export function instanceOfUserExternalDataResponse(value: object): boolean {
     isInstance = isInstance && "opsh" in value;
     isInstance = isInstance && "onlineDateiablage" in value;
     isInstance = isInstance && "iqshHelpdesk" in value;
+    isInstance = isInstance && "polyteia" in value;
 
     return isInstance;
 }
@@ -124,6 +137,7 @@ export function UserExternalDataResponseFromJSONTyped(json: any, ignoreDiscrimin
         'opsh': UserExeternalDataResponseOpshFromJSON(json['opsh']),
         'onlineDateiablage': UserExeternalDataResponseOnlineDateiablageFromJSON(json['onlineDateiablage']),
         'iqshHelpdesk': UserExternalDataResponseIqshHelpdeskFromJSON(json['iqshHelpdesk']),
+        'polyteia': UserExternalDataResponsePolyteiaFromJSON(json['polyteia']),
     };
 }
 
@@ -142,6 +156,7 @@ export function UserExternalDataResponseToJSON(value?: UserExternalDataResponse 
         'opsh': UserExeternalDataResponseOpshToJSON(value.opsh),
         'onlineDateiablage': UserExeternalDataResponseOnlineDateiablageToJSON(value.onlineDateiablage),
         'iqshHelpdesk': UserExternalDataResponseIqshHelpdeskToJSON(value.iqshHelpdesk),
+        'polyteia': UserExternalDataResponsePolyteiaToJSON(value.polyteia),
     };
 }
 
