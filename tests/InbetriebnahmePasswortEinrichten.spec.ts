@@ -3,16 +3,16 @@ import { expect, PlaywrightTestArgs, test } from '@playwright/test';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../base/api/personApi';
 import { testschuleName } from '../base/organisation';
 import { typeLehrer } from '../base/rollentypen';
-import { email } from '../base/sp';
+import { email, uem } from '../base/sp';
 import { DEV } from '../base/tags';
 import { TestHelperLdap } from '../base/testHelperLdap';
 import { gotoTargetURL, loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { generateKopersNr } from '../base/utils/generateTestdata';
-import { LoginViewPage } from '../pages/LoginView.page';
-import { ProfileViewPage } from '../pages/ProfileView.page';
 import { PersonDetailsViewPage } from '../pages/admin/personen/details/PersonDetailsView.page';
 import { PersonManagementViewPage } from '../pages/admin/personen/PersonManagementView.page';
 import { HeaderPage } from '../pages/components/Header.page';
+import { LoginViewPage } from '../pages/LoginView.page';
+import { ProfileViewPage } from '../pages/ProfileView.page';
 
 test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
   test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
@@ -44,7 +44,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
-          serviceProviderNames: [email],
+          serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });
       });
@@ -85,7 +85,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
-          serviceProviderNames: [email],
+          serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });
       });
