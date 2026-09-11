@@ -8,7 +8,7 @@ import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } 
 import { createServiceProvider } from '../../base/api/serviceProviderApi';
 import { test as base } from '../../base/fixtures';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
-import { DEV } from '../../base/tags';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
@@ -101,7 +101,7 @@ const test = base.extend<{
 test.describe('Schulspezifische Angebote anzeigen', () => {
   test(
     'Als Schuladmin mit 1 Schule ohne zuweisbare Angebote wird ein Hinweis angezeigt',
-    { tag: [DEV] },
+    { tag: [DEV, STAGE] },
     async ({ asSchuladminOhneAngebot }) => {
       const { managementPage } = asSchuladminOhneAngebot;
       await managementPage.assertNoServiceProvidersFound();
@@ -110,7 +110,7 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
 
   test(
     'Als Schuladmin mit 1 Schule wird die Angebotsverwaltung für die eigene Schule angezeigt',
-    { tag: [DEV] },
+    { tag: [DEV, STAGE] },
     async ({ asSchuladminMitAngebot }) => {
       const { managementPage, schulen, angebotName } = asSchuladminMitAngebot;
       const schuleName: string = schulen[0]!.name;
@@ -136,7 +136,7 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
 
   test(
     'Als Schuladmin mit 2 Schulen muss zunächst eine Schule gefiltert werden',
-    { tag: [DEV] },
+    { tag: [DEV, STAGE] },
     async ({ asSchuladminMit2Schulen }) => {
       const { managementPage, schulen, angebotName } = asSchuladminMit2Schulen;
 
