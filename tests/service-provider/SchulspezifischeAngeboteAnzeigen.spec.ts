@@ -40,7 +40,7 @@ async function createServiceProviderForSchule(page: Page, schuleId: string, ange
   });
 }
 
-async function loginAsSchuladminAndNavigateToAngebotsverwaltung(
+async function loginAsSchuladminAndNavigateToAngebotManagementSchulspezifisch(
   page: Page,
   user: UserInfo,
 ): Promise<ServiceProviderManagementBySchuleViewPage> {
@@ -48,15 +48,15 @@ async function loginAsSchuladminAndNavigateToAngebotsverwaltung(
   const loginPage = await landingPage.navigateToLogin();
   const startViewPage = await loginPage.loginNewUserWithPasswordChange(user.username, user.password);
   const personManagementViewPage: PersonManagementViewPage = await startViewPage.navigateToAdministration();
-  return personManagementViewPage.getMenu().navigateToAngebotSchulspezifisch();
+  return personManagementViewPage.getMenu().navigateToAngebotManagementSchulspezifisch();
 }
 
 const test = base.extend<{
-  asSchuladminOhneAngebot: AngebotsverwaltungFixture;
-  asSchuladminMitAngebot: AngebotsverwaltungFixture;
-  asSchuladminMit2Schulen: AngebotsverwaltungFixture;
+  asSchuladminWithoutAngebot: AngebotsverwaltungFixture;
+  asSchuladminWithAngebot: AngebotsverwaltungFixture;
+  asSchuladminWith2Schulen: AngebotsverwaltungFixture;
 }>({
-  asSchuladminOhneAngebot: async ({ page }, use) => {
+  asSchuladminWithoutAngebot: async ({ page }, use) => {
     await loginAndNavigateToAdministration(page);
     const schuleName: string = generateSchulname();
     const schuleId: string = await createSchule(page, schuleName);
@@ -64,11 +64,11 @@ const test = base.extend<{
 
     const user: UserInfo = await createPersonWithPersonenkontext(page, schuleName, schuladminOeffentlichRolle);
     const managementPage: ServiceProviderManagementBySchuleViewPage =
-      await loginAsSchuladminAndNavigateToAngebotsverwaltung(page, user);
+      await loginAsSchuladminAndNavigateToAngebotManagementSchulspezifisch(page, user);
     await use({ managementPage, schulen });
   },
 
-  asSchuladminMitAngebot: async ({ page }, use) => {
+  asSchuladminWithAngebot: async ({ page }, use) => {
     await loginAndNavigateToAdministration(page);
     const schuleName: string = generateSchulname();
     const schuleId: string = await createSchule(page, schuleName);
@@ -78,11 +78,11 @@ const test = base.extend<{
 
     const user: UserInfo = await createPersonWithPersonenkontext(page, schuleName, schuladminOeffentlichRolle);
     const managementPage: ServiceProviderManagementBySchuleViewPage =
-      await loginAsSchuladminAndNavigateToAngebotsverwaltung(page, user);
+      await loginAsSchuladminAndNavigateToAngebotManagementSchulspezifisch(page, user);
     await use({ managementPage, schulen, angebotName });
   },
 
-  asSchuladminMit2Schulen: async ({ page }, use) => {
+  asSchuladminWith2Schulen: async ({ page }, use) => {
     await loginAndNavigateToAdministration(page);
     const schulNamen: string[] = [generateSchulname(), generateSchulname()];
     const schuleIds: string[] = await Promise.all(schulNamen.map((name: string) => createSchule(page, name)));
@@ -93,7 +93,7 @@ const test = base.extend<{
     const user: UserInfo = await createPersonWithPersonenkontext(page, schulNamen[0]!, schuladminOeffentlichRolle);
     await addOrganisationenToPerson(page, user.personId, schuleIds, user.rolleId);
     const managementPage: ServiceProviderManagementBySchuleViewPage =
-      await loginAsSchuladminAndNavigateToAngebotsverwaltung(page, user);
+      await loginAsSchuladminAndNavigateToAngebotManagementSchulspezifisch(page, user);
     await use({ managementPage, schulen, angebotName });
   },
 });
@@ -102,8 +102,8 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
   test(
     'Als Schuladmin mit 1 Schule ohne zuweisbare Angebote wird ein Hinweis angezeigt',
     { tag: [DEV, STAGE] },
-    async ({ asSchuladminOhneAngebot }) => {
-      const { managementPage } = asSchuladminOhneAngebot;
+    async ({ asSchuladminWithoutAngebot }) => {
+      const { managementPage } = asSchuladminWithoutAngebot;
       await managementPage.assertNoServiceProvidersFound();
     },
   );
@@ -111,8 +111,8 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
   test(
     'Als Schuladmin mit 1 Schule wird die Angebotsverwaltung für die eigene Schule angezeigt',
     { tag: [DEV, STAGE] },
-    async ({ asSchuladminMitAngebot }) => {
-      const { managementPage, schulen, angebotName } = asSchuladminMitAngebot;
+    async ({ asSchuladminWithAngebot }) => {
+      const { managementPage, schulen, angebotName } = asSchuladminWithAngebot;
       const schuleName: string = schulen[0]!.name;
 
       await test.step('Überschrift, vorausgewählter Schulfilter und Tabellenstruktur prüfen', async () => {
@@ -137,8 +137,8 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
   test(
     'Als Schuladmin mit 2 Schulen muss zunächst eine Schule gefiltert werden',
     { tag: [DEV, STAGE] },
-    async ({ asSchuladminMit2Schulen }) => {
-      const { managementPage, schulen, angebotName } = asSchuladminMit2Schulen;
+    async ({ asSchuladminWith2Schulen }) => {
+      const { managementPage, schulen, angebotName } = asSchuladminWith2Schulen;
 
       await test.step('Ohne Schulauswahl wird ein Hinweis angezeigt', async () => {
         await managementPage.assertHeadline();
