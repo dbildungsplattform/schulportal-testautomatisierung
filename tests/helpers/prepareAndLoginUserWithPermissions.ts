@@ -1,13 +1,7 @@
 import { Page } from '@playwright/test';
-import { RollenSystemRechtEnum } from '../../base/api/generated/models/RollenSystemRechtEnum';
 import { getOrganisationId } from '../../base/api/organisationApi';
-import {
-  addSecondOrganisationToPerson,
-  createRolleAndPersonWithPersonenkontext,
-  UserInfo,
-} from '../../base/api/personApi';
-import { RollenArt } from '../../base/api/rolleApi';
-import { testschule665Name, testschuleName } from '../../base/organisation';
+import { addOrganisationenToPerson, createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { RolleCase } from '../../base/rollen';
 import { schulportaladmin } from '../../base/sp';
 import { HeaderPage } from '../../pages/components/Header.page';
 import { LandingViewPage } from '../../pages/LandingView.page';
@@ -26,34 +20,33 @@ import { StartViewPage } from '../../pages/StartView.page';
  * 6. Navigates to the Administration view to ensure the user session is ready for tests.
  *
  * @param page - The Playwright `Page` object representing the browser page.
- * @param permissions - An array of `RollenSystemRechtEnum` system rights to assign to the user.
+ * @param rolle - The role case containing permissions and organisations to assign.
  *
  * @example
  * ```ts
- * await prepareAndLoginUserWithPermissions(page, [
- *   RollenSystemRechtEnum.PersonenVerwalten,
- *   RollenSystemRechtEnum.KlassenVerwalten,
- * ]);
+ * await prepareAndLoginUserWithPermissions(page, {
+ *   name: 'My role',
+ *   permissions: [RollenSystemRechtEnum.PersonenVerwalten],
+ *   organisations: [testschuleName, testschule665Name],
+ * });
  * ```
  */
-export async function prepareAndLoginUserWithPermissions(
-  page: Page,
-  permissions: RollenSystemRechtEnum[],
-): Promise<UserInfo> {
+export async function prepareAndLoginUserWithPermissions(page: Page, rolle: RolleCase): Promise<UserInfo> {
   // Create a new user with role and person context
   const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
-    organisationName: testschuleName,
-    rollenArt: RollenArt.Leit,
+    organisationName: rolle.organisations[0],
+    rollenArt: rolle.rollenArt,
     serviceProviderNames: [schulportaladmin],
-    systemrechte: new Set(permissions),
+    systemrechte: new Set(rolle.permissions),
   });
 
-  // Add a second school to the user's person context
-  const [primarySchuleId, secondarySchuleId]: [string, string] = await Promise.all([
-    getOrganisationId(page, testschuleName),
-    getOrganisationId(page, testschule665Name),
-  ]);
-  await addSecondOrganisationToPerson(page, userInfo.personId, primarySchuleId, secondarySchuleId, userInfo.rolleId);
+  // Assign all organisations to the person
+  if (rolle.organisations.length > 1) {
+    const organisationIds: string[] = await Promise.all(
+      rolle.organisations.map((name) => getOrganisationId(page, name)),
+    );
+    await addOrganisationenToPerson(page, userInfo.personId, organisationIds, userInfo.rolleId);
+  }
 
   // Logout any existing session
   const header: HeaderPage = new HeaderPage(page);

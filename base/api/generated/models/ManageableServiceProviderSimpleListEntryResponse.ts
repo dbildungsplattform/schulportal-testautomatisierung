@@ -47,151 +47,101 @@ import {
 /**
  * 
  * @export
- * @interface ManageableServiceProviderResponse
+ * @interface ManageableServiceProviderSimpleListEntryResponse
  */
-export interface ManageableServiceProviderResponse {
+export interface ManageableServiceProviderSimpleListEntryResponse {
     /**
      * 
      * @type {string}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     id: string;
     /**
      * 
      * @type {string}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     name: string;
     /**
      * 
      * @type {OrganisationRefResponse}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     administrationsebene: OrganisationRefResponse;
     /**
      * 
      * @type {ServiceProviderKategorie}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     kategorie: ServiceProviderKategorie;
     /**
-     * Optional logoId for use with standard logos
-     * @type {number}
-     * @memberof ManageableServiceProviderResponse
-     */
-    logoId: number;
-    /**
      * 
      * @type {boolean}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     requires2fa: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     vidisAngebotId?: string;
     /**
      * 
      * @type {Array<ServiceProviderMerkmal>}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     merkmale: Array<ServiceProviderMerkmal>;
     /**
      * 
      * @type {Array<RollenArt>}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     rollenartenWhitelist: Array<RollenArt>;
     /**
-     * Can be undefined, if `target` is not equal to `URL`
-     * @type {string}
-     * @memberof ManageableServiceProviderResponse
-     */
-    url: string;
-    /**
      * 
      * @type {boolean}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
-    hasRollenerweiterung: boolean;
-    /**
-     * Indicates whether the service provider is available for rollenerweiterung.
-     * @type {boolean}
-     * @memberof ManageableServiceProviderResponse
-     */
-    availableForRollenerweiterung: boolean;
+    hasRollenerweiterungen: boolean;
     /**
      * 
      * @type {Array<RolleRefResponse>}
-     * @memberof ManageableServiceProviderResponse
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
     rollen: Array<RolleRefResponse>;
     /**
      * 
-     * @type {Array<string>}
-     * @memberof ManageableServiceProviderResponse
+     * @type {boolean}
+     * @memberof ManageableServiceProviderSimpleListEntryResponse
      */
-    relevantSystemrechte: Array<ManageableServiceProviderResponseRelevantSystemrechteEnum>;
+    hasSomeVerwaltenPermission: boolean;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the ManageableServiceProviderSimpleListEntryResponse interface.
  */
-export const ManageableServiceProviderResponseRelevantSystemrechteEnum = {
-    RollenVerwalten: 'ROLLEN_VERWALTEN',
-    PersonenSofortLoeschen: 'PERSONEN_SOFORT_LOESCHEN',
-    PersonenVerwalten: 'PERSONEN_VERWALTEN',
-    LandesbediensteteSuchenUndHinzufuegen: 'LANDESBEDIENSTETE_SUCHEN_UND_HINZUFUEGEN',
-    EingeschraenktNeueBenutzerErstellen: 'EINGESCHRAENKT_NEUE_BENUTZER_ERSTELLEN',
-    SchulenVerwalten: 'SCHULEN_VERWALTEN',
-    KlassenVerwalten: 'KLASSEN_VERWALTEN',
-    SchultraegerVerwalten: 'SCHULTRAEGER_VERWALTEN',
-    PersonSynchronisieren: 'PERSON_SYNCHRONISIEREN',
-    CronDurchfuehren: 'CRON_DURCHFUEHREN',
-    PersonenAnlegen: 'PERSONEN_ANLEGEN',
-    ImportDurchfuehren: 'IMPORT_DURCHFUEHREN',
-    PersonenLesen: 'PERSONEN_LESEN',
-    BulkVerwalten: 'BULK_VERWALTEN',
-    SchulportalVerwalten: 'SCHULPORTAL_VERWALTEN',
-    HinweiseBearbeiten: 'HINWEISE_BEARBEITEN',
-    RollenErweitern: 'ROLLEN_ERWEITERN',
-    AngeboteVerwalten: 'ANGEBOTE_VERWALTEN',
-    AngeboteEingeschraenktVerwalten: 'ANGEBOTE_EINGESCHRAENKT_VERWALTEN',
-    SchulischeVidisAngeboteAbrufen: 'SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN'
-} as const;
-export type ManageableServiceProviderResponseRelevantSystemrechteEnum = typeof ManageableServiceProviderResponseRelevantSystemrechteEnum[keyof typeof ManageableServiceProviderResponseRelevantSystemrechteEnum];
-
-
-/**
- * Check if a given object implements the ManageableServiceProviderResponse interface.
- */
-export function instanceOfManageableServiceProviderResponse(value: object): boolean {
+export function instanceOfManageableServiceProviderSimpleListEntryResponse(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "administrationsebene" in value;
     isInstance = isInstance && "kategorie" in value;
-    isInstance = isInstance && "logoId" in value;
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
     isInstance = isInstance && "rollenartenWhitelist" in value;
-    isInstance = isInstance && "url" in value;
-    isInstance = isInstance && "hasRollenerweiterung" in value;
-    isInstance = isInstance && "availableForRollenerweiterung" in value;
+    isInstance = isInstance && "hasRollenerweiterungen" in value;
     isInstance = isInstance && "rollen" in value;
-    isInstance = isInstance && "relevantSystemrechte" in value;
+    isInstance = isInstance && "hasSomeVerwaltenPermission" in value;
 
     return isInstance;
 }
 
-export function ManageableServiceProviderResponseFromJSON(json: any): ManageableServiceProviderResponse {
-    return ManageableServiceProviderResponseFromJSONTyped(json, false);
+export function ManageableServiceProviderSimpleListEntryResponseFromJSON(json: any): ManageableServiceProviderSimpleListEntryResponse {
+    return ManageableServiceProviderSimpleListEntryResponseFromJSONTyped(json, false);
 }
 
-export function ManageableServiceProviderResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ManageableServiceProviderResponse {
+export function ManageableServiceProviderSimpleListEntryResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): ManageableServiceProviderSimpleListEntryResponse {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -201,20 +151,17 @@ export function ManageableServiceProviderResponseFromJSONTyped(json: any, ignore
         'name': json['name'],
         'administrationsebene': OrganisationRefResponseFromJSON(json['administrationsebene']),
         'kategorie': ServiceProviderKategorieFromJSON(json['kategorie']),
-        'logoId': json['logoId'],
         'requires2fa': json['requires2fa'],
         'vidisAngebotId': !exists(json, 'vidisAngebotId') ? undefined : json['vidisAngebotId'],
         'merkmale': ((json['merkmale'] as Array<any>).map(ServiceProviderMerkmalFromJSON)),
         'rollenartenWhitelist': ((json['rollenartenWhitelist'] as Array<any>).map(RollenArtFromJSON)),
-        'url': json['url'],
-        'hasRollenerweiterung': json['hasRollenerweiterung'],
-        'availableForRollenerweiterung': json['availableForRollenerweiterung'],
+        'hasRollenerweiterungen': json['hasRollenerweiterungen'],
         'rollen': ((json['rollen'] as Array<any>).map(RolleRefResponseFromJSON)),
-        'relevantSystemrechte': json['relevantSystemrechte'],
+        'hasSomeVerwaltenPermission': json['hasSomeVerwaltenPermission'],
     };
 }
 
-export function ManageableServiceProviderResponseToJSON(value?: ManageableServiceProviderResponse | null): any {
+export function ManageableServiceProviderSimpleListEntryResponseToJSON(value?: ManageableServiceProviderSimpleListEntryResponse | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -227,16 +174,13 @@ export function ManageableServiceProviderResponseToJSON(value?: ManageableServic
         'name': value.name,
         'administrationsebene': OrganisationRefResponseToJSON(value.administrationsebene),
         'kategorie': ServiceProviderKategorieToJSON(value.kategorie),
-        'logoId': value.logoId,
         'requires2fa': value.requires2fa,
         'vidisAngebotId': value.vidisAngebotId,
         'merkmale': ((value.merkmale as Array<any>).map(ServiceProviderMerkmalToJSON)),
         'rollenartenWhitelist': ((value.rollenartenWhitelist as Array<any>).map(RollenArtToJSON)),
-        'url': value.url,
-        'hasRollenerweiterung': value.hasRollenerweiterung,
-        'availableForRollenerweiterung': value.availableForRollenerweiterung,
+        'hasRollenerweiterungen': value.hasRollenerweiterungen,
         'rollen': ((value.rollen as Array<any>).map(RolleRefResponseToJSON)),
-        'relevantSystemrechte': value.relevantSystemrechte,
+        'hasSomeVerwaltenPermission': value.hasSomeVerwaltenPermission,
     };
 }
 

@@ -3,20 +3,20 @@ import { UserInfo } from '../../base/api/personApi';
 import { deletePersonenBySearchStrings, deleteRolleById } from '../../base/testHelperDeleteTestdata';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { RollenSystemRechtEnum } from '../../base/api/generated/models/RollenSystemRechtEnum';
-import { ROLLEN_CASES } from '../../base/rollen';
+import { ROLLEN_CASES, RolleCase } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
 import { MenuBarPage } from '../../pages/components/MenuBar.page';
 import { HeaderPage } from '../../pages/components/Header.page';
 import { prepareAndLoginUserWithPermissions } from '../helpers/prepareAndLoginUserWithPermissions';
 import { MENU_TEST_CASES } from './menu.test-cases';
 
-ROLLEN_CASES.forEach((rolle: { name: string; permissions: RollenSystemRechtEnum[] }) => {
+ROLLEN_CASES.forEach((rolle: RolleCase) => {
   test.describe(`MenuBar – ${rolle.name}`, () => {
     let userInfo: UserInfo | undefined;
 
     test.beforeEach(async ({ page }: { page: Page }) => {
       await loginAndNavigateToAdministration(page);
-      userInfo = await prepareAndLoginUserWithPermissions(page, rolle.permissions);
+      userInfo = await prepareAndLoginUserWithPermissions(page, rolle);
     });
 
     test.afterEach(async ({ page }: { page: Page }) => {

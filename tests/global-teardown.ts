@@ -11,15 +11,15 @@ import {
   PersonenFrontendApi,
   PersonFrontendControllerFindPersons200Response,
   ProviderApi,
-  ProviderControllerGetManageableServiceProviders200Response,
+  ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
   RolleApi,
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
-import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
+import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
 const shardIndex = process.env.SHARD_INDEX ?? '0';
@@ -150,14 +150,29 @@ export default async function globalTeardown(): Promise<void> {
         return wrappedResponse.value();
       },
       async (item: OrganisationResponse) => {
+        // Klassen der Schule löschen (auch solche mit numerischen Namen ohne Testdaten-Präfix)
         await cleanup(
           async () => {
-            const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProviders200Response> =
+            const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+              await organisationApi.organisationControllerFindOrganizationsRaw({
+                administriertVon: [item.id],
+                typ: OrganisationsTyp.Klasse,
+                limit,
+              });
+            return wrappedResponse.value();
+          },
+          async (klasse: OrganisationResponse) =>
+            organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),
+        );
+        await cleanup(
+          async () => {
+            const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> =
               await providerApi.providerControllerGetManageableServiceProvidersForOrganisationIdRaw({
                 organisationId: item.id,
                 limit,
               });
-            const angebote: ProviderControllerGetManageableServiceProviders200Response = await wrappedResponse.value();
+            const angebote: ProviderControllerGetManageableServiceProvidersForOrganisationId200Response =
+              await wrappedResponse.value();
             if (angebote.total === 0) return [];
 
             console.log(`${angebote.total} Angebote für ${item.id}:${item.name} löschen`);

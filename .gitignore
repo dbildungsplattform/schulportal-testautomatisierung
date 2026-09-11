@@ -3,6 +3,7 @@ node_modules/
 
 # Ignore environment variables
 /.env
+.env.mcp
 
 # Ignore temporary and debug files
 /test-results/
@@ -12,3 +13,6 @@ error-global-setup.png
 
 # Ignore editor files
 *.code-workspace
+
+# Ignore VS Code settings
+.vscode/settings.json

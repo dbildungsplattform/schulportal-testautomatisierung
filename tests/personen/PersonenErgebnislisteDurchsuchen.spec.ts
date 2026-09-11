@@ -1,16 +1,15 @@
 import { PlaywrightTestArgs } from '@playwright/test';
 import { test } from '../../base/fixtures';
 
-import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
-import { addSecondOrganisationToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { createSchule, getKlassenNamenBySchule, getOrganisationId } from '../../base/api/organisationApi';
+import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { getRolleId } from '../../base/api/rolleApi';
-import { landSH, testschuleDstNr, testschuleName } from '../../base/organisation';
+import { landSH, testschule665Name, testschuleDstNr, testschuleName } from '../../base/organisation';
 import { landesadminRolle, lehrkraftOeffentlichRolle, schuladminOeffentlichRolle } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateDienststellenNr,
-  generateKlassenname,
   generateKopersNr,
   generateNachname,
   generateSchulname,
@@ -50,6 +49,7 @@ interface AdminFixture {
 ].forEach(({ organisationsName, dienststellenNr, rolleName, bezeichnung }: AdminFixture) => {
   let schuleId2: string;
   let schuleParams: SchuleCreationParams;
+  let klassenNamen: string[] = [];
 
   test.describe(`Testfälle für die Ergebnisliste von Benutzern als ${bezeichnung}: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
     test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
@@ -73,9 +73,12 @@ interface AdminFixture {
 
       const schuleId1: string = await getOrganisationId(page, organisationsName);
       schuleId2 = await getOrganisationId(page, schuleParams.name);
+      // Playwright Schule (1111139) hat manuell angelegte Klassen – dynamisch auslesen statt neu anzulegen.
+      const playwrightSchuleId: string = await getOrganisationId(page, testschule665Name);
+      klassenNamen = await getKlassenNamenBySchule(page, playwrightSchuleId);
       const rolleId: string = await getRolleId(page, rolleName);
       if (rolleName === schuladminOeffentlichRolle) {
-        await addSecondOrganisationToPerson(page, admin.personId, schuleId1, schuleId2, rolleId);
+        await addOrganisationenToPerson(page, admin.personId, [schuleId1, schuleId2, playwrightSchuleId], rolleId);
       }
       landingPage = await header.logout();
       const loginPage: LoginViewPage = await landingPage.navigateToLogin();
@@ -146,36 +149,26 @@ interface AdminFixture {
       );
     });
 
-    // Skipping this test for now since it fails when sharding. It will be re-enabled in a separate scope SPSH-3815
-    // eslint-disable-next-line playwright/no-skipped-test
-    test.describe.skip('Mit Klassendatenanlage', () => {
-      let klassenNamen: string[] = [];
-
-      test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-        klassenNamen = [];
-        for (let i: number = 0; i < 40; i++) {
-          const klassenname: string = generateKlassenname();
-          await createKlasse(page, schuleId2, klassenname);
-          klassenNamen.push(klassenname);
-        }
-      });
-
+    test.describe('Mit Nutzung vorhandener Klassen', () => {
       // SPSH-3056
       test.describe('Klassenfilter-Tests', () => {
         test(
           `Als ${bezeichnung}: Alle Klassen im Drop-Down des Klassenfilters anzeigen`,
-          { tag: [STAGE, DEV] },
+          { tag: [DEV, STAGE] },
           async () => {
-            await personManagementViewPage.filterBySchule(schuleParams.name);
+            await personManagementViewPage.filterBySchule(testschule665Name);
             await personManagementViewPage.checkIfKlassenAreVisibleInDropdown(klassenNamen);
           },
         );
 
         test(
           `Als ${bezeichnung}: Alle Klassen im Drop-Down des Klassenfilters anklickbar`,
-          { tag: [STAGE, DEV] },
+          { tag: [DEV, STAGE] },
           async () => {
-            await personManagementViewPage.filterBySchule(schuleParams.name);
+            // Jede Klasse wird einzeln gesucht und angeklickt – bei vielen Klassen eine
+            // lange, aber legitime Interaktion. Timeout großzügiger setzen statt zu flaken.
+            test.slow();
+            await personManagementViewPage.filterBySchule(testschule665Name);
             await personManagementViewPage.checkAllKlassenOptionsClickable(klassenNamen);
           },
         );

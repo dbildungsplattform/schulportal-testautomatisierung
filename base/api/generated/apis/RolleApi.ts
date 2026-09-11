@@ -76,7 +76,8 @@ export interface RolleControllerFindRollenRequest {
     limit?: number;
     searchStr?: string;
     organisationId?: string;
-    systemrecht?: RollenSystemRechtEnum;
+    rolleIds?: Array<string>;
+    systemrechte?: Array<RollenSystemRechtEnum>;
     rollenarten?: Array<RollenArt>;
 }
 
@@ -173,7 +174,8 @@ export interface RolleApiInterface {
      * @param {number} [limit] The requested limit for the page size.
      * @param {string} [searchStr] The name for the role.
      * @param {string} [organisationId] The id of the organisation where the role should be available.
-     * @param {RollenSystemRechtEnum} [systemrecht] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or IMPORT_DURCHFUEHREN.
+     * @param {Array<string>} [rolleIds] The ids of the selected Rollen. If provided, these Rollen will be returned regardless of the other filters since they are required by the frontend
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both or IMPORT_DURCHFUEHREN.
      * @param {Array<RollenArt>} [rollenarten] Filter roles by their role types.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -468,8 +470,12 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             queryParameters['organisationId'] = requestParameters.organisationId;
         }
 
-        if (requestParameters.systemrecht !== undefined) {
-            queryParameters['systemrecht'] = requestParameters.systemrecht;
+        if (requestParameters.rolleIds) {
+            queryParameters['rolleIds'] = requestParameters.rolleIds;
+        }
+
+        if (requestParameters.systemrechte) {
+            queryParameters['systemrechte'] = requestParameters.systemrechte;
         }
 
         if (requestParameters.rollenarten) {

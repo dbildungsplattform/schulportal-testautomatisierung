@@ -123,6 +123,7 @@ export class ServiceProviderCreationViewPage {
   }
 
   public async assertSelectableSchulen(schulen: string[]): Promise<void> {
-    await this.organisationAutocomplete.checkVisibleDropdownOptions(schulen, true);
+    // Organisation options render as "<Dienststellennummer> (<Schulname>)", so match on substring.
+    await this.organisationAutocomplete.checkVisibleDropdownOptions(schulen, true, undefined, true);
   }
 }

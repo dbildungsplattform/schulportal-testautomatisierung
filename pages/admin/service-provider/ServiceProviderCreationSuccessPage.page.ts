@@ -2,6 +2,7 @@ import { expect, Page } from '@playwright/test';
 import { KATEGORIE_LABEL } from '../../../base/sp';
 import { booleanToString } from '../../../base/utils/conversion';
 import { ServiceProviderCreateParams } from './ServiceProviderCreationView.page';
+import { ServiceProviderDetailsBySchuleViewPage } from './ServiceProviderDetailsBySchuleView.page';
 
 export class ServiceProviderCreationSuccessPage {
   constructor(protected readonly page: Page) {}
@@ -12,6 +13,11 @@ export class ServiceProviderCreationSuccessPage {
     );
     await expect(this.page.getByTestId('to-service-provider-details-button')).toBeVisible();
     return this;
+  }
+
+  public async navigateToRollenauswahl(): Promise<ServiceProviderDetailsBySchuleViewPage> {
+    await this.page.getByTestId('to-service-provider-details-button').click();
+    return new ServiceProviderDetailsBySchuleViewPage(this.page).waitForPageLoad();
   }
 
   public async assertSuccessPage({

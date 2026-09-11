@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ManageableServiceProviderListEntryResponse } from './ManageableServiceProviderListEntryResponse';
+import type { ManageableServiceProviderSimpleListEntryResponse } from './ManageableServiceProviderSimpleListEntryResponse';
 import {
-    ManageableServiceProviderListEntryResponseFromJSON,
-    ManageableServiceProviderListEntryResponseFromJSONTyped,
-    ManageableServiceProviderListEntryResponseToJSON,
-} from './ManageableServiceProviderListEntryResponse';
+    ManageableServiceProviderSimpleListEntryResponseFromJSON,
+    ManageableServiceProviderSimpleListEntryResponseFromJSONTyped,
+    ManageableServiceProviderSimpleListEntryResponseToJSON,
+} from './ManageableServiceProviderSimpleListEntryResponse';
 
 /**
  * 
@@ -28,10 +28,10 @@ import {
 export interface ProviderControllerGetManageableServiceProviders200ResponseAllOf {
     /**
      * 
-     * @type {Array<ManageableServiceProviderListEntryResponse>}
+     * @type {Array<ManageableServiceProviderSimpleListEntryResponse>}
      * @memberof ProviderControllerGetManageableServiceProviders200ResponseAllOf
      */
-    items: Array<ManageableServiceProviderListEntryResponse>;
+    items: Array<ManageableServiceProviderSimpleListEntryResponse>;
 }
 
 /**
@@ -54,7 +54,7 @@ export function ProviderControllerGetManageableServiceProviders200ResponseAllOfF
     }
     return {
         
-        'items': ((json['items'] as Array<any>).map(ManageableServiceProviderListEntryResponseFromJSON)),
+        'items': ((json['items'] as Array<any>).map(ManageableServiceProviderSimpleListEntryResponseFromJSON)),
     };
 }
 
@@ -67,7 +67,7 @@ export function ProviderControllerGetManageableServiceProviders200ResponseAllOfT
     }
     return {
         
-        'items': ((value.items as Array<any>).map(ManageableServiceProviderListEntryResponseToJSON)),
+        'items': ((value.items as Array<any>).map(ManageableServiceProviderSimpleListEntryResponseToJSON)),
     };
 }
 

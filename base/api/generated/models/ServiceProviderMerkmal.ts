@@ -19,7 +19,9 @@
  */
 export const ServiceProviderMerkmal = {
     NachtraeglichZuweisbar: 'NACHTRAEGLICH_ZUWEISBAR',
-    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG'
+    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG',
+    AnbietenInSchulischerAngebotsverwaltung: 'ANBIETEN_IN_SCHULISCHER_ANGEBOTSVERWALTUNG',
+    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG'
 } as const;
 export type ServiceProviderMerkmal = typeof ServiceProviderMerkmal[keyof typeof ServiceProviderMerkmal];
 

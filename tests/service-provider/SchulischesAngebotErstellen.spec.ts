@@ -1,6 +1,7 @@
 import { test as base, expect, Page } from '@playwright/test';
+import { ServiceProviderKategorie } from '../../base/api/generated';
 import { createSchule } from '../../base/api/organisationApi';
-import { addSecondOrganisationToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateSchulname } from '../../base/utils/generateTestdata';
@@ -10,7 +11,7 @@ import {
   ServiceProviderCreateParams,
   ServiceProviderCreationViewPage,
 } from '../../pages/admin/service-provider/ServiceProviderCreationView.page';
-import { ServiceProviderKategorie } from '../../base/api/generated';
+import { ServiceProviderDetailsBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsBySchuleView.page';
 
 interface BaseFixture {
   schulen: {
@@ -85,7 +86,7 @@ const test = base.extend<{
     const schulNamen: string[] = [generateSchulname(), generateSchulname()];
     const schulen: string[] = await Promise.all(schulNamen.map((name: string) => createSchule(page, name)));
     const userinfo: UserInfo = await createPersonWithPersonenkontext(page, schulNamen[0], schuladminOeffentlichRolle);
-    await addSecondOrganisationToPerson(page, userinfo.personId, schulen[0], schulen[1], userinfo.rolleId);
+    await addOrganisationenToPerson(page, userinfo.personId, [schulen[0], schulen[1]], userinfo.rolleId);
 
     const landingPage = await logout(page);
     const loginPage = await landingPage.navigateToLogin();
@@ -143,6 +144,12 @@ test.describe('Schulisches Angebot erstellen', () => {
     await test.step('Erfolgsmeldung prüfen', async () => {
       await successPage.assertSuccessPage(angebot);
     });
+    await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
+      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
+      await detailsPage.assertServiceProviderDetailsHeadline(schulen[0].name);
+      await detailsPage.assertServiceProviderDetails(angebot);
+      await detailsPage.assertRollenerweiterungenDetails();
+    });
   });
 
   test('Als Schuladmin ein schulisches Angebot erstellen', async ({ asSchuladmin }) => {
@@ -173,6 +180,12 @@ test.describe('Schulisches Angebot erstellen', () => {
     });
     await test.step('Erfolgsmeldung prüfen', async () => {
       await successPage.assertSuccessPage(angebot);
+    });
+    await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
+      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
+      await detailsPage.assertServiceProviderDetailsHeadline(schulen[0].name);
+      await detailsPage.assertServiceProviderDetails(angebot);
+      await detailsPage.assertRollenerweiterungenDetails();
     });
   });
 

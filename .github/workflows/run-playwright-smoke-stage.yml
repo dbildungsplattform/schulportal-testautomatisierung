@@ -12,7 +12,7 @@ jobs:
     uses: ./.github/workflows/run-playwright.yml
     with:
       frontendHostname: spsh.staging.spsh.dbildungsplattform.de
-      tag: smoke
+      tag: stage-smoke
       browser: chromium
       playwright_branch: main
       send_notifications: true

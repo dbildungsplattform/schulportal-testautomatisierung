@@ -73,6 +73,12 @@ export interface CreateServiceProviderBodyParams {
      * @memberof CreateServiceProviderBodyParams
      */
     merkmale: Array<CreateServiceProviderBodyParamsMerkmaleEnum>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof CreateServiceProviderBodyParams
+     */
+    rollenartenWhitelist?: Array<CreateServiceProviderBodyParamsRollenartenWhitelistEnum>;
 }
 
 
@@ -104,9 +110,27 @@ export type CreateServiceProviderBodyParamsKategorieEnum = typeof CreateServiceP
  */
 export const CreateServiceProviderBodyParamsMerkmaleEnum = {
     NachtraeglichZuweisbar: 'NACHTRAEGLICH_ZUWEISBAR',
-    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG'
+    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG',
+    AnbietenInSchulischerAngebotsverwaltung: 'ANBIETEN_IN_SCHULISCHER_ANGEBOTSVERWALTUNG',
+    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG'
 } as const;
 export type CreateServiceProviderBodyParamsMerkmaleEnum = typeof CreateServiceProviderBodyParamsMerkmaleEnum[keyof typeof CreateServiceProviderBodyParamsMerkmaleEnum];
+
+/**
+ * @export
+ */
+export const CreateServiceProviderBodyParamsRollenartenWhitelistEnum = {
+    Lern: 'LERN',
+    Lehr: 'LEHR',
+    Extern: 'EXTERN',
+    Orgadmin: 'ORGADMIN',
+    Leit: 'LEIT',
+    Sysadmin: 'SYSADMIN',
+    Sorgber: 'SORGBER',
+    Schb: 'SCHB',
+    Nlehr: 'NLEHR'
+} as const;
+export type CreateServiceProviderBodyParamsRollenartenWhitelistEnum = typeof CreateServiceProviderBodyParamsRollenartenWhitelistEnum[keyof typeof CreateServiceProviderBodyParamsRollenartenWhitelistEnum];
 
 
 /**
@@ -143,6 +167,7 @@ export function CreateServiceProviderBodyParamsFromJSONTyped(json: any, ignoreDi
         'kategorie': json['kategorie'],
         'requires2fa': json['requires2fa'],
         'merkmale': json['merkmale'],
+        'rollenartenWhitelist': !exists(json, 'rollenartenWhitelist') ? undefined : json['rollenartenWhitelist'],
     };
 }
 
@@ -164,6 +189,7 @@ export function CreateServiceProviderBodyParamsToJSON(value?: CreateServiceProvi
         'kategorie': value.kategorie,
         'requires2fa': value.requires2fa,
         'merkmale': value.merkmale,
+        'rollenartenWhitelist': value.rollenartenWhitelist,
     };
 }
 

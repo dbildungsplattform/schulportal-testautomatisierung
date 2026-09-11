@@ -10,7 +10,7 @@ import {
 import { createRolle, RollenArt } from '../base/api/rolleApi';
 import { testschuleName } from '../base/organisation';
 import { adressbuch, email, itslearning, kalender, schulportaladmin } from '../base/sp';
-import { DEV, SMOKE, STAGE } from '../base/tags';
+import { DEV, STAGE_SMOKE, STAGE } from '../base/tags';
 import { generateKlassenname, generateRolleName } from '../base/utils/generateTestdata';
 import { LandingViewPage } from '../pages/LandingView.page';
 import { LoginViewPage } from '../pages/LoginView.page';
@@ -31,7 +31,7 @@ test.describe(`Testfälle für den Login: Umgebung: ${process.env.ENV}: URL: ${p
     header = new HeaderPage(page);
   });
 
-  test('Fehlgeschlagener Login mit falschen Daten', { tag: [SMOKE, DEV, STAGE] }, async () => {
+  test('Fehlgeschlagener Login mit falschen Daten', { tag: [STAGE_SMOKE, DEV, STAGE] }, async () => {
     await loginPage.login('anakin', 'obi-wan');
     await expect(loginPage.loginFailedWithWrongCredentials()).resolves.toBeUndefined();
   });
@@ -53,10 +53,10 @@ test.describe(`Testfälle für den Login: Umgebung: ${process.env.ENV}: URL: ${p
   });
 });
 
-test.describe('Smoke: Rollenbasierte Zugänge', () => {
+test.describe('Stage-Smoke: Rollenbasierte Zugänge', () => {
   test(
-    'Smoke: Lehrer kann sich anmelden, sieht die Kacheln und kann sich abmelden',
-    { tag: [SMOKE] },
+    'Stage-Smoke: Lehrer kann sich anmelden, sieht die Kacheln und kann sich abmelden',
+    { tag: [STAGE_SMOKE] },
     async ({ page }: PlaywrightTestArgs) => {
       const startPage: StartViewPage = await test.step('Lehrer anlegen und anmelden', async () => {
         await loginAndNavigateToAdministration(page);
@@ -81,8 +81,8 @@ test.describe('Smoke: Rollenbasierte Zugänge', () => {
   );
 
   test(
-    'Smoke: Landesadmin kann sich anmelden und zum Administrationsbereich und sich abmelden',
-    { tag: [SMOKE] },
+    'Stage-Smoke: Landesadmin kann sich anmelden und zum Administrationsbereich und sich abmelden',
+    { tag: [STAGE_SMOKE] },
     async ({ page }: PlaywrightTestArgs) => {
       const startPage: StartViewPage = await test.step('Als Landesadmin anmelden', async () => {
         const loginPage: LoginViewPage = await freshLoginPage(page);
@@ -102,8 +102,8 @@ test.describe('Smoke: Rollenbasierte Zugänge', () => {
   );
 
   test(
-    'Smoke: Schuladmin kann sich anmelden und zur Schulportal-Administration und sich abmelden',
-    { tag: [SMOKE] },
+    'Stage-Smoke: Schuladmin kann sich anmelden und zur Schulportal-Administration und sich abmelden',
+    { tag: [STAGE_SMOKE] },
     async ({ page }: PlaywrightTestArgs) => {
       const startPage: StartViewPage = await test.step('Schuladmin anlegen und anmelden', async () => {
         await loginAndNavigateToAdministration(page);
@@ -130,8 +130,8 @@ test.describe('Smoke: Rollenbasierte Zugänge', () => {
   );
 
   test(
-    'Smoke: Schüler kann sich anmelden, itslearning öffnen und sich abmelden',
-    { tag: [SMOKE] },
+    'Stage-Smoke: Schüler kann sich anmelden, itslearning öffnen und sich abmelden',
+    { tag: [STAGE_SMOKE] },
     async ({ page }: PlaywrightTestArgs) => {
       const startPage: StartViewPage = await test.step('Schüler anlegen und anmelden', async () => {
         await loginAndNavigateToAdministration(page);

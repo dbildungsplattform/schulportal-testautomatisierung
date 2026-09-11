@@ -115,7 +115,7 @@ export interface RolleWithServiceProvidersResponse {
      * @type {Array<ServiceProviderIdNameResponse>}
      * @memberof RolleWithServiceProvidersResponse
      */
-    serviceProviders?: Array<ServiceProviderIdNameResponse>;
+    serviceProviders: Array<ServiceProviderIdNameResponse>;
 }
 
 /**
@@ -134,6 +134,7 @@ export function instanceOfRolleWithServiceProvidersResponse(value: object): bool
     isInstance = isInstance && "administeredBySchulstrukturknotenName" in value;
     isInstance = isInstance && "administeredBySchulstrukturknotenKennung" in value;
     isInstance = isInstance && "version" in value;
+    isInstance = isInstance && "serviceProviders" in value;
 
     return isInstance;
 }
@@ -159,7 +160,7 @@ export function RolleWithServiceProvidersResponseFromJSONTyped(json: any, ignore
         'administeredBySchulstrukturknotenName': json['administeredBySchulstrukturknotenName'],
         'administeredBySchulstrukturknotenKennung': json['administeredBySchulstrukturknotenKennung'],
         'version': json['version'],
-        'serviceProviders': !exists(json, 'serviceProviders') ? undefined : ((json['serviceProviders'] as Array<any>).map(ServiceProviderIdNameResponseFromJSON)),
+        'serviceProviders': ((json['serviceProviders'] as Array<any>).map(ServiceProviderIdNameResponseFromJSON)),
     };
 }
 
@@ -183,7 +184,7 @@ export function RolleWithServiceProvidersResponseToJSON(value?: RolleWithService
         'administeredBySchulstrukturknotenName': value.administeredBySchulstrukturknotenName,
         'administeredBySchulstrukturknotenKennung': value.administeredBySchulstrukturknotenKennung,
         'version': value.version,
-        'serviceProviders': value.serviceProviders === undefined ? undefined : ((value.serviceProviders as Array<any>).map(ServiceProviderIdNameResponseToJSON)),
+        'serviceProviders': ((value.serviceProviders as Array<any>).map(ServiceProviderIdNameResponseToJSON)),
     };
 }
 
