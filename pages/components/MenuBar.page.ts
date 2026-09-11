@@ -126,7 +126,7 @@ export class MenuBarPage {
     );
   }
 
-  public async navigateToAngebotSchulspezifisch(): Promise<ServiceProviderManagementBySchuleViewPage> {
+  public async navigateToAngebotManagementSchulspezifisch(): Promise<ServiceProviderManagementBySchuleViewPage> {
     return this.navigateTo(
       'angebot-display-schulspezifisch-menu-item',
       new ServiceProviderManagementBySchuleViewPage(this.page).waitForPageLoad(),

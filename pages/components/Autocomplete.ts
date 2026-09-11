@@ -270,6 +270,9 @@ export class Autocomplete {
     if (exactCount) {
       const expectedCount: number = filterHeaderText ? sortedItems.length + 1 : sortedItems.length;
       await expect(options).toHaveCount(expectedCount, { timeout: 5000 });
+    } else if (sortedItems.length > 0) {
+      // Without an exact count to poll for, still give the async search time to populate the list.
+      await expect(options.first()).toBeVisible({ timeout: 5000 });
     }
 
     // Virtual scroll only renders a subset of items at a time, so scroll the
