@@ -7,7 +7,7 @@ Diese Übersicht beschreibt, wie in diesem Projekt Testdaten für Playwright-Tes
 - **Testdaten werden ausschließlich über die Backend-API angelegt**, nicht über die UI. Damit bleiben Tests schnell, stabil und unabhängig von UI-Änderungen.
 - **UI wird nur für das tatsächliche Testszenario verwendet** (z. B. Login, Navigation, das zu prüfende Verhalten).
 - **Testdaten werden im `beforeEach` erstellt – nicht mitten im eigentlichen Testablauf.** Der Testkörper enthält nur das zu prüfende Verhalten und die Assertions.
-- **Jeder Test räumt seine Daten in `afterEach` selbst auf** (siehe Abschnitt „Aufräumen").
+- **Das globale Teardown räumt die Testdaten nach dem Testlauf auf** (siehe Abschnitt „Aufräumen").
 - **Generierte Namen tragen den Präfix `TAuto-PW-…`**, damit Testdaten erkennbar und im Notfall zentral aufräumbar sind.
 - **Eindeutigkeit:** Vornamen, Nachnamen, Rollennamen, Klassen- und Schulnamen werden mit Faker und Zufallssuffix generiert, um Kollisionen bei parallelen Tests zu vermeiden.
 
@@ -71,7 +71,9 @@ Der Präfix `TAuto-PW-` ist Konvention und wird an mehreren Stellen verwendet (S
 
 ## Aufräumen
 
-Tests müssen ihre Daten selbst löschen. Übliche Patterns:
+Das in [tests/global-teardown.ts](../tests/global-teardown.ts) konfigurierte globale Teardown löscht nach dem Testlauf alle Testdaten mit dem Präfix `TAuto-PW` in der Reihenfolge Personen, Rollen, Klassen und Schulen. Neue Tests sollen daher keinen eigenen `afterEach`-Cleanup implementieren.
+
+Ein `afterEach`-Cleanup ist nur bei einer ausdrücklich begründeten Ausnahme erforderlich, wenn Daten noch innerhalb desselben Testlaufs entfernt werden müssen. Dann können die folgenden Hilfsfunktionen verwendet werden:
 
 ```ts
 let usernames: string[] = [];
@@ -95,7 +97,7 @@ Hilfsfunktionen in [base/testHelperDeleteTestdata.ts](../base/testHelperDeleteTe
 - `deleteRolleById(rolleIds[], page)` / `deleteRolleByName(rolleNamen[], page)`
 - `deleteKlasseByName(klassenNamen[], page)`
 
-Schulen werden aktuell **nicht** gelöscht – stattdessen die festen Test-Schulen aus [base/organisation.ts](../base/organisation.ts) wiederverwenden (z. B. `testschuleName`, `testschule665Name`, `ersatzTestschuleName`).
+Dynamisch angelegte Schulen werden vom globalen Teardown gelöscht. Deshalb werden Schulen für neue Tests mit `createSchule(page, generateSchulname(), generateDienststellenNr())` angelegt; feste Test-Schulen aus [base/organisation.ts](../base/organisation.ts) sind dafür nicht zu verwenden.
 
 ## Praxisbeispiele
 
@@ -117,7 +119,7 @@ usernames.push(userInfoLehrer.username);
 rolleIds.push(userInfoLehrer.rolleId);
 ```
 
-Hier wird eine neue Rolle (`typeLehrer`) mit Service-Provider „email" an `testschuleName` erzeugt und gleich eine Person darauf gesetzt. `username`/`rolleId` werden für `afterEach` gemerkt.
+Hier wird eine neue Rolle (`typeLehrer`) mit Service-Provider „email" an `testschuleName` erzeugt und gleich eine Person darauf gesetzt. Für neue Tests ist statt der festen Schule ein dynamisch erzeugter Schulname zu verwenden; die angelegten Daten werden nach dem Lauf durch das globale Teardown entfernt.
 
 ### Beispiel 2: Person mit bestehender Rolle und Schule
 
