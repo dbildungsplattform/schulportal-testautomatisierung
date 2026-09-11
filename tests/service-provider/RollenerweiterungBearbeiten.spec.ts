@@ -67,7 +67,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     const loginPage = await landingPage.navigateToLogin();
     const startViewPage = await loginPage.loginNewUserWithPasswordChange(user.username, user.password);
     const schuladminPersonManagementViewPage: PersonManagementViewPage = await startViewPage.navigateToAdministration();
-    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotSchulspezifisch();
+    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotManagementSchulspezifisch();
   }
 
   async function attachSecondSchuleToSchuladmin(

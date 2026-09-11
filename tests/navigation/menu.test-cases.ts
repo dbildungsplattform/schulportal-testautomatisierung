@@ -111,7 +111,7 @@ export const MENU_TEST_CASES: MenuTestCase[] = [
     testId: 'angebot-display-schulspezifisch-menu-item',
     route: '/admin/angebote/schulspezifisch',
     requiredPermissions: [RollenSystemRechtEnum.RollenErweitern],
-    navigate: (menu: MenuBarPage) => menu.navigateToAngebotSchulspezifisch(),
+    navigate: (menu: MenuBarPage) => menu.navigateToAngebotManagementSchulspezifisch(),
   },
   {
     name: 'Neues Angebot anlegen',
