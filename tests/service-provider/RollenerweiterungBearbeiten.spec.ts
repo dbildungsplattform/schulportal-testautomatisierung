@@ -19,7 +19,7 @@ import { constructProviderApi, createServiceProvider, deleteServiceProvider } fr
 import { test } from '../../base/fixtures';
 import { testschuleName } from '../../base/organisation';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
-import { DEV } from '../../base/tags';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateKlassenname, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
@@ -67,7 +67,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     const loginPage = await landingPage.navigateToLogin();
     const startViewPage = await loginPage.loginNewUserWithPasswordChange(user.username, user.password);
     const schuladminPersonManagementViewPage: PersonManagementViewPage = await startViewPage.navigateToAdministration();
-    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotSchulspezifisch();
+    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotManagementSchulspezifisch();
   }
 
   async function attachSecondSchuleToSchuladmin(
@@ -197,7 +197,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
   ];
 
   for (const { hasMultipleSchulen, bezeichnung } of schuladminScenarios) {
-    test(`SPSH-3313 Schritte 1-6 prüfen (${bezeichnung})`, { tag: [DEV] }, async ({ page }) => {
+    test(`SPSH-3313 Schritte 1-6 prüfen (${bezeichnung})`, { tag: [DEV, STAGE] }, async ({ page }) => {
       const managementBySchuleViewPage: ServiceProviderManagementBySchuleViewPage =
         await getServiceProviderManagementPage(page, hasMultipleSchulen);
       const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = hasMultipleSchulen
@@ -216,7 +216,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
       });
     });
 
-    test(`SPSH-3313 Schritte 7-15 prüfen (${bezeichnung})`, { tag: [DEV] }, async ({ page }) => {
+    test(`SPSH-3313 Schritte 7-15 prüfen (${bezeichnung})`, { tag: [DEV, STAGE] }, async ({ page }) => {
       const managementBySchuleViewPage: ServiceProviderManagementBySchuleViewPage =
         await getServiceProviderManagementPage(page, hasMultipleSchulen);
       const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = hasMultipleSchulen
