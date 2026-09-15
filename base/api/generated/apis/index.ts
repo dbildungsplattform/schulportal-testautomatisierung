@@ -22,3 +22,4 @@ export * from './PersonenkontexteApi';
 export * from './ProviderApi';
 export * from './RolleApi';
 export * from './StatusApi';
+export * from './VidisApi';

@@ -1,6 +1,8 @@
+import { Download, Page, PlaywrightTestArgs } from '@playwright/test';
+import { RollenArt } from '../../base/api/generated/models/RollenArt';
 import { createKlasse, createSchule } from '../../base/api/organisationApi';
 import {
-  addSecondOrganisationToPerson,
+  addOrganisationenToPerson,
   createPerson,
   createPersonWithPersonenkontext,
   createUserWithLernRollenInDifferentKlassen,
@@ -8,8 +10,6 @@ import {
 } from '../../base/api/personApi';
 import { createRolle, getRolleId } from '../../base/api/rolleApi';
 import { getServiceProviderId } from '../../base/api/serviceProviderApi';
-import { RollenArt } from '../../base/api/generated/models/RollenArt';
-import { Download, Page, PlaywrightTestArgs } from '@playwright/test';
 import { test } from '../../base/fixtures';
 import { landSH } from '../../base/organisation';
 import { landesadminRolle, schuladminOeffentlichRolle } from '../../base/rollen';
@@ -17,20 +17,17 @@ import { typeLehrer, typeSchueler } from '../../base/rollentypen';
 import { itslearning } from '../../base/sp';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
+import { createMany } from '../../base/utils/concurrency';
 import {
   generateDienststellenNr,
   generateKlassenname,
   generateRolleName,
   generateSchulname,
 } from '../../base/utils/generateTestdata';
-import { createMany } from '../../base/utils/concurrency';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
 import { StartViewPage } from '../../pages/StartView.page';
-import {
-  SchuleCreationParams,
-  Schulform,
-} from '../../pages/admin/organisationen/schulen/SchuleCreationView.page';
+import { SchuleCreationParams, Schulform } from '../../pages/admin/organisationen/schulen/SchuleCreationView.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { RolleEntziehenPage } from '../../pages/admin/personen/mehrfachbearbeitung/RolleEntziehen.page';
 import { HeaderPage } from '../../pages/components/Header.page';
@@ -59,15 +56,13 @@ async function createUsersWithRolle(
   klasseId?: string,
   secondaryRolleId?: string,
 ): Promise<UserInfo[]> {
-  return createMany(
-    count,
-    () =>
-      createPerson(page, {
-        organisationId: schuleId,
-        rolleId,
-        klasseId,
-        secondaryRolleId,
-      }),
+  return createMany(count, () =>
+    createPerson(page, {
+      organisationId: schuleId,
+      rolleId,
+      klasseId,
+      secondaryRolleId,
+    }),
   );
 }
 
@@ -152,7 +147,7 @@ async function logoutAndFirstLoginWithAnotherUser(
         schuleId2 = await createSchule(page, schule2Name, schule2Kennung);
 
         const rolleId: string = await getRolleId(page, rolleName);
-        await addSecondOrganisationToPerson(page, admin.personId, schuleId, schuleId2, rolleId);
+        await addOrganisationenToPerson(page, admin.personId, [schuleId, schuleId2], rolleId);
       }
     });
 
@@ -312,47 +307,59 @@ test.describe('Rolle entziehen als Schuladmin', () => {
     return schuladminPersonManagementViewPage;
   }
 
-  test('Fehler wenn Rolle die einzige Rollenzuordnung ist', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-    const stepData: { bezeichnung: string; rolleName: string; users: UserInfo[] }[] = [];
+  test(
+    'Fehler wenn Rolle die einzige Rollenzuordnung ist',
+    { tag: [DEV, STAGE] },
+    async ({ page }: PlaywrightTestArgs) => {
+      const stepData: { bezeichnung: string; rolleName: string; users: UserInfo[] }[] = [];
 
-    await test.step('Setup', async () => {
-      const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
-      for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
-        const targetRolleName: string = generateRolleName();
-        const targetRolleId: string = await createRolle(page, rollenArt, schuleId, targetRolleName, undefined, undefined, new Set(idSPs));
-        const klasseId: string | undefined =
-          rollenArt === typeSchueler ? await createKlasse(page, schuleId, generateKlassenname()) : undefined;
+      await test.step('Setup', async () => {
+        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+        for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
+          const targetRolleName: string = generateRolleName();
+          const targetRolleId: string = await createRolle(
+            page,
+            rollenArt,
+            schuleId,
+            targetRolleName,
+            undefined,
+            undefined,
+            new Set(idSPs),
+          );
+          const klasseId: string | undefined =
+            rollenArt === typeSchueler ? await createKlasse(page, schuleId, generateKlassenname()) : undefined;
 
-        const users: UserInfo[] = await createUsersWithRolle(
-          page,
-          schuleId,
-          targetRolleId,
-          ROLLE_ENTZIEHEN_BULK_COUNT,
-          klasseId,
-        );
+          const users: UserInfo[] = await createUsersWithRolle(
+            page,
+            schuleId,
+            targetRolleId,
+            ROLLE_ENTZIEHEN_BULK_COUNT,
+            klasseId,
+          );
 
-        stepData.push({ bezeichnung, rolleName: targetRolleName, users });
-      }
-    });
-
-    personManagementViewPage = await test.step('Als Schuladmin anmelden', async () => switchToSchuladmin(page));
-
-    for (const { bezeichnung, rolleName, users } of stepData) {
-      await test.step(bezeichnung, async () => {
-        await personManagementViewPage.resetFilter();
-        const rolleEntziehenPage: RolleEntziehenPage = await selectUsersAndOpenRolleEntziehenDialog(
-          personManagementViewPage,
-          rolleName,
-          users,
-        );
-        await rolleEntziehenPage.submit();
-
-        await rolleEntziehenPage.assertInProgress();
-        await rolleEntziehenPage.assertBulkErrorDialog(users.length);
-        await rolleEntziehenPage.closeBulkErrorDialog();
+          stepData.push({ bezeichnung, rolleName: targetRolleName, users });
+        }
       });
-    }
-  });
+
+      personManagementViewPage = await test.step('Als Schuladmin anmelden', async () => switchToSchuladmin(page));
+
+      for (const { bezeichnung, rolleName, users } of stepData) {
+        await test.step(bezeichnung, async () => {
+          await personManagementViewPage.resetFilter();
+          const rolleEntziehenPage: RolleEntziehenPage = await selectUsersAndOpenRolleEntziehenDialog(
+            personManagementViewPage,
+            rolleName,
+            users,
+          );
+          await rolleEntziehenPage.submit();
+
+          await rolleEntziehenPage.assertInProgress();
+          await rolleEntziehenPage.assertBulkErrorDialog(users.length);
+          await rolleEntziehenPage.closeBulkErrorDialog();
+        });
+      }
+    },
+  );
 
   test('Rolle wird erfolgreich entzogen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     const stepData: { bezeichnung: string; rolleName: string; users: UserInfo[] }[] = [];
@@ -362,8 +369,24 @@ test.describe('Rolle entziehen als Schuladmin', () => {
       for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
         const targetRolleName: string = generateRolleName();
         const secondaryRolleName: string = generateRolleName();
-        const targetRolleId: string = await createRolle(page, rollenArt, schuleId, targetRolleName, undefined, undefined, new Set(idSPs));
-        const secondaryRolleId: string = await createRolle(page, rollenArt, schuleId, secondaryRolleName, undefined, undefined, new Set(idSPs));
+        const targetRolleId: string = await createRolle(
+          page,
+          rollenArt,
+          schuleId,
+          targetRolleName,
+          undefined,
+          undefined,
+          new Set(idSPs),
+        );
+        const secondaryRolleId: string = await createRolle(
+          page,
+          rollenArt,
+          schuleId,
+          secondaryRolleName,
+          undefined,
+          undefined,
+          new Set(idSPs),
+        );
         const klasseId: string | undefined =
           rollenArt === typeSchueler ? await createKlasse(page, schuleId, generateKlassenname()) : undefined;
 
@@ -418,7 +441,15 @@ test.describe('Rolle entziehen als Schuladmin', () => {
         const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
         zugewieseneRolleName = generateRolleName();
         nichtZugewieseneRolleName = generateRolleName();
-        const zugewieseneRolleId: string = await createRolle(page, typeSchueler, schuleId, zugewieseneRolleName, undefined, undefined, new Set(idSPs));
+        const zugewieseneRolleId: string = await createRolle(
+          page,
+          typeSchueler,
+          schuleId,
+          zugewieseneRolleName,
+          undefined,
+          undefined,
+          new Set(idSPs),
+        );
         await createRolle(
           page,
           typeSchueler,
@@ -467,8 +498,24 @@ test.describe('Rolle entziehen als Schuladmin', () => {
           const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
           targetRolleName = generateRolleName();
           const secondaryRolleName: string = generateRolleName();
-          const targetRolleId: string = await createRolle(page, typeSchueler, schuleId, targetRolleName, undefined, undefined, new Set(idSPs));
-          const secondaryRolleId: string = await createRolle(page, typeSchueler, schuleId, secondaryRolleName, undefined, undefined, new Set(idSPs));
+          const targetRolleId: string = await createRolle(
+            page,
+            typeSchueler,
+            schuleId,
+            targetRolleName,
+            undefined,
+            undefined,
+            new Set(idSPs),
+          );
+          const secondaryRolleId: string = await createRolle(
+            page,
+            typeSchueler,
+            schuleId,
+            secondaryRolleName,
+            undefined,
+            undefined,
+            new Set(idSPs),
+          );
 
           const primaryKlasseId: string = await createKlasse(page, schuleId, generateKlassenname());
           if (unterschiedlicheKlassen) {
@@ -525,15 +572,32 @@ test.describe('Rolle entziehen als Schuladmin', () => {
   });
 
   test('Teilerfolg bei gemischten Benutzern', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-    const stepData: { bezeichnung: string; rolleName: string; singleRolleUsers: UserInfo[]; allUsers: UserInfo[] }[] = [];
+    const stepData: { bezeichnung: string; rolleName: string; singleRolleUsers: UserInfo[]; allUsers: UserInfo[] }[] =
+      [];
 
     await test.step('Setup', async () => {
       const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
       for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
         const targetRolleName: string = generateRolleName();
         const secondaryRolleName: string = generateRolleName();
-        const targetRolleId: string = await createRolle(page, rollenArt, schuleId, targetRolleName, undefined, undefined, new Set(idSPs));
-        const secondaryRolleId: string = await createRolle(page, rollenArt, schuleId, secondaryRolleName, undefined, undefined, new Set(idSPs));
+        const targetRolleId: string = await createRolle(
+          page,
+          rollenArt,
+          schuleId,
+          targetRolleName,
+          undefined,
+          undefined,
+          new Set(idSPs),
+        );
+        const secondaryRolleId: string = await createRolle(
+          page,
+          rollenArt,
+          schuleId,
+          secondaryRolleName,
+          undefined,
+          undefined,
+          new Set(idSPs),
+        );
         const klasseId: string | undefined =
           rollenArt === typeSchueler ? await createKlasse(page, schuleId, generateKlassenname()) : undefined;
 
@@ -577,4 +641,3 @@ test.describe('Rolle entziehen als Schuladmin', () => {
     }
   });
 });
-

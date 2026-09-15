@@ -1,8 +1,7 @@
 import { PlaywrightTestArgs } from '@playwright/test';
-import { test } from '../../base/fixtures';
 import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import {
-  addSecondOrganisationToPerson,
+  addOrganisationenToPerson,
   createPerson,
   createPersonWithPersonenkontext,
   createRolleAndPersonWithPersonenkontext,
@@ -10,6 +9,7 @@ import {
 } from '../../base/api/personApi';
 import { createRolle, getRolleId, RollenArt } from '../../base/api/rolleApi';
 import { getServiceProviderId } from '../../base/api/serviceProviderApi';
+import { test } from '../../base/fixtures';
 import { landSH } from '../../base/organisation';
 import {
   landesadminRolle,
@@ -22,6 +22,7 @@ import { typeSchueler } from '../../base/rollentypen';
 import { itslearning } from '../../base/sp';
 import { DEV } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
+import { createMany } from '../../base/utils/concurrency';
 import {
   formatDateDMY,
   generateCurrentDate,
@@ -32,13 +33,12 @@ import {
   generateSchulname,
   generateVorname,
 } from '../../base/utils/generateTestdata';
-import { createMany } from '../../base/utils/concurrency';
-import { LandingViewPage } from '../../pages/LandingView.page';
-import { LoginViewPage } from '../../pages/LoginView.page';
-import { StartViewPage } from '../../pages/StartView.page';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { RolleZuordnenPage } from '../../pages/admin/personen/mehrfachbearbeitung/RolleZuordnen.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
+import { LandingViewPage } from '../../pages/LandingView.page';
+import { LoginViewPage } from '../../pages/LoginView.page';
+import { StartViewPage } from '../../pages/StartView.page';
 
 test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
   test.describe(`Als Schuladmin (1 Schule)`, () => {
@@ -240,7 +240,7 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         // Schuladmin mit 2 Schulen anlegen
         const admin: UserInfo = await createPersonWithPersonenkontext(page, schuleName, schuladminOeffentlichRolle);
         const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
-        await addSecondOrganisationToPerson(page, admin.personId, schuleId, zweiteSchuleId, schuladminRolleId);
+        await addOrganisationenToPerson(page, admin.personId, [schuleId, zweiteSchuleId], schuladminRolleId);
 
         // Als Schuladmin neu anmelden (inkl. Passwortwechsel)
         const landingPage: LandingViewPage = await personManagementViewPage.getHeader().logout();

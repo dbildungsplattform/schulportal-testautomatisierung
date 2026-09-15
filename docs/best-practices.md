@@ -1,144 +1,140 @@
-# TLDR
+# TL;DR
 
-- Code soll TypeScript Best Practices folgen
-- Frontend-Views werden als Pages abgebildet
-- Funktionslogik (Actions und Assertions) als Methoden in Pages
-- Navigation läuft über Pages und die `waitForPageLoad()`-Funktion wird aufgerufen
-- Testlogik (inkl. Aufruf der Page-Methoden) in Tests
-- Lokatoren werden in Pages gekapselt und bevorzugt methodenlokal verwendet. Tests greifen ausschließlich auf Page-Methoden zu
-- API-Funktionen werden mit Hilfe einer generierten API und Playwright-Fetch-Wrapper implementiert
-- Die API muss bei jeder Aktualisierung im Backend auch in Playwright aktualisiert werden
-- Um Daten via API anzulegen, muss bis ins Portal navigiert werden, damit gegebenenfalls 2FA ausgeführt werden kann.
+- Code should follow TypeScript best practices.
+- Frontend views are represented as pages.
+- Business logic (actions and assertions) is implemented as methods in pages.
+- Navigation is done through pages, and the `waitForPageLoad()` method is called.
+- Test logic (including calls to page methods) lives in tests.
+- Locators are encapsulated in pages and preferably defined method-locally. Tests only access page methods.
+- API functions are implemented using the generated API and a Playwright fetch wrapper.
+- The API must be updated in Playwright whenever it changes in the backend.
+- To create data via API, navigate into the portal first so 2FA can be performed if necessary.
 
 # Pages
 
-Jede View im Frontend (schulportal-client) wird als Page in Playwright abgebildet.
+Every view in the frontend (`schulportal-client`) is represented as a page in Playwright.
 
-Pages beinhalten drei Sektionen: Lokatoren, Actions und Assertions. Lokatoren dienen der Auffindbarkeit von Elementen in der Anwendung. Actions sind die Methoden zur Funktionslogik der Frontend-Views. Assertions sind die Überprüfungen (expects). Assertions beginnen mit dem Präfix "assert", bspw. `assertPersonalData()`.
+Pages contain three sections: locators, actions, and assertions. Locators are used to find elements in the application. Actions are methods that implement the business logic of frontend views. Assertions are the checks (`expect`s). Assertions start with the prefix `assert`, e.g. `assertPersonalData()`.
 
-## Lokatoren
+## Locators
 
-Lokatoren sollen nur innerhalb der Page benutzt werden. Die Tests dürfen niemals direkt auf Page-Lokatoren zugreifen, sondern nur auf Page-Methoden. Lokatoren werden bevorzugt lokal in der jeweiligen Methode erzeugt. Dadurch entfällt die Notwendigkeit von Klassenfeldern bei einmalig genutzten Lokatoren und die Kapselung bleibt erhalten. Methodenübergreifende Lokatoren werden global definiert.
+Locators should only be used inside a page. Tests must never access page locators directly, only page methods. Locators are preferably created locally inside the respective method. This removes the need for class fields for one-off locators and keeps encapsulation intact. Method-spanning locators are defined globally.
 
-Die Namen der Locator-Variablen orientieren sich an den Benennungen der Test-Ids im Frontend.
+Locator variable names are based on the test ID names used in the frontend.
 
 ## Actions
 
-Methoden, die in Tests verwendet werden, müssen public sein. Methoden, die nur intern genutzt werden, sollen private sein. Die Tests sollen nur so wenig Parameter wie möglich (aber so viele wie nötig) an die Page-Funktionen übergeben.
+Methods used by tests must be `public`. Methods only used internally should be `private`. Tests should pass as few parameters as possible (but as many as necessary) to page functions.
 
-Jede Page besitzt eine Methode waitForPageLoad(), die mindestens eine eindeutige Headline (oder ähnliches Element) der Seite überprüft und die Page anschließend zurückgibt.
+Every page must have a `waitForPageLoad()` method that checks at least one unique headline (or similar element) of the page and then returns the page.
 
-Innerhalb der Pages beschreibt die Bezeichnung 'Workflow' einen fachlichen Ablauf, der im Frontend durchgeführt wird und in Playwright aus mehreren Einheiten (z.B. Actions, Pages, etc.) zusammengesetzt wird.
+Inside pages, the term *workflow* describes a business process executed in the frontend that is composed in Playwright of multiple units (e.g. actions, pages, etc.).
 
 ## Assertions
 
-- Web-first Assertions bevorzugen: `await expect(locator).toBeVisible()` statt separatem `waitFor(...)` plus zusätzlichem `expect`.
-- `expect.soft()` für nicht-kritische Mehrfachprüfungen nutzen.
-- `toPass()` für polling-basierte Verifikation verwenden, statt manueller Retry-Loops.
+- Prefer web-first assertions: `await expect(locator).toBeVisible()` instead of a separate `waitFor(...)` plus an additional `expect`.
+- Use `expect.soft()` for non-critical multi-assertion checks.
+- Use `toPass()` for polling-based verification instead of manual retry loops.
 
-Zusammengehörige Assertions sollen in einer gemeinsamen Methode zusammengefasst werden, sofern kein fachlicher Grund besteht, sie einzeln aufzurufen. Nur wenn eine Assertion separat und gezielt aufgerufen werden soll (z.B. weil sie einen eigenen Parameter benötigt wie `assertHeadline(schulname: string)`), wird sie als eigenständige Methode ausgelagert. Solche spezifischen Assertions können dann innerhalb einer übergeordneten Assertion-Methode aufgerufen werden.
+Related assertions should be grouped into a shared method unless there is a business reason to call them individually. Only if an assertion needs to be called separately and deliberately (e.g. because it needs its own parameter like `assertHeadline(schulname: string)`) should it be extracted as a standalone method. Such specific assertions can then be called inside a higher-level assertion method.
 
-## Test-Ids
+## Test IDs
 
-Jedes sinnvoll mit Playwright zu testende HTML-Element im Frontend bekommt eine Test-Id über das HTML-Attribut data-testid. Dieses Attribut kann mit der Playwright-Funktion .getByTestId() ausgelesen werden. Vorzugsweise erfolgt die Benennung im Frontend in kebab-case nach dem Schema <Funktion>-<Element>, bspw. `data-testid="username-input"`.
+Every HTML element that is meaningfully testable with Playwright receives a test ID via the HTML attribute `data-testid`. This attribute can be read using the Playwright function `.getByTestId()`. Names in the frontend preferably use kebab-case following the schema `<function>-<element>`, e.g. `data-testid="username-input"`.
 
-Test-Ids müssen pro Seite eindeutig sein, damit die Tests eindeutig auf die Elemente zugreifen können. Das betrifft insbesondere programmatisch generierte Elemente, wie z.B. die Service-Provider-Cards. Bei solchen Elementen muss die Test-Id einen Affix bekommen, der sie unique macht, bspw. die Id des Models: `service-provider-card-7e6f10d7-b6e5-4686-9011-182634c03bf3`.
+Test IDs must be unique per page so tests can access elements unambiguously. This especially applies to programmatically generated elements, such as service-provider cards. For such elements the test ID must get an affix that makes it unique, e.g. the model ID: `service-provider-card-7e6f10d7-b6e5-4686-9011-182634c03bf3`.
 
-### Keine Id im Frontend vorhanden?
+### No ID available in the frontend?
 
-Sollte ein zu testendes Element keine Test-Id haben, muss im Frontend nachgearbeitet werden. Am sinnvollsten ist in diesem Fall ein Branch im schulportal-client mit der gleichen Nummer des Playwright-Tickets. Dadurch stellen wir sicher, dass die Tests immer konsistent durchlaufen.
+If an element to be tested has no test ID, the frontend must be updated. The best approach is a branch in `schulportal-client` with the same number as the Playwright ticket. This ensures the tests always run consistently.
 
-### Ausnahmen wegen Vuetify
+### Exceptions due to Vuetify
 
-In einigen Fällen kann es vorkommen, dass ein konkretes Element (z.B. ein Inputfeld) keine Test-Id hat, obwohl im Frontend eine Test-Id vergeben wurde. Dann liegt es an Vuetify, der UI-Komponenten-Bibliothek, die im Frontend eingesetzt wird. Für Vuetify-Komponenten können wir (nach aktuellem Stand) nur auf oberster Ebene eine Test-Id vergeben. Wenn ein Element auf einer tieferen Ebene in Playwright lokalisiert werden muss, ist dies über Chaining der Playwright-Methoden möglich.
+In some cases a specific element (e.g. an input field) has no test ID even though one was assigned in the frontend. This is caused by Vuetify, the UI component library used in the frontend. For Vuetify components we can currently assign a test ID only at the top level. If an element at a deeper level must be located in Playwright, this can be done by chaining Playwright methods.
 
-Beispiel: Das Inputfeld im Search Filter soll lokalisiert werden, der Search Filter ist eine Vuetify-Komponente mit Test-Id. Chaining wie folgt: `this.page.getByTestId('search-filter-input').locator('input')`.
+Example: the input field inside the search filter should be located. The search filter is a Vuetify component with a test ID. Chain as follows: `this.page.getByTestId('search-filter-input').locator('input')`.
 
-# Testsuiten
+# Test Suites
 
-Alle Testsuiten (Dateien) sind Use-Case bezogen. Eine Testsuite beinhaltet **nur einen** Use-Case. Ein Use-Case kann aus mehreren Testfällen bestehen.
+All test suites (files) are use-case oriented. A test suite contains **only one** use case. A use case can consist of several test cases.
 
-Die Tests beinhalten keine Funktionslogik. Logik, Aktionen und Überprüfungen finden nur in den Pages statt.
+Tests must not contain business logic. Logic, actions, and checks only happen in pages.
 
-Ein Top-Level describe-Block ist nicht nötig, wenn aus dem Dateinamen klar wird, was im Test inbegriffen ist.
+A top-level `describe` block is not needed if the file name makes it clear what the test contains.
 
-Describe-Block-Namen sollen kurz und fachlich sein, z.B. `Testfälle für die Anlage von Personen`. Umgebungsinformationen wie `Umgebung`, `URL` oder `process.env.*` gehören nicht in den Describe-Namen, da diese Informationen bereits in Playwright-Reports und der Konfiguration vorhanden sind.
+`describe` block names should be short and business-oriented, e.g. `Testfälle für die Anlage von Personen`. Environment information like environment, URL, or `process.env.*` does not belong in `describe` names, since this information is already present in Playwright reports and configuration.
 
-## Parallele Sicherheit
+## Parallel Safety
 
-Module-Level mutable State (z.B. `let usernames: string[] = []`) ist bei parallelen Test-Workern fehleranfällig. Deshalb gilt:
+Module-level mutable state (e.g. `let usernames: string[] = []`) is error-prone with parallel test workers. Therefore:
+- Use variables only test-locally (`test`) or suite-locally (`test.describe`).
+- Do not use global arrays/objects for created data.
+- For reusable setup/teardown, use Playwright custom fixtures (`test.extend`) in the medium to long term.
 
-- Variablen nur test-lokal (`test`) oder suite-lokal (`test.describe`) verwenden.
-- Keine globalen Sammel-Arrays/Objekte für erstellte Daten nutzen.
-- Für wiederverwendbares Setup/Teardown mittel- bis langfristig Playwright Custom Fixtures (`test.extend`) einsetzen.
+## test.step() Guidelines
 
-## test.step() Richtlinien
+- Use `test.step()` only for major business phases (setup, action, verification).
+- Keep step names short, in German, and describing *what* is being done.
+- Use return values from steps to pass data clearly to subsequent steps.
 
-- `test.step()` nur für fachliche Hauptphasen einsetzen (Setup, Aktion, Verifikation).
-- Step-Namen kurz halten, auf Deutsch, und das Was beschreiben.
-- Rückgabewerte aus Steps nutzen, um Daten klar an Folgeschritte zu übergeben.
+# Naming
 
-# Namensgebung
+| Element             | Recommended Case     | Extension | Example                  | Notes                                              |
+| ------------------- | -------------------- | --------- | ------------------------ | -------------------------------------------------- |
+| Pages               | PascalCase           | .page.ts  | PersonImportView.page.ts | Matches the frontend view file name                |
+| Test suites         | PascalCase           | .spec.ts  | RolleAnlegen.spec.ts     | Test suites are always use-case based              |
+| Helpers/Utils       | camelCase            | .ts       | generateTestdata.ts      |                                                      |
+| Variables           | camelCase            | -         | organisationAutocomplete |                                                      |
+| Constants           | SCREAMING_SNAKE_CASE | -         | FRONTEND_URL             |                                                      |
+| Methods             | camelCase            | -         | waitForPageLoad()        |                                                      |
+| Test IDs (Frontend) | kebab-case           | -         | person-creation-form     |                                                      |
 
-| Element             | Empfohlener Case     | Endung   | Beispiel                 | Besonderheit                                   |
-| ------------------- | -------------------- | -------- | ------------------------ | ---------------------------------------------- |
-| Pages               | PascalCase           | .page.ts | PersonImportView.page.ts | Übernahme des Dateinamens der View im Frontend |
-| Testsuiten          | PascalCase           | .spec.ts | RolleAnlegen.spec.ts     | Testsuiten sind immer Use Case bezogen         |
-| Helper/Utils        | camelCase            | .ts      | generateTestdata.ts      |
-| Variablen           | camelCase            | -        | organisationAutocomplete |
-| Konstanten          | SCREAMING_SNAKE_CASE | -        | FRONTEND_URL             |
-| Methoden            | camelCase            | -        | waitForPageLoad()        |
-| Test Ids (Frontend) | kebab-case           | -        | person-creation-form     |
+# Coding Rules
 
-# Coding-Regeln
-
-Vor dem Pushen _immer_ Linter, Build und Tests ausführen
+_Always_ run linter, build, and tests before pushing:
 
 ```
 npm run lint
-
-npm run build
-
-npm run coverage
+npm run type-check
+npx playwright test
 ```
 
 # Tags
+Tags allow targeted control over test execution. For example, tests can be run only on stage or only on dev, depending on which third-party systems or other circumstances must be considered. The following matrix shows the available tags and what they cover.
 
-Mit Tags können wir die Ausführung der Tests gezielt steuern. So können beispielsweise Tests nur auf Stage oder nur auf Dev ausgeführt, je nachdem welche Drittsysteme oder andere Gegebenheiten berücksichtigt werden müssen. Die folgende Matrix zeigt, welche Tags vorhanden sind und welche Besonderheiten sie abdecken.
+| Tag         | Basic Functions | LDAP | Third-Party Systems | Login |
+| ----------- | --------------- | ---- | ------------------- | ----- |
+| dev         | x               | x    |                     |       |
+| stage       | x               |      | x                   |       |
+| stage-smoke |                 |      |                     | x     |
 
-| Tag         | Grundfunktionen | LDAP | Drittsysteme | Login |
-| ----------- | --------------- | ---- | ------------ | ----- |
-| dev         | x               | x    |              |       |
-| stage       | x               |      | x            |       |
-| stage-smoke |                 |      |              | x     |
+Tags are always given in alphabetical order: `{ tag: [DEV, STAGE] }`, not `{ tag: [STAGE, DEV] }`. Consistent order makes searching and review easier.
 
-Tags werden immer alphabetisch sortiert angegeben: `{ tag: [DEV, STAGE] }`, nicht `{ tag: [STAGE, DEV] }`. Konsistente Reihenfolge erleichtert Suche und Review.
+# Cleanup
 
-# Aufräumen (Cleanup)
+The preferred project standard is global teardown, which cleans up all test data with the prefix `TAuto` after the test run. Tests therefore do not need to implement their own cleanup steps for created entities.
 
-Bevorzugter Projektstandard ist das Global Teardown, das alle Testdaten mit dem Prefix `TAuto` nach dem Testlauf aufräumt. Tests müssen daher keine eigenen Cleanup-Schritte für erstellte Entitäten implementieren.
+Deleting test data in an `afterEach` hook is not necessary, because global teardown takes care of it.
 
-Das Löschen von Testdaten in einem `afterEach` Hook ist nicht nötig, da das Global Teardown diese Aufgabe übernimmt.
-
-Langfristig ist die Migration auf Playwright Custom Fixtures mit automatischem Teardown pro Test der bevorzugte Weg.
+In the long term, migrating to Playwright custom fixtures with automatic teardown per test is the preferred direction.
 
 # API
 
-Für die Erhaltung der Stabilität und Wartbarkeit der automatisierten Tests wurden auch die API-Calls in eigenen Klassen definiert. Es gibt einmal die von uns erstellten API-Klassen, bspw. base/api/personApi.ts (selbst vergebener Name, Modelname im Singular), in denen wir die Methoden zur Verwendung in Pages und Tests definieren. Dort benutzen wir die zugehörige generierte API-Klasse, bspw. base/api/generated/personenApi.ts (Name aus der API vom Backend vergeben). Diese wird aus dem Swagger Doc der Backend-API generiert.
+To maintain stability and maintainability of the automated tests, API calls are defined in their own classes. There are the API classes we created ourselves, e.g. `base/api/personApi.ts` (name we chose, model name in singular), where we define methods for use in pages and tests. There we use the corresponding generated API class, e.g. `base/api/generated/personenApi.ts` (name assigned by the backend API). This is generated from the backend API Swagger document.
 
-Vor dem Refactoring gab es Helper-Klassen, die sowohl Funktionslogik, als auch API-Logik beinhaltet haben. Diese wurden durch das Refactoring getrennt, so dass die API-Klassen nur noch API-Logik beinhalten.
+Before the refactoring there were helper classes containing both business logic and API logic. They were separated by the refactoring so that API classes now contain only API logic.
 
-Bei jeder Änderung der API im Backend-Repo muss die API auch in Playwright neu generiert werden. Der Befehl dazu lautet im Playwright-Repo `npm run generate-api`.
+Whenever the API changes in the backend repo, the API must also be regenerated in Playwright. The command for this in the Playwright repo is `npm run generate-api`.
 
-# Github Workflows
+# GitHub Workflows
 
-Es gibt einen Github Workflow (run-playwright.yml), der sich um die Ausführung kümmert und Parameter für Umgebung, Browser und Testumfang (Tags) annimmt. Damit ist es möglich, jede mögliche Kombination von Parametern manuell und geplant auszuführen.
+There is one GitHub workflow (`run-playwright.yml`) that handles execution and accepts parameters for environment, browser, and test scope (tags). This makes it possible to execute every possible combination of parameters manually and on schedule.
 
-Die weiteren Github Workflows rufen run-playwright.yml parametrisiert auf.
+The other GitHub workflows call `run-playwright.yml` with parameters.
 
-Siehe docs/actions-github.md.
+See `docs/actions-github.md`.
 
-# Beispiele
+# Examples
 
 ## Page
 
@@ -146,40 +142,40 @@ Siehe docs/actions-github.md.
 import ....
 
 export class LoginViewPage {
-  // Alle global in der Page verwendeten Variablen (z.B. wenn Variablen in mehreren Methoden benötigt werden) werden hier auf oberster Ebene definiert.
-  // Alle Variablen, die nur lokal in den Methoden verwendet werden, werden auch nur lokal definiert.
+  // All variables used globally in the page (e.g. needed in multiple methods) are defined at the top.
+  // Variables used only locally inside methods are defined only locally.
   /* add global locators here */
 
-  // protected readonly sorgt dafür, dass this.page verfügbar ist
+  // protected readonly makes this.page available
   constructor(protected readonly page: Page) {}
 
-  // Wir trennen zwischen Actions und Assertions
-  // Actions sind alle Funktionen, die eine Page bereitstellt
+  // We separate actions and assertions
+  // Actions are all functions provided by a page
   /* actions */
-  // Jede Page benötigt eine Methode waitForPageLoad(), die public ist und in Tests verwendet werden kann
-  // Indem this zurückgegeben wird, können wir den aufrufenden Code etwas verschlanken
+  // Every page needs a public waitForPageLoad() method that can be used in tests
+  // Returning this allows the caller to be a bit slimmer
   public async waitForPageLoad(): Promise<LoginViewPage> {
     await expect(this.page.getByTestId('login-page-title')).toHaveText('Anmeldung');
     return this;
   }
 
-  // Alle Methoden, die nicht in Tests verwendet werden müssen, sind als private deklariert und werden nur innerhalb der Page aufgerufen
+  // All methods that don't need to be used by tests are declared private and only called inside the page
   private generateSecurePassword(): string {
     return generator.generate({ length: 8, numbers: true }) + '1Aa!';
   }
 
-  // Public Methoden werden in Tests verwendet und haben meistens einen Rückgabewert
-  // Der Rückgabewert kann in vielen Fällen eine weitere Page sein
+  // Public methods are used in tests and usually have a return value
+  // The return value is often another page
   public async login(
     username: string = process.env.USER as string,
     password: string = process.env.PW as string
   ): Promise<StartViewPage> {
-    // Wenn Lokatoren lokal mehrfach benutzt werden, sollten sie als Variable deklariert werden
+    // If locators are used locally multiple times, declare them as variables
     const usernameInput: Locator = this.page.getByTestId('username-input');
     const passwordInput: Locator = this.page.getByTestId('password-input');
     const loginButton: Locator = this.page.getByTestId('login-button');
 
-    // Lokatoren, die nur einmalig benutzt werden, können direkt aufgerufen werden
+    // Locators used only once can be called directly
     await expect(this.page.getByTestId('login-page-title')).toHaveText('Anmeldung');
     await expect(this.page.getByTestId('login-prompt-text')).toHaveText('Bitte geben Sie Ihre persönlichen Zugangsdaten ein.');
 
@@ -194,7 +190,7 @@ export class LoginViewPage {
     return new StartViewPage(this.page);
   }
 
-  // Assertions sind alle Methoden, die Überprüfungen von Page-Elementen oder -Verhalten dienen
+  // Assertions are methods that check page elements or behavior
   /* assertions */
   public async loginFailedWithWrongCredentials(): Promise<void> {
     const inputErrorSpan: Locator = this.page.getByTestId('input-error-message');
@@ -217,48 +213,48 @@ export class LoginViewPage {
 ```typescript
 import ....
 
-// Globale Variablen für alle Tests in diesem Spec-File
+// Global variables for all tests in this spec file
 const ADMIN: string | undefined = process.env.USER;
 const PASSWORD: string | undefined = process.env.PW;
 
-// Mit test.describe() werden einzelne Testsuites definiert.
-// Ein Spec-File behandelt in unserem Projekt einen konkreten Anwendungsfall des Schulportals und kann mehrere Testsuites enthalten
+// test.describe() defines individual test suites
+// A spec file in our project covers one concrete use case of the Schulportal and may contain multiple test suites
 test.describe('Testfälle für den Login', () => {
-  // Lokale Variablen des Testfalls
+  // Local variables of the test case
   let landingPage: LandingViewPage;
   let loginPage: LoginViewPage;
   let header: HeaderPage;
 
-  // Der beforeEach Hook einer Testsuite läuft vor jedem einzelnen Test und kann benötigte Ausgangssituationen herstellen
-  // Z.B. für den Test benötigte Daten anlegen oder den Login durchführen etc.
+  // The beforeEach hook of a test suite runs before each individual test and can establish required starting situations
+  // e.g. create data needed for the test or perform login, etc.
   test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
     loginPage = await freshLoginPage(page);
     header = new HeaderPage(page);
   });
 
-  // Ein konkreter Testfall wird mit test() ausgeführt
-  // Im Idealfall sind die einzelnen Tests sehr schlank, da sie nur die einzelnen Schritte der Funktionslogik aus den Pages aufrufen
-  // Hier werden bspw. nur 2 Methoden aufgerufen, loginPage.login() und startPage.assertServiceProvidersAreLoaded()
+  // A concrete test case is executed with test()
+  // Ideally the individual tests are very slim because they only call the business logic steps from the pages
+  // Here for example only 2 methods are called, loginPage.login() and startPage.assertServiceProvidersAreLoaded()
   test('Erfolgreicher Login', async () => {
-    // In diesem Fall wird die StartPage bereits durch den Login zurückgegeben und muss deshalb nicht erneut beim waitForPageLoad gespeichert werden
+    // In this case the StartPage is already returned by login(), so it doesn't need to be stored again via waitForPageLoad
     const startPage: StartViewPage = await loginPage.login(ADMIN, PASSWORD);
     await startPage.waitForPageLoad();
     await startPage.assertServiceProvidersAreLoaded();
   });
 
-  // Tipp: Zum Debugging kann test.only() genutzt werden, um nur diesen Test auszuführen. test.only() darf nicht committed werden.
+  // Tip: for debugging use test.only() to run only this test. test.only() must not be committed.
   test('Fehlgeschlagener Login mit falschen Daten', async () => {
     await loginPage.login('anakin', 'obi-wan');
     await loginPage.loginFailedWithWrongCredentials();
   });
 
-  // Tipp: Sollte ein einzelner Test zu Problemen führen, kann er mit test.skip() geskippt werden
-  // Das darf aber maximal eine Übergangslösung sein und ist eher zu vermeiden
+  // Tip: if a single test causes problems, it can be skipped with test.skip()
+  // This should only be a temporary solution and is rather to be avoided
   test.skip('Fehlgeschlagener Login mit gesperrtem Benutzer', async ({ page }: { page: Page }) => {
     const startPage: StartViewPage = await loginPage.login(ADMIN, PASSWORD);
     await startPage.waitForPageLoad();
 
-    // Der gesperrte Nutzer wird nur in diesem Testfall benötigt und deshalb lokal angelegt
+    // The locked user is only needed in this test case, so it is created locally
     /* create locked user */
     const testSchuleId: string = await getOrganisationId(page, testschuleName)
     const rolleName: string = await generateRolleName();

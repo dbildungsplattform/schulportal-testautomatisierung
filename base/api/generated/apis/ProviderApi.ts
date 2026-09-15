@@ -20,6 +20,7 @@ import type {
   ManageableServiceProviderResponse,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
   ProviderControllerGetManageableServiceProviders200Response,
+  ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
   ServiceProviderResponse,
   UpdateServiceProviderBodyParams,
 } from '../models';
@@ -34,6 +35,8 @@ import {
     ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseToJSON,
     ProviderControllerGetManageableServiceProviders200ResponseFromJSON,
     ProviderControllerGetManageableServiceProviders200ResponseToJSON,
+    ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseFromJSON,
+    ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseToJSON,
     ServiceProviderResponseFromJSON,
     ServiceProviderResponseToJSON,
     UpdateServiceProviderBodyParamsFromJSON,
@@ -52,7 +55,8 @@ export interface ProviderControllerFindRollenerweiterungenByServiceProviderIdReq
     angebotId: string;
     offset?: number;
     limit?: number;
-    organisationId?: string | null;
+    organisationIds?: Array<string>;
+    rolleIds?: Array<string>;
 }
 
 export interface ProviderControllerGetAssignableServiceProvidersForRolleRequest {
@@ -128,7 +132,8 @@ export interface ProviderApiInterface {
      * @param {string} angebotId The id of the service provider
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
-     * @param {string} [organisationId] The id of the organisation
+     * @param {Array<string>} [organisationIds] The ids of the organisations where the rollenerweiterung should be available.
+     * @param {Array<string>} [rolleIds] The ids of the rollen where the rollenerweiterung should be available.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
@@ -215,13 +220,13 @@ export interface ProviderApiInterface {
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
      */
-    providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProviders200Response>>;
+    providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>>;
 
     /**
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProviders200Response>;
+    providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>;
 
     /**
      * 
@@ -371,8 +376,12 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             queryParameters['limit'] = requestParameters.limit;
         }
 
-        if (requestParameters.organisationId !== undefined) {
-            queryParameters['organisationId'] = requestParameters.organisationId;
+        if (requestParameters.organisationIds) {
+            queryParameters['organisationIds'] = requestParameters.organisationIds;
+        }
+
+        if (requestParameters.rolleIds) {
+            queryParameters['rolleIds'] = requestParameters.rolleIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -597,7 +606,7 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    async providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProviders200Response>> {
+    async providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>> {
         if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
             throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling providerControllerGetManageableServiceProvidersForOrganisationId.');
         }
@@ -638,14 +647,14 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetManageableServiceProviders200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseFromJSON(jsonValue));
     }
 
     /**
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    async providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProviders200Response> {
+    async providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> {
         const response = await this.providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters, initOverrides);
         return await response.value();
     }

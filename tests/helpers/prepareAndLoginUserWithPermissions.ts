@@ -1,12 +1,8 @@
 import { Page } from '@playwright/test';
 import { getOrganisationId } from '../../base/api/organisationApi';
-import {
-  addSecondOrganisationToPerson,
-  createRolleAndPersonWithPersonenkontext,
-  UserInfo,
-} from '../../base/api/personApi';
-import { schulportaladmin } from '../../base/sp';
+import { addOrganisationenToPerson, createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { RolleCase } from '../../base/rollen';
+import { schulportaladmin } from '../../base/sp';
 import { HeaderPage } from '../../pages/components/Header.page';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
@@ -49,13 +45,7 @@ export async function prepareAndLoginUserWithPermissions(page: Page, rolle: Roll
     const organisationIds: string[] = await Promise.all(
       rolle.organisations.map((name) => getOrganisationId(page, name)),
     );
-    await addSecondOrganisationToPerson(
-      page,
-      userInfo.personId,
-      organisationIds[0],
-      organisationIds[1],
-      userInfo.rolleId,
-    );
+    await addOrganisationenToPerson(page, userInfo.personId, organisationIds, userInfo.rolleId);
   }
 
   // Logout any existing session

@@ -18,6 +18,7 @@ export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   ROLLEN_ERWEITERN: 'Darf Rollen schulspezifisch erweitern',
   ANGEBOTE_VERWALTEN: 'Darf Angebote verwalten',
   ANGEBOTE_EINGESCHRAENKT_VERWALTEN: 'Darf Angebote eingeschränkt verwalten',
+  SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN: 'Darf schulische VIDIS-Angebote abrufen',
   CRON_DURCHFUEHREN: '', // no label in UI
   PERSONEN_LESEN: '', // no label in UI
 };

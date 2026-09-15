@@ -126,12 +126,22 @@ export class Autocomplete {
     await this.closeModal();
   }
 
-  public async searchByTitle(searchString: string, exactMatch: boolean = false, endpoint?: string): Promise<void> {
+  public async searchByTitle(
+    searchString: string,
+    exactMatch: boolean = false,
+    endpoint?: string,
+    expectedHeaderText?: string,
+  ): Promise<void> {
     const currentValue: string | null = await this.inputLocator.textContent();
     if (currentValue === searchString) {
       return;
     }
     await this.openModal();
+    // Wait until the dropdown data has finished updating before typing, e.g. the
+    // "X Klassen gefunden" header only shows the final count once loading is done.
+    if (expectedHeaderText) {
+      await expect(this.overlayLocator.locator('.filter-header')).toContainText(expectedHeaderText);
+    }
     await this.clear();
     // Start listening BEFORE typing so we don't miss the response
     const responsePromise: Promise<Response> | null = endpoint
@@ -297,7 +307,9 @@ export class Autocomplete {
       await listContainer.evaluate((el: Element): void => {
         el.scrollBy(0, el.clientHeight);
       });
-      await this.page.waitForTimeout(50);
+      // Give the virtual scroller enough time to render the newly revealed items
+      // before the next read; too short a wait flakes on the last batch under load.
+      await this.page.waitForTimeout(150);
     }
 
     const stillMissing: string[] = sortedItems.filter((item: string): boolean => !isSeen(item));
@@ -307,11 +319,17 @@ export class Autocomplete {
     ).toEqual([]);
   }
 
-  public async checkAllDropdownOptionsClickable(items: string[]): Promise<void> {
+  public async checkAllDropdownOptionsClickable(items: string[], filterHeaderText?: string): Promise<void> {
     const sortedItems: string[] = [...items].sort((a: string, b: string) =>
       a.localeCompare(b, 'de', { numeric: true }),
     );
     await this.openModal();
+    // Wait until the dropdown data has finished updating (e.g. after changing the
+    // school filter) before typing – otherwise stale options remain and cause
+    // strict-mode violations when filtering by name.
+    if (filterHeaderText) {
+      await expect(this.overlayLocator.locator('.filter-header')).toContainText(filterHeaderText);
+    }
     await expect(this.itemsLocator.first()).toBeVisible();
     for (const item of sortedItems) {
       await this.inputLocator.pressSequentially(item);

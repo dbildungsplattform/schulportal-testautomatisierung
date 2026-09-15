@@ -1,7 +1,7 @@
 import { test as base, expect, Page } from '@playwright/test';
 import { ServiceProviderKategorie } from '../../base/api/generated';
 import { createSchule } from '../../base/api/organisationApi';
-import { addSecondOrganisationToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateSchulname } from '../../base/utils/generateTestdata';
@@ -86,7 +86,7 @@ const test = base.extend<{
     const schulNamen: string[] = [generateSchulname(), generateSchulname()];
     const schulen: string[] = await Promise.all(schulNamen.map((name: string) => createSchule(page, name)));
     const userinfo: UserInfo = await createPersonWithPersonenkontext(page, schulNamen[0], schuladminOeffentlichRolle);
-    await addSecondOrganisationToPerson(page, userinfo.personId, schulen[0], schulen[1], userinfo.rolleId);
+    await addOrganisationenToPerson(page, userinfo.personId, [schulen[0], schulen[1]], userinfo.rolleId);
 
     const landingPage = await logout(page);
     const loginPage = await landingPage.navigateToLogin();

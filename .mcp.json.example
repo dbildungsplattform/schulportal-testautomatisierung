@@ -12,10 +12,6 @@
         "${workspaceFolder}/.env.mcp",
         "--read-only"
       ]
-    },
-    "playwright": {
-      "command": "npx",
-      "args": ["@playwright/mcp@latest", "--browser", "chromium"]
     }
   }
 }

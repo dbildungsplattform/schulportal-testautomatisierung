@@ -2,9 +2,9 @@ import test, { Page, PlaywrightTestArgs } from '@playwright/test';
 
 import { getOrganisationId } from '../base/api/organisationApi';
 import {
-  addSecondOrganisationToPerson,
-  createRolleAndPersonWithPersonenkontext,
+  addOrganisationenToPerson,
   createPersonWithPersonenkontext,
+  createRolleAndPersonWithPersonenkontext,
   getEmailByPersonId,
   lockPerson,
   removeAllPersonenkontexte,
@@ -72,7 +72,7 @@ async function setupSchuladminAndLoginAndNavigate(
     const primarySchuleId: string = await getOrganisationId(page, primarySchuleName);
     const secondSchuleId: string = await getOrganisationId(page, secondSchuleName);
     const rolleId: string = await getRolleId(page, rolle);
-    await addSecondOrganisationToPerson(page, schuladmin.personId, primarySchuleId, secondSchuleId, rolleId);
+    await addOrganisationenToPerson(page, schuladmin.personId, [primarySchuleId, secondSchuleId], rolleId);
   }
 
   const header: HeaderPage = new HeaderPage(page);

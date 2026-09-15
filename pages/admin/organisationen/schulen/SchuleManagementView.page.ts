@@ -1,7 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { DataTable } from '../../../components/DataTable.page';
-import { SearchFilter } from '../../../components/SearchFilter';
 import { MenuBarPage } from '../../../components/MenuBar.page';
+import { SearchFilter } from '../../../components/SearchFilter';
 
 export class SchuleManagementViewPage {
   /* add global locators here */
@@ -55,7 +55,7 @@ export class SchuleManagementViewPage {
     await expect(this.headline).toHaveText('Schulverwaltung');
     await expect(this.page.getByTestId('search-filter-input')).toBeVisible();
     await expect(this.page.getByTestId('apply-search-filter-button')).toBeVisible();
-    await this.checkHeaders(['Dienststellennummer', 'Schulname', 'itslearning-Status', 'Aktion']);
+    await this.checkHeaders(['Dienststellennummer', 'Schulname', 'E-Mail-Adresse', 'itslearning-Status', 'Aktion']);
   }
 
   public async checkHeaders(expectedHeaders: string[]): Promise<void> {

@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { LoeschungResponse } from './LoeschungResponse';
+import type { PersonenkontextResponseLoeschung } from './PersonenkontextResponseLoeschung';
 import {
-    LoeschungResponseFromJSON,
-    LoeschungResponseFromJSONTyped,
-    LoeschungResponseToJSON,
-} from './LoeschungResponse';
+    PersonenkontextResponseLoeschungFromJSON,
+    PersonenkontextResponseLoeschungFromJSONTyped,
+    PersonenkontextResponseLoeschungToJSON,
+} from './PersonenkontextResponseLoeschung';
 
 /**
  * 
@@ -82,10 +82,10 @@ export interface PersonenkontextResponse {
     sichtfreigabe: PersonenkontextResponseSichtfreigabeEnum;
     /**
      * 
-     * @type {LoeschungResponse}
+     * @type {PersonenkontextResponseLoeschung}
      * @memberof PersonenkontextResponse
      */
-    loeschung: LoeschungResponse | null;
+    loeschung: PersonenkontextResponseLoeschung | null;
     /**
      * 
      * @type {string}
@@ -169,7 +169,7 @@ export function PersonenkontextResponseFromJSONTyped(json: any, ignoreDiscrimina
         'personenstatus': json['personenstatus'],
         'jahrgangsstufe': json['jahrgangsstufe'],
         'sichtfreigabe': json['sichtfreigabe'],
-        'loeschung': LoeschungResponseFromJSON(json['loeschung']),
+        'loeschung': PersonenkontextResponseLoeschungFromJSON(json['loeschung']),
         'revision': json['revision'],
     };
 }
@@ -192,7 +192,7 @@ export function PersonenkontextResponseToJSON(value?: PersonenkontextResponse | 
         'personenstatus': value.personenstatus,
         'jahrgangsstufe': value.jahrgangsstufe,
         'sichtfreigabe': value.sichtfreigabe,
-        'loeschung': LoeschungResponseToJSON(value.loeschung),
+        'loeschung': PersonenkontextResponseLoeschungToJSON(value.loeschung),
         'revision': value.revision,
     };
 }
