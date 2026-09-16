@@ -18,7 +18,6 @@ export * from './PersonenApi';
 export * from './PersonenFrontendApi';
 export * from './PersonenInfoApi';
 export * from './PersonenkontextApi';
-export * from './PersonenkontexteApi';
 export * from './ProviderApi';
 export * from './RolleApi';
 export * from './StatusApi';

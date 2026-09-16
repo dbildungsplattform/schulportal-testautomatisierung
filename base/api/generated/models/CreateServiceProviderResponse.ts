@@ -31,6 +31,12 @@ import {
     ServiceProviderMerkmalFromJSONTyped,
     ServiceProviderMerkmalToJSON,
 } from './ServiceProviderMerkmal';
+import type { ServiceProviderSystem } from './ServiceProviderSystem';
+import {
+    ServiceProviderSystemFromJSON,
+    ServiceProviderSystemFromJSONTyped,
+    ServiceProviderSystemToJSON,
+} from './ServiceProviderSystem';
 import type { ServiceProviderTarget } from './ServiceProviderTarget';
 import {
     ServiceProviderTargetFromJSON,
@@ -104,6 +110,12 @@ export interface CreateServiceProviderResponse {
      * @memberof CreateServiceProviderResponse
      */
     rollenartenWhitelist: Array<RollenArt>;
+    /**
+     * 
+     * @type {ServiceProviderSystem}
+     * @memberof CreateServiceProviderResponse
+     */
+    externalSystem: ServiceProviderSystem;
 }
 
 /**
@@ -120,6 +132,7 @@ export function instanceOfCreateServiceProviderResponse(value: object): boolean 
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
     isInstance = isInstance && "rollenartenWhitelist" in value;
+    isInstance = isInstance && "externalSystem" in value;
 
     return isInstance;
 }
@@ -144,6 +157,7 @@ export function CreateServiceProviderResponseFromJSONTyped(json: any, ignoreDisc
         'requires2fa': json['requires2fa'],
         'merkmale': ((json['merkmale'] as Array<any>).map(ServiceProviderMerkmalFromJSON)),
         'rollenartenWhitelist': ((json['rollenartenWhitelist'] as Array<any>).map(RollenArtFromJSON)),
+        'externalSystem': ServiceProviderSystemFromJSON(json['externalSystem']),
     };
 }
 
@@ -166,6 +180,7 @@ export function CreateServiceProviderResponseToJSON(value?: CreateServiceProvide
         'requires2fa': value.requires2fa,
         'merkmale': ((value.merkmale as Array<any>).map(ServiceProviderMerkmalToJSON)),
         'rollenartenWhitelist': ((value.rollenartenWhitelist as Array<any>).map(RollenArtToJSON)),
+        'externalSystem': ServiceProviderSystemToJSON(value.externalSystem),
     };
 }
 
