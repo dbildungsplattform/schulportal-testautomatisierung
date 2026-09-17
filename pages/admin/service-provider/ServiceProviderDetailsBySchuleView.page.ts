@@ -285,6 +285,10 @@ export class ServiceProviderDetailsBySchuleViewPage {
     await expect(this.serviceProviderDetailsHeadline).toHaveText(`Angebot bearbeiten ${schulname}`);
   }
 
+  public async assertUrlContainsOrganisationId(organisationId: string): Promise<void> {
+    await expect(this.page).toHaveURL((url: URL): boolean => url.searchParams.get('orga') === organisationId);
+  }
+
   public async assertCanEditRollenerweiterung(): Promise<void> {
     await expect(this.rollenerweiterungBearbeitenButton).toBeVisible();
     await expect(this.rollenerweiterungBearbeitenButton).toBeEnabled();
@@ -295,6 +299,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     name?: string;
     administrationsebene?: string;
     requires2fa?: string;
+    canBeAssignedToRollen?: string;
     kategorie?: ServiceProviderKategorie;
     link?: string;
     rollenerweiterung?: string;
@@ -304,6 +309,8 @@ export class ServiceProviderDetailsBySchuleViewPage {
     if (expected.administrationsebene)
       await expect(this.administrationsebeneField).toHaveText(expected.administrationsebene);
     if (expected.requires2fa) await expect(this.requires2faField).toHaveText(expected.requires2fa);
+    if (expected.canBeAssignedToRollen)
+      await expect(this.canBeAssignedToRollenField).toHaveText(expected.canBeAssignedToRollen);
     if (expected.kategorie) await expect(this.kategorieField).toHaveText(KATEGORIE_LABEL[expected.kategorie]);
     if (expected.link) await expect(this.linkField).toHaveText(expected.link);
     if (expected.rollenerweiterung) await expect(this.rollenerweiterungField).toHaveText(expected.rollenerweiterung);
@@ -330,6 +337,12 @@ export class ServiceProviderDetailsBySchuleViewPage {
   public async assertRollenerweiterungenContain(expectedRollen: string[]): Promise<void> {
     for (const rollenName of expectedRollen) {
       await expect(this.rollenerweiterungenField).toContainText(rollenName);
+    }
+  }
+
+  public async assertRollenerweiterungenNotContain(expectedRollen: string[]): Promise<void> {
+    for (const rollenName of expectedRollen) {
+      await expect(this.rollenerweiterungenField).not.toContainText(rollenName);
     }
   }
 
