@@ -41,11 +41,7 @@ async function loginAsSchuladminAndNavigateToAngebotManagement(
   return personManagementViewPage.getMenu().navigateToAngebotManagementSchulspezifisch();
 }
 
-async function createRolleForSchule(
-  page: Page,
-  organisationId: string,
-  rollenArt: RollenArt,
-): Promise<CreatedRolle> {
+async function createRolleForSchule(page: Page, organisationId: string, rollenArt: RollenArt): Promise<CreatedRolle> {
   const name: string = generateRolleName();
   const id: string = await createRolle(page, rollenArt, organisationId, name);
   return { id, name };
@@ -116,7 +112,8 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
 
   test('Angebotsdaten und leere Rollenerweiterungen anzeigen', { tag: [DEV, STAGE] }, async ({ angebot }) => {
     const { managementPage, angebotLink, angebotName, schuleName } = angebot;
-    const detailsPage: ServiceProviderDetailsBySchuleViewPage = await managementPage.openServiceProviderDetails(angebotName);
+    const detailsPage: ServiceProviderDetailsBySchuleViewPage =
+      await managementPage.openServiceProviderDetails(angebotName);
 
     await test.step('Angebotsdaten prüfen', async () => {
       await detailsPage.assertServiceProviderDetails({
@@ -151,7 +148,8 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     });
 
     await test.step('Rollen der eigenen Schule prüfen', async () => {
-      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await managementPage.openServiceProviderDetails(angebotName);
+      const detailsPage: ServiceProviderDetailsBySchuleViewPage =
+        await managementPage.openServiceProviderDetails(angebotName);
       await detailsPage.assertRollenerweiterungenContain(eigeneRollen.map((rolle: CreatedRolle) => rolle.name));
       await detailsPage.assertRollenerweiterungenNotContain([studentRolle.name]);
     });
@@ -170,7 +168,8 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     });
 
     await test.step('Alle Rollen als Chips prüfen', async () => {
-      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await managementPage.openServiceProviderDetails(angebotName);
+      const detailsPage: ServiceProviderDetailsBySchuleViewPage =
+        await managementPage.openServiceProviderDetails(angebotName);
       await detailsPage.assertRollenerweiterungenContain(rollen.map((rolle: CreatedRolle) => rolle.name));
     });
   });

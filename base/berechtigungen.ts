@@ -20,5 +20,6 @@ export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   ANGEBOTE_EINGESCHRAENKT_VERWALTEN: 'Darf Angebote eingeschränkt verwalten',
   SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN: 'Darf schulische VIDIS-Angebote abrufen',
   CRON_DURCHFUEHREN: '', // no label in UI
-  PERSONEN_LESEN: '', // no label in UI
+  PERSONEN_LESEN: '', // no label in UI,
+  MPT_ROLLEN_VERWALTEN: 'Darf Rollen für multiprofessionelle Teams verwalten'
 };
