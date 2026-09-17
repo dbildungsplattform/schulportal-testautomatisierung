@@ -93,17 +93,9 @@ const test = base.extend<{
     await use({ detailsPage, angebotName, schulen });
 
     for (const schule of schulen) {
-      try {
         await applyRollenerweiterungChanges(page, angebotId, schule.id, [], [schule.rolleId]);
-      } catch (error) {
-        console.warn('[WARN] Failed to detach rollenerweiterung during cleanup:', error);
-      }
     }
-    try {
-      await deleteServiceProvider(page, angebotId);
-    } catch (error) {
-      console.warn('[WARN] Failed to delete Angebot during cleanup:', error);
-    }
+    await deleteServiceProvider(page, angebotId);
   },
 
   angebotOhneRollenerweiterung: async ({ page }, use) => {
@@ -113,11 +105,7 @@ const test = base.extend<{
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);
     await use({ detailsPage, angebotName, schulen: [] });
 
-    try {
-      await deleteServiceProvider(page, angebotId);
-    } catch (error) {
-      console.warn('[WARN] Failed to delete Angebot during cleanup:', error);
-    }
+    await deleteServiceProvider(page, angebotId);
   },
 
   angebotNichtVerfuegbar: async ({ page }, use) => {
@@ -127,11 +115,7 @@ const test = base.extend<{
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);
     await use({ detailsPage, angebotName, schulen: [] });
 
-    try {
-      await deleteServiceProvider(page, angebotId);
-    } catch (error) {
-      console.warn('[WARN] Failed to delete Angebot during cleanup:', error);
-    }
+    await deleteServiceProvider(page, angebotId);
   },
 });
 
