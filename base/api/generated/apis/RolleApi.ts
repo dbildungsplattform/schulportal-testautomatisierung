@@ -23,6 +23,7 @@ import type {
   RolleServiceProviderResponse,
   RolleWithServiceProvidersResponse,
   RollenArt,
+  RollenMerkmal,
   RollenSystemRechtEnum,
   RollenerweiterungResponse,
   SystemRechtResponse,
@@ -45,6 +46,8 @@ import {
     RolleWithServiceProvidersResponseToJSON,
     RollenArtFromJSON,
     RollenArtToJSON,
+    RollenMerkmalFromJSON,
+    RollenMerkmalToJSON,
     RollenSystemRechtEnumFromJSON,
     RollenSystemRechtEnumToJSON,
     RollenerweiterungResponseFromJSON,
@@ -75,10 +78,13 @@ export interface RolleControllerFindRollenRequest {
     offset?: number;
     limit?: number;
     searchStr?: string;
-    organisationId?: string;
+    organisationContextForOperation?: string;
+    organisationenForFilter?: Array<string>;
     rolleIds?: Array<string>;
     systemrechte?: Array<RollenSystemRechtEnum>;
     rollenarten?: Array<RollenArt>;
+    merkmale?: Array<RollenMerkmal>;
+    serviceProviderIds?: Array<string>;
 }
 
 export interface RolleControllerGetRolleServiceProviderIdsRequest {
@@ -173,10 +179,13 @@ export interface RolleApiInterface {
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
      * @param {string} [searchStr] The name for the role.
-     * @param {string} [organisationId] The id of the organisation where the role should be available.
+     * @param {string} [organisationContextForOperation] Only relevant when systemrechte contains ROLLEN_ERWEITERN or IMPORT_DURCHFUEHREN. Provides the organisation context for the requested workflow operation. If provided, only roles available for that organisation will be returned. Mutually exclusive with organisationenForFilter.
+     * @param {Array<string>} [organisationenForFilter] Only relevant when systemrechte contains ROLLEN_VERWALTEN or no systemrechte is provided. Filters the result to roles administered by any of the given organisations. Mutually exclusive with organisationContextForOperation.
      * @param {Array<string>} [rolleIds] The ids of the selected Rollen. If provided, these Rollen will be returned regardless of the other filters since they are required by the frontend
-     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both or IMPORT_DURCHFUEHREN.
-     * @param {Array<RollenArt>} [rollenarten] Filter roles by their role types.
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] Determines the authorization context for this request. Use ROLLEN_VERWALTEN (default) with organisationIdsForFilter for general role administration. Use ROLLEN_ERWEITERN or IMPORT_DURCHFUEHREN with organisationIdContextForOperation for workflow-specific role lookups. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both, or IMPORT_DURCHFUEHREN.
+     * @param {Array<RollenArt>} [rollenarten] Filter roles by rollenart.
+     * @param {Array<RollenMerkmal>} [merkmale] Filter roles by merkmal.
+     * @param {Array<string>} [serviceProviderIds] Filter roles by service provider ids.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RolleApiInterface
@@ -466,8 +475,12 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             queryParameters['searchStr'] = requestParameters.searchStr;
         }
 
-        if (requestParameters.organisationId !== undefined) {
-            queryParameters['organisationId'] = requestParameters.organisationId;
+        if (requestParameters.organisationContextForOperation !== undefined) {
+            queryParameters['organisationContextForOperation'] = requestParameters.organisationContextForOperation;
+        }
+
+        if (requestParameters.organisationenForFilter) {
+            queryParameters['organisationenForFilter'] = requestParameters.organisationenForFilter;
         }
 
         if (requestParameters.rolleIds) {
@@ -480,6 +493,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
 
         if (requestParameters.rollenarten) {
             queryParameters['rollenarten'] = requestParameters.rollenarten;
+        }
+
+        if (requestParameters.merkmale) {
+            queryParameters['merkmale'] = requestParameters.merkmale;
+        }
+
+        if (requestParameters.serviceProviderIds) {
+            queryParameters['serviceProviderIds'] = requestParameters.serviceProviderIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
