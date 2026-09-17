@@ -97,6 +97,8 @@ export class ServiceProviderDetailsViewPage {
   public async assertHoverTitlesPresent(): Promise<void> {
     // Truncated cells expose the full value via the title attribute (hover tooltip).
     const rows: Locator = this.rollenerweiterungenTable.locator('tbody tr.v-data-table__tr');
+    // Wait for a rendered data cell first, otherwise an empty count would pass this check vacuously.
+    await expect(this.rollenerweiterungenTable.locator('.ellipsis-wrapper').first()).toBeVisible();
     const rowCount: number = await rows.count();
     for (let index: number = 0; index < rowCount; index++) {
       const row: Locator = rows.nth(index);
