@@ -93,7 +93,7 @@ const test = base.extend<{
     await use({ detailsPage, angebotName, schulen });
 
     for (const schule of schulen) {
-        await applyRollenerweiterungChanges(page, angebotId, schule.id, [], [schule.rolleId]);
+      await applyRollenerweiterungChanges(page, angebotId, schule.id, [], [schule.rolleId]);
     }
     await deleteServiceProvider(page, angebotId);
   },
