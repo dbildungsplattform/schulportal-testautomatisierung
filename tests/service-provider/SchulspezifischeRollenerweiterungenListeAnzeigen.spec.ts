@@ -1,7 +1,7 @@
 import { Page } from '@playwright/test';
 import {
-    CreateServiceProviderBodyParamsKategorieEnum,
-    CreateServiceProviderBodyParamsMerkmaleEnum,
+  CreateServiceProviderBodyParamsKategorieEnum,
+  CreateServiceProviderBodyParamsMerkmaleEnum,
 } from '../../base/api/generated';
 import { createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../base/api/rolleApi';
@@ -11,10 +11,10 @@ import { testschuleName } from '../../base/organisation';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
-    generateAngebotname,
-    generateDienststellenNr,
-    generateRolleName,
-    generateSchulname,
+  generateAngebotname,
+  generateDienststellenNr,
+  generateRolleName,
+  generateSchulname,
 } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { ServiceProviderDetailsViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsView.page';
@@ -132,9 +132,9 @@ const test = base.extend<{
   },
 });
 
-test.describe('SPSH-3957: Liste schulspezifischer Rollenerweiterungen am Angebot anzeigen', () => {
+test.describe('Liste schulspezifischer Rollenerweiterungen am Angebot anzeigen', () => {
   test(
-    'SPSH-3018 Angebot mit Rollenerweiterungen zeigt die Schulliste korrekt an',
+    'Angebot mit Rollenerweiterungen zeigt die Schulliste korrekt an',
     { tag: [DEV, STAGE] },
     async ({ angebotMitRollenerweiterungen }) => {
       const { detailsPage, schulen } = angebotMitRollenerweiterungen;
@@ -172,7 +172,7 @@ test.describe('SPSH-3957: Liste schulspezifischer Rollenerweiterungen am Angebot
   );
 
   test(
-    'SPSH-3018 Angebot ohne Rollenerweiterungen zeigt eine leere Tabelle',
+    'Angebot ohne Rollenerweiterungen zeigt eine leere Tabelle',
     { tag: [DEV, STAGE] },
     async ({ angebotOhneRollenerweiterung }) => {
       const { detailsPage } = angebotOhneRollenerweiterung;
@@ -193,7 +193,7 @@ test.describe('SPSH-3957: Liste schulspezifischer Rollenerweiterungen am Angebot
   );
 
   test(
-    'SPSH-3018 Nicht erweiterbares Angebot zeigt einen Hinweistext',
+    'Nicht erweiterbares Angebot zeigt einen Hinweistext',
     { tag: [DEV, STAGE] },
     async ({ angebotNichtVerfuegbar }) => {
       const { detailsPage } = angebotNichtVerfuegbar;
