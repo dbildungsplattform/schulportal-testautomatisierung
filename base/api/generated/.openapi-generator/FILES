@@ -139,6 +139,7 @@ models/ServiceProviderIdNameResponse.ts
 models/ServiceProviderKategorie.ts
 models/ServiceProviderMerkmal.ts
 models/ServiceProviderResponse.ts
+models/ServiceProviderSystem.ts
 models/ServiceProviderTarget.ts
 models/Sichtfreigabe.ts
 models/SortFieldPerson.ts

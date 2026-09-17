@@ -117,6 +117,7 @@ export * from './ServiceProviderIdNameResponse';
 export * from './ServiceProviderKategorie';
 export * from './ServiceProviderMerkmal';
 export * from './ServiceProviderResponse';
+export * from './ServiceProviderSystem';
 export * from './ServiceProviderTarget';
 export * from './Sichtfreigabe';
 export * from './SortFieldPerson';

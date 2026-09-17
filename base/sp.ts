@@ -13,6 +13,7 @@ export const helpdeskKontaktieren: string = 'Helpdesk kontaktieren';
 export const psychosozialesBeratungsangebot: string = 'Psychosoziales Beratungsangebot';
 export const schulrechtAZ: string = 'Schulrecht A-Z';
 export const firmenfitness: string = 'Firmenfitness Angebot';
+export const uem: string = 'LK-Endgeräte';
 
 export const KATEGORIE_LABEL: Record<ServiceProviderKategorie, string> = {
   EMAIL: 'Dienstliche Email',
