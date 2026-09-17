@@ -16,3 +16,4 @@ error-global-setup.png
 
 # Ignore VS Code settings
 .vscode/settings.json
+.vscode/mcp.json
