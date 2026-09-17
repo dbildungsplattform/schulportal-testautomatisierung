@@ -36,6 +36,7 @@ async function createServiceProviderForSchule(page: Page, schuleId: string, ange
     merkmale: [
       CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
       CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
     ],
   });
 }
