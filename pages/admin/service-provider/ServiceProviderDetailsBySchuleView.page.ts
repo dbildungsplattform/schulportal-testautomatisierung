@@ -34,9 +34,6 @@ export class ServiceProviderDetailsBySchuleViewPage {
   private readonly rollenerweiterungBaumGruppeCheckboxLEHR: Locator;
   private readonly rollenerweiterungBaumGruppeCheckboxLERN: Locator;
   private readonly rollenerweiterungBaumGruppeCheckboxLEIT: Locator;
-  private readonly rollenerweiterungSchulspezifischeRollenerweiterungenHeadline: Locator;
-  private readonly rollenerweiterungSchulspezifischeRollenerweiterungenHeadlineButton: Locator;
-  private readonly rollenerweiterungSchulspezifischeRollenerweiterungenTable: Locator;
   private readonly rollenerweiterungCancelButton: Locator;
   private readonly rollenerweiterungSaveButton: Locator;
 
@@ -72,9 +69,6 @@ export class ServiceProviderDetailsBySchuleViewPage {
     this.rollenerweiterungBaumGruppeCheckboxLEHR = this.page.getByTestId('treeview-group-checkbox-LEHR');
     this.rollenerweiterungBaumGruppeCheckboxLERN = this.page.getByTestId('treeview-group-checkbox-LERN');
     this.rollenerweiterungBaumGruppeCheckboxLEIT = this.page.getByTestId('treeview-group-checkbox-LEIT');
-    this.rollenerweiterungSchulspezifischeRollenerweiterungenHeadline = this.page.getByTestId('schulspezifische-rollenerweiterungen-section-headline');
-    this.rollenerweiterungSchulspezifischeRollenerweiterungenHeadlineButton = this.page.getByTestId('open-schulspezifische-rollenerweiterungen-section-headline-button');
-    this.rollenerweiterungSchulspezifischeRollenerweiterungenTable = this.page.getByTestId('rollenerweiterungen-table');
     this.rollenerweiterungCancelButton = this.page.getByTestId('rollenerweiterung-cancel-button');
     this.rollenerweiterungSaveButton = this.page.getByTestId('rollenerweiterung-save-button');
     this.menu = new MenuBarPage(this.page);
