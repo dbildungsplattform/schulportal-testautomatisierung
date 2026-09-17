@@ -1,8 +1,8 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { ServiceProviderKategorie } from '../../../base/api/generated';
-import { RollenArt } from '../../../base/api/rolleApi';
 import { KATEGORIE_LABEL } from '../../../base/sp';
 import { MenuBarPage } from '../../components/MenuBar.page';
+import { RollenArt } from '../../../base/api/rolleApi';
 
 interface GroupCounter { selected: number; total: number }
 
