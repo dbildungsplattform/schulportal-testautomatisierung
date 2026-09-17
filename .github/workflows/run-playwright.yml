@@ -228,6 +228,17 @@ jobs:
         run: ldapwhoami -x -H ldap://localhost:1389 -D "$LDAP_ADMIN_USER" -w "$LDAP_ADMIN_PASSWORD"
 
       # --------------------------
+      # Resolve bootstrap user per shard
+      # --------------------------
+      - name: Resolve bootstrap user for shard
+        env:
+          BOOTSTRAP_USER_PREFIX: ${{ secrets.USER }}
+        run: |
+          USER="${BOOTSTRAP_USER_PREFIX}${{ matrix.shard }}"
+          echo "::add-mask::$USER"
+          echo "USER=$USER" >> "$GITHUB_ENV"
+
+      # --------------------------
       # Run Playwright tests (SHARDED)
       # --------------------------
       - name: Run Playwright tests
@@ -235,7 +246,6 @@ jobs:
           FRONTEND_URL: 'https://${{ inputs.frontendHostname }}/'
           TAG: ${{ inputs.tag }}
           BROWSER: ${{ inputs.browser }}
-          USER: '${{ secrets.USER }}'
           PW: '${{ secrets.PW }}'
           OTP_SEED_B32: '${{ secrets.OTP_SEED_B32 }}'
           LDAP_URL: ldap://localhost:1389
