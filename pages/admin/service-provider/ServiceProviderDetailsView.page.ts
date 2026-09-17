@@ -77,7 +77,9 @@ export class ServiceProviderDetailsViewPage {
   }
 
   public async assertSchoolRow(kennung: string, schulname: string, rollenNamen: string[]): Promise<void> {
-    const row: Locator = this.rollenerweiterungenTable.locator('tbody tr.v-data-table__tr').filter({ hasText: kennung });
+    const row: Locator = this.rollenerweiterungenTable
+      .locator('tbody tr.v-data-table__tr')
+      .filter({ hasText: kennung });
     await expect(row).toHaveCount(1);
     await expect(row).toContainText(schulname);
     for (const rollenName of rollenNamen) {

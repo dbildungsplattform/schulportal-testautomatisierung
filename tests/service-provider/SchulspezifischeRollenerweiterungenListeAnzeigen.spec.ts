@@ -33,7 +33,10 @@ interface AngebotDetailsFixture {
   schulen: SchuleMitRolle[];
 }
 
-async function createAngebot(page: Page, verfuegbarFuerRollenerweiterung: boolean): Promise<{ id: string; name: string }> {
+async function createAngebot(
+  page: Page,
+  verfuegbarFuerRollenerweiterung: boolean,
+): Promise<{ id: string; name: string }> {
   const organisationId: string = await getOrganisationId(page, testschuleName);
   const name: string = generateAngebotname();
   const merkmale: CreateServiceProviderBodyParamsMerkmaleEnum[] = verfuegbarFuerRollenerweiterung

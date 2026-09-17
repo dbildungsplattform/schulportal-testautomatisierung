@@ -15,8 +15,8 @@
     "lint": "eslint . --fix",
     "lint:ci": "eslint .",
     "type-check": "tsc --noEmit",
-    "format": "prettier --write **/*.ts",
-    "check-format": "prettier --check **/*.ts",
+    "format": "prettier --write \"**/*.ts\"",
+    "check-format": "prettier --check \"**/*.ts\"",
     "format:spec": "prettier --write base/api/openapispec.json",
     "check-format:spec": "prettier --check base/api/openapispec.json"
   },
