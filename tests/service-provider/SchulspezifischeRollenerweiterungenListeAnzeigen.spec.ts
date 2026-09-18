@@ -143,7 +143,7 @@ test.describe('Liste schulspezifischer Rollenerweiterungen am Angebot anzeigen',
 
       await test.step('Alle Schulen mit Rollenerweiterungen werden angezeigt', async () => {
         for (const schule of schulen) {
-          await detailsPage.assertSchoolRow(schule.kennung, schule.name, [schule.rolleName]);
+          await detailsPage.assertSchuleRow(schule.kennung, schule.name, [schule.rolleName]);
         }
       });
 
