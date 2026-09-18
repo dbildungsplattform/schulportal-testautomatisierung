@@ -246,6 +246,7 @@ jobs:
           FRONTEND_URL: 'https://${{ inputs.frontendHostname }}/'
           TAG: ${{ inputs.tag }}
           BROWSER: ${{ inputs.browser }}
+          USER: '${{ env.USER }}'
           PW: '${{ secrets.PW }}'
           OTP_SEED_B32: '${{ secrets.OTP_SEED_B32 }}'
           LDAP_URL: ldap://localhost:1389

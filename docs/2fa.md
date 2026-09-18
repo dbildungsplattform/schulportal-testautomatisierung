@@ -31,7 +31,7 @@ playwrighttestadmin3
 
 The GitHub Actions secret `USER` contains the prefix, for example `playwrighttestadmin`. The workflow appends the shard number automatically, so shard 1 uses `playwrighttestadmin1`, shard 2 uses `playwrighttestadmin2`, and shard 3 uses `playwrighttestadmin3`.
 
-The target environments must provide these bootstrap admins with the same role and permissions as the previous single bootstrap admin. For dev, the users are provided through the backend seed data. For stage, the users must be provisioned in the target environment. PrivacyIDEA token data is handled separately. Addtional data can be found in the 1
+The target environments must provide these bootstrap admins. For dev, the users are provided through the backend seed data. For stage, the users must be provisioned in the target environment. PrivacyIDEA token data is handled separately. Additional data can be found in the 1Password SPSH staging vault.
 
 The same password and the same OTP seed can be reused for all three bootstrap admins if the target system accepts the token setup for each user individually. The important requirement is that each shard uses a different username; the password and seed can remain shared if the 2FA implementation is bound per user account.
 
