@@ -1,21 +1,10 @@
-import { Page } from '@playwright/test';
-import {
-  CreateServiceProviderBodyParamsKategorieEnum,
-  CreateServiceProviderBodyParamsMerkmaleEnum,
-} from '../../base/api/generated';
-import { createSchule, getOrganisationId } from '../../base/api/organisationApi';
+import { createSchule } from '../../base/api/organisationApi';
 import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../base/api/rolleApi';
-import { createServiceProvider, deleteServiceProvider } from '../../base/api/serviceProviderApi';
+import { createServiceProviderForTestschule, deleteServiceProvider } from '../../base/api/serviceProviderApi';
 import { test as base } from '../../base/fixtures';
-import { testschuleName } from '../../base/organisation';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import {
-  generateAngebotname,
-  generateDienststellenNr,
-  generateRolleName,
-  generateSchulname,
-} from '../../base/utils/generateTestdata';
+import { generateDienststellenNr, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { ServiceProviderDetailsViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsView.page';
 
@@ -33,31 +22,6 @@ interface AngebotDetailsFixture {
   schulen: SchuleMitRolle[];
 }
 
-async function createAngebot(
-  page: Page,
-  verfuegbarFuerRollenerweiterung: boolean,
-): Promise<{ id: string; name: string }> {
-  const organisationId: string = await getOrganisationId(page, testschuleName);
-  const name: string = generateAngebotname();
-  const merkmale: CreateServiceProviderBodyParamsMerkmaleEnum[] = verfuegbarFuerRollenerweiterung
-    ? [
-        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
-        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
-      ]
-    : [CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar];
-
-  const id: string = await createServiceProvider(page, {
-    organisationId,
-    name,
-    url: page.url(),
-    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
-    requires2fa: false,
-    merkmale,
-  });
-
-  return { id, name };
-}
-
 async function openAngebotDetails(
   personManagementViewPage: PersonManagementViewPage,
   angebotId: string,
@@ -73,7 +37,7 @@ const test = base.extend<{
 }>({
   angebotMitRollenerweiterungen: async ({ page }, use) => {
     const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
-    const { id: angebotId, name: angebotName } = await createAngebot(page, true);
+    const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, true);
 
     // Create schools in descending Dienststellennummer order so an unsorted list would fail the ascending-sort check.
     const kennungen: string[] = [generateDienststellenNr(), generateDienststellenNr(), generateDienststellenNr()].sort(
@@ -100,7 +64,7 @@ const test = base.extend<{
 
   angebotOhneRollenerweiterung: async ({ page }, use) => {
     const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
-    const { id: angebotId, name: angebotName } = await createAngebot(page, true);
+    const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, true);
 
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);
     await use({ detailsPage, angebotName, schulen: [] });
@@ -110,7 +74,7 @@ const test = base.extend<{
 
   angebotNichtVerfuegbar: async ({ page }, use) => {
     const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
-    const { id: angebotId, name: angebotName } = await createAngebot(page, false);
+    const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, false);
 
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);
     await use({ detailsPage, angebotName, schulen: [] });
