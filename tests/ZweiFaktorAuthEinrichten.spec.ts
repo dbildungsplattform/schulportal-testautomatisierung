@@ -117,12 +117,12 @@ test.describe('Zwei-Faktor-Authentifizierung als Admin einrichten', () => {
       const rollenname: string = generateRolleName();
       const rolleId: string = await createRolle(
         page,
-        'LERN',
+        RollenArt.Lern,
         schuleId,
         rollenname,
         undefined,
         undefined,
-        new Set([await getServiceProviderId(page, itslearning, schuleId)]),
+        new Set([await getServiceProviderId(page, itslearning, schuleId, RollenArt.Lern)]),
       );
       const userInfo: UserInfo = await createPerson(page, {
         organisationId: schuleId,

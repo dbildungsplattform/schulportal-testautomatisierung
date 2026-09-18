@@ -2,7 +2,6 @@ import { expect, Page } from '@playwright/test';
 import { HeaderPage } from '../../pages/components/Header.page';
 import FromAnywhere from '../../pages/FromAnywhere';
 import { LoginViewPage } from '../../pages/LoginView.page';
-import { befristungPflicht } from '../merkmale';
 import { testschuleName } from '../organisation';
 import { adressbuch, email, kalender } from '../sp';
 import {
@@ -38,7 +37,7 @@ import {
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
-  RollenSystemRechtEnum
+  RollenSystemRechtEnum,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
 import { getOrganisationId } from './organisationApi';
@@ -202,7 +201,7 @@ export async function createPerson(page: Page, params: CreatePersonParams): Prom
 
     if (merkmalNames) {
       for (const merkmal of merkmalNames) {
-        if (merkmal == befristungPflicht) {
+        if (merkmal == RollenMerkmal.BefristungPflicht) {
           createPersonBodyParams.befristung = generateCurrentDate({ days: 0, months: 6 });
         }
       }
@@ -306,6 +305,7 @@ export async function createRolleAndPersonWithPersonenkontext(
       page,
       params.serviceProviderNames,
       organisationId,
+      params.rollenArt,
     );
 
     const missingServiceProviderNames: string[] = params.serviceProviderNames.filter(
