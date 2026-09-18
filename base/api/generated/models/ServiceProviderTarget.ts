@@ -18,6 +18,7 @@
  * @export
  */
 export const ServiceProviderTarget = {
+    None: 'NONE',
     Url: 'URL',
     Email: 'EMAIL',
     SchulportalAdministration: 'SCHULPORTAL_ADMINISTRATION'
