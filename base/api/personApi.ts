@@ -38,7 +38,7 @@ import {
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
-  RollenSystemRechtEnum
+  RollenSystemRechtEnum,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
 import { getOrganisationId } from './organisationApi';
