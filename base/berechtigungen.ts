@@ -3,6 +3,7 @@ import { RollenSystemRechtEnum } from './api/generated';
 export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   IMPORT_DURCHFUEHREN: 'Darf Import durchführen',
   ROLLEN_VERWALTEN: 'Darf Rollen verwalten',
+  MPT_ROLLEN_VERWALTEN: 'Darf Rollen für multiprofessionelle Teams verwalten',
   PERSONEN_SOFORT_LOESCHEN: 'Darf Benutzer sofort löschen',
   PERSONEN_VERWALTEN: 'Darf Benutzer verwalten',
   SCHULEN_VERWALTEN: 'Darf Schulen verwalten',

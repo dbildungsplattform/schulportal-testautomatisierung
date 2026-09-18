@@ -10,7 +10,6 @@ apis/LandesbediensteterApi.ts
 apis/MeldungApi.ts
 apis/MetricsApi.ts
 apis/OrganisationenApi.ts
-apis/PersonAdministrationApi.ts
 apis/PersonInfoApi.ts
 apis/PersonenApi.ts
 apis/PersonenFrontendApi.ts
@@ -23,6 +22,7 @@ apis/VidisApi.ts
 apis/index.ts
 index.ts
 models/ApplyRollenerweiterungBodyParams.ts
+models/ApplyRollenerweiterungChangesBodyParams.ts
 models/AssignHardwareTokenBodyParams.ts
 models/AssignHardwareTokenResponse.ts
 models/CreateOrUpdateMeldungBodyParams.ts
@@ -39,7 +39,7 @@ models/DBiamPersonenuebersichtControllerFindPersonenuebersichten200ResponseAllOf
 models/DBiamPersonenuebersichtResponse.ts
 models/DBiamPersonenzuordnungResponse.ts
 models/DbiamApplyRollenerweiterungMultiError.ts
-models/DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner.ts
+models/DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner.ts
 models/DbiamCreatePersonWithPersonenkontexteBodyParams.ts
 models/DbiamCreatePersonenkontextBodyParams.ts
 models/DbiamImportError.ts
@@ -53,7 +53,6 @@ models/DbiamUpdatePersonenkontexteBodyParams.ts
 models/EmailAddressStatus.ts
 models/EmailChangedBodyParams.ts
 models/FeatureFlagResponse.ts
-models/FindRollenResponse.ts
 models/ImportDataItemResponse.ts
 models/ImportDataItemStatus.ts
 models/ImportResultResponse.ts
@@ -116,13 +115,15 @@ models/Personenstatus.ts
 models/PersonenuebersichtBodyParams.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200Response.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseAllOf.ts
-models/ProviderControllerGetManageableLandRootServiceProviders200Response.ts
-models/ProviderControllerGetManageableLandRootServiceProviders200ResponseAllOf.ts
+models/ProviderControllerGetAvailableServiceProviders200Response.ts
+models/ProviderControllerGetAvailableServiceProviders200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProviders200Response.ts
 models/ProviderControllerGetManageableServiceProviders200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProvidersForOrganisationId200Response.ts
 models/ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseAllOf.ts
 models/RawPagedResponse.ts
+models/RolleControllerFindRollenAvailableForPersonAdministration200Response.ts
+models/RolleControllerFindRollenAvailableForPersonAdministration200ResponseAllOf.ts
 models/RolleRefResponse.ts
 models/RolleResponse.ts
 models/RolleServiceProviderResponse.ts

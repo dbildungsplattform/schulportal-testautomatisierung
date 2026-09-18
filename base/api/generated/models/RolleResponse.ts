@@ -76,16 +76,16 @@ export interface RolleResponse {
     rollenart: RollenArt;
     /**
      * 
-     * @type {Set<RollenMerkmal>}
+     * @type {Array<RollenMerkmal>}
      * @memberof RolleResponse
      */
-    merkmale: Set<RollenMerkmal>;
+    merkmale: Array<RollenMerkmal>;
     /**
      * 
-     * @type {Set<SystemRechtResponse>}
+     * @type {Array<SystemRechtResponse>}
      * @memberof RolleResponse
      */
-    systemrechte: Set<SystemRechtResponse>;
+    systemrechte: Array<SystemRechtResponse>;
     /**
      * 
      * @type {string}
@@ -142,8 +142,8 @@ export function RolleResponseFromJSONTyped(json: any, ignoreDiscriminator: boole
         'name': json['name'],
         'administeredBySchulstrukturknoten': json['administeredBySchulstrukturknoten'],
         'rollenart': RollenArtFromJSON(json['rollenart']),
-        'merkmale': (new Set((json['merkmale'] as Array<any>).map(RollenMerkmalFromJSON))),
-        'systemrechte': (new Set((json['systemrechte'] as Array<any>).map(SystemRechtResponseFromJSON))),
+        'merkmale': ((json['merkmale'] as Array<any>).map(RollenMerkmalFromJSON)),
+        'systemrechte': ((json['systemrechte'] as Array<any>).map(SystemRechtResponseFromJSON)),
         'administeredBySchulstrukturknotenName': json['administeredBySchulstrukturknotenName'],
         'administeredBySchulstrukturknotenKennung': json['administeredBySchulstrukturknotenKennung'],
         'version': json['version'],
@@ -165,8 +165,8 @@ export function RolleResponseToJSON(value?: RolleResponse | null): any {
         'name': value.name,
         'administeredBySchulstrukturknoten': value.administeredBySchulstrukturknoten,
         'rollenart': RollenArtToJSON(value.rollenart),
-        'merkmale': (Array.from(value.merkmale as Set<any>).map(RollenMerkmalToJSON)),
-        'systemrechte': (Array.from(value.systemrechte as Set<any>).map(SystemRechtResponseToJSON)),
+        'merkmale': ((value.merkmale as Array<any>).map(RollenMerkmalToJSON)),
+        'systemrechte': ((value.systemrechte as Array<any>).map(SystemRechtResponseToJSON)),
         'administeredBySchulstrukturknotenName': value.administeredBySchulstrukturknotenName,
         'administeredBySchulstrukturknotenKennung': value.administeredBySchulstrukturknotenKennung,
         'version': value.version,

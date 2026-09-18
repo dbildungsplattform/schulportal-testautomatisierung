@@ -58,7 +58,6 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         const schuleName: string = generateSchulname();
         const schuleDstNr: string = generateDienststellenNr();
         const schuleId: string = await createSchule(page, schuleName, schuleDstNr);
-        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId);
 
         // Zwei Klassen anlegen
         klasse1Name = generateKlassenname();
@@ -68,6 +67,7 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
 
         // Ziel-Lern-Rolle anlegen, mit der die Mehrfachbearbeitung durchgeführt wird
         zielRolleName = generateRolleName();
+        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId, RollenArt.Lern);
         await createRolle(page, typeSchueler, schuleId, zielRolleName, undefined, undefined, new Set([itslearningId]));
 
         // Zwei Schüler mit jeweils eigener Lern-Rolle in Klasse 1 anlegen
@@ -179,7 +179,7 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         const zweiteSchuleDstNr: string = generateDienststellenNr();
         const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName, zweiteSchuleDstNr);
 
-        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId);
+        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId, RollenArt.Lern);
 
         // Quell- und Zielklasse an der ersten Schule anlegen
         quellKlasseName = generateKlassenname();
