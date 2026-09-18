@@ -22,11 +22,7 @@ export class ServiceProviderDetailsViewPage {
       'open-schulspezifische-rollenerweiterungen-section-headline-button',
     );
     this.rollenerweiterungenTable = this.page.getByTestId('rollenerweiterungen-table');
-    this.notAvailableHint = this.page.getByText(
-      'Dieses Angebot kann nicht für schulspezifische Rollenerweiterungen verwendet werden. ' +
-        'In diesem Bereich werden daher keine Daten und Funktionen angeboten.',
-      { exact: true },
-    );
+    this.notAvailableHint = this.page.getByTestId('rollenerweiterungen-not-available-hint');
     this.dataTable = new DataTable(this.page, this.rollenerweiterungenTable);
     this.footer = new FooterDataTablePage(this.page);
   }
