@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner } from './DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner';
+import type { DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner } from './DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner';
 import {
-    DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInnerFromJSON,
-    DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInnerFromJSONTyped,
-    DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInnerToJSON,
-} from './DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner';
+    DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerFromJSON,
+    DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerFromJSONTyped,
+    DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerToJSON,
+} from './DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface DbiamApplyRollenerweiterungMultiError {
     code: number;
     /**
      * 
-     * @type {Array<DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner>}
+     * @type {Array<DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner>}
      * @memberof DbiamApplyRollenerweiterungMultiError
      */
-    rolleIdsWithI18nKeys: Array<DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner>;
+    idsWithI18nKeys: Array<DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner>;
 }
 
 /**
@@ -46,7 +46,7 @@ export interface DbiamApplyRollenerweiterungMultiError {
 export function instanceOfDbiamApplyRollenerweiterungMultiError(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "code" in value;
-    isInstance = isInstance && "rolleIdsWithI18nKeys" in value;
+    isInstance = isInstance && "idsWithI18nKeys" in value;
 
     return isInstance;
 }
@@ -62,7 +62,7 @@ export function DbiamApplyRollenerweiterungMultiErrorFromJSONTyped(json: any, ig
     return {
         
         'code': json['code'],
-        'rolleIdsWithI18nKeys': ((json['rolleIdsWithI18nKeys'] as Array<any>).map(DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInnerFromJSON)),
+        'idsWithI18nKeys': ((json['idsWithI18nKeys'] as Array<any>).map(DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerFromJSON)),
     };
 }
 
@@ -76,7 +76,7 @@ export function DbiamApplyRollenerweiterungMultiErrorToJSON(value?: DbiamApplyRo
     return {
         
         'code': value.code,
-        'rolleIdsWithI18nKeys': ((value.rolleIdsWithI18nKeys as Array<any>).map(DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInnerToJSON)),
+        'idsWithI18nKeys': ((value.idsWithI18nKeys as Array<any>).map(DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerToJSON)),
     };
 }
 

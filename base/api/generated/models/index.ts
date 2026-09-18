@@ -1,6 +1,7 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './ApplyRollenerweiterungBodyParams';
+export * from './ApplyRollenerweiterungChangesBodyParams';
 export * from './AssignHardwareTokenBodyParams';
 export * from './AssignHardwareTokenResponse';
 export * from './CreateOrUpdateMeldungBodyParams';
@@ -17,7 +18,7 @@ export * from './DBiamPersonenuebersichtControllerFindPersonenuebersichten200Res
 export * from './DBiamPersonenuebersichtResponse';
 export * from './DBiamPersonenzuordnungResponse';
 export * from './DbiamApplyRollenerweiterungMultiError';
-export * from './DbiamApplyRollenerweiterungMultiErrorRolleIdsWithI18nKeysInner';
+export * from './DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner';
 export * from './DbiamCreatePersonWithPersonenkontexteBodyParams';
 export * from './DbiamCreatePersonenkontextBodyParams';
 export * from './DbiamImportError';
@@ -31,7 +32,6 @@ export * from './DbiamUpdatePersonenkontexteBodyParams';
 export * from './EmailAddressStatus';
 export * from './EmailChangedBodyParams';
 export * from './FeatureFlagResponse';
-export * from './FindRollenResponse';
 export * from './ImportDataItemResponse';
 export * from './ImportDataItemStatus';
 export * from './ImportResultResponse';
@@ -94,13 +94,15 @@ export * from './Personenstatus';
 export * from './PersonenuebersichtBodyParams';
 export * from './ProviderControllerFindRollenerweiterungenByServiceProviderId200Response';
 export * from './ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseAllOf';
-export * from './ProviderControllerGetManageableLandRootServiceProviders200Response';
-export * from './ProviderControllerGetManageableLandRootServiceProviders200ResponseAllOf';
+export * from './ProviderControllerGetAvailableServiceProviders200Response';
+export * from './ProviderControllerGetAvailableServiceProviders200ResponseAllOf';
 export * from './ProviderControllerGetManageableServiceProviders200Response';
 export * from './ProviderControllerGetManageableServiceProviders200ResponseAllOf';
 export * from './ProviderControllerGetManageableServiceProvidersForOrganisationId200Response';
 export * from './ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseAllOf';
 export * from './RawPagedResponse';
+export * from './RolleControllerFindRollenAvailableForPersonAdministration200Response';
+export * from './RolleControllerFindRollenAvailableForPersonAdministration200ResponseAllOf';
 export * from './RolleRefResponse';
 export * from './RolleResponse';
 export * from './RolleServiceProviderResponse';
