@@ -306,6 +306,7 @@ export async function createRolleAndPersonWithPersonenkontext(
       page,
       params.serviceProviderNames,
       organisationId,
+      params.rollenArt,
     );
 
     const missingServiceProviderNames: string[] = params.serviceProviderNames.filter(
