@@ -218,27 +218,23 @@ test.describe('Angebot löschen', () => {
   );
 
   // SPSH-3614
-  test(
-    'Löschvorgang über den Abbrechen-Button abbrechen',
-    { tag: [DEV, STAGE] },
-    async ({ asLandesadmin }) => {
-      const { managementPage, angebotName } = asLandesadmin;
+  test('Löschvorgang über den Abbrechen-Button abbrechen', { tag: [DEV, STAGE] }, async ({ asLandesadmin }) => {
+    const { managementPage, angebotName } = asLandesadmin;
 
-      await test.step('Angebot suchen', async () => {
-        await managementPage.searchByName(angebotName);
-      });
+    await test.step('Angebot suchen', async () => {
+      await managementPage.searchByName(angebotName);
+    });
 
-      const deleteDialog = await test.step('Löschdialog öffnen', async () => {
-        return managementPage.openDeleteDialog(angebotName);
-      });
+    const deleteDialog = await test.step('Löschdialog öffnen', async () => {
+      return managementPage.openDeleteDialog(angebotName);
+    });
 
-      await test.step('Löschvorgang abbrechen', async () => {
-        await deleteDialog.cancel();
-      });
+    await test.step('Löschvorgang abbrechen', async () => {
+      await deleteDialog.cancel();
+    });
 
-      await managementPage.assertServiceProviderPresent(angebotName);
-    },
-  );
+    await managementPage.assertServiceProviderPresent(angebotName);
+  });
 
   // SPSH-3615
   test(
