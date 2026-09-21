@@ -52,7 +52,7 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 
 ### Service-Provider ([base/api/serviceProviderApi.ts](../base/api/serviceProviderApi.ts))
 
-- `getServiceProviderId(page, name)` und `getServiceProviderIds(page, names[])` – IDs für `email`, `kalender`, `adressbuch`, `Schulportal-Administration` etc. (Konstanten in [base/sp.ts](../base/sp.ts)).
+- `getServiceProviderId(page, name, schulstrukturknotenOfRolle, rollenArt)` und `getServiceProviderIds(page, names[])` – IDs für `email`, `kalender`, `adressbuch`, `Schulportal-Administration` etc. (Konstanten in [base/sp.ts](../base/sp.ts)).
 
 ## Generatoren ([base/utils/generateTestdata.ts](../base/utils/generateTestdata.ts))
 

@@ -1442,6 +1442,13 @@
             "in": "query",
             "description": "The id of the organisation where the service provider should be assignable on",
             "schema": { "nullable": false, "type": "string" }
+          },
+          {
+            "name": "rollenArt",
+            "required": true,
+            "in": "query",
+            "description": "The rollenart of the rolle for which the service provider should be found",
+            "schema": { "nullable": false, "allOf": [{ "$ref": "#/components/schemas/RollenArt" }] }
           }
         ],
         "responses": {

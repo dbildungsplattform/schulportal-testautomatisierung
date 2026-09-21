@@ -47,7 +47,9 @@ export class ServiceProviderManagementBySchuleViewPage {
     await expect(row).toBeVisible();
     await row.click();
 
-    const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = new ServiceProviderDetailsBySchuleViewPage(this.page);
+    const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = new ServiceProviderDetailsBySchuleViewPage(
+      this.page,
+    );
     await detailsViewPage.waitForPageLoad();
     return detailsViewPage;
   }
@@ -67,7 +69,9 @@ export class ServiceProviderManagementBySchuleViewPage {
       );
     });
 
-    const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = new ServiceProviderDetailsBySchuleViewPage(this.page);
+    const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = new ServiceProviderDetailsBySchuleViewPage(
+      this.page,
+    );
     await detailsViewPage.waitForPageLoad();
     await detailsViewPage.assertRollenerweiterungBearbeitenVisible();
     return detailsViewPage;

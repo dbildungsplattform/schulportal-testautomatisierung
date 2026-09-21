@@ -38,7 +38,7 @@ import {
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
-  RollenSystemRechtEnum
+  RollenSystemRechtEnum,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
 import { getOrganisationId } from './organisationApi';
@@ -306,6 +306,7 @@ export async function createRolleAndPersonWithPersonenkontext(
       page,
       params.serviceProviderNames,
       organisationId,
+      params.rollenArt,
     );
 
     const missingServiceProviderNames: string[] = params.serviceProviderNames.filter(
