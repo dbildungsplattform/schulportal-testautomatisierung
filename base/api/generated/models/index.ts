@@ -144,8 +144,5 @@ export * from './UserExternalDataResponseIqshHelpdesk';
 export * from './UserExternalDataResponseIqshHelpdeskPk';
 export * from './UserExternalDataResponseOx';
 export * from './UserExternalDataResponsePolyteia';
-export * from './UserExternalDataV2BodyParams';
-export * from './UserExternalDataV2PersonenkontextResponse';
-export * from './UserExternalDataV2Response';
 export * from './UserLockParams';
 export * from './UserinfoResponse';

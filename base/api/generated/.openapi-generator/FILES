@@ -165,9 +165,6 @@ models/UserExternalDataResponseIqshHelpdesk.ts
 models/UserExternalDataResponseIqshHelpdeskPk.ts
 models/UserExternalDataResponseOx.ts
 models/UserExternalDataResponsePolyteia.ts
-models/UserExternalDataV2BodyParams.ts
-models/UserExternalDataV2PersonenkontextResponse.ts
-models/UserExternalDataV2Response.ts
 models/UserLockParams.ts
 models/UserinfoResponse.ts
 models/index.ts
