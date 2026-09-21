@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 import { Autocomplete } from '../../components/Autocomplete';
 import { DataTable } from '../../components/DataTable.page';
 import { FooterDataTablePage } from '../../components/FooterDataTable.page';
+import { ServiceProviderDeleteDialogPage } from '../../components/ServiceProviderDeleteDialog.page';
 import { ServiceProviderDetailsBySchuleViewPage } from './ServiceProviderDetailsBySchuleView.page';
 
 export class ServiceProviderManagementBySchuleViewPage {
@@ -10,6 +11,10 @@ export class ServiceProviderManagementBySchuleViewPage {
   private readonly footer: FooterDataTablePage;
   private readonly schuleAutocomplete: Autocomplete;
   private readonly schuleFilterInput: Locator;
+  private readonly deleteDialog: ServiceProviderDeleteDialogPage;
+  private readonly errorAlertTitle: Locator;
+  private readonly errorAlertText: Locator;
+  private readonly errorAlertButton: Locator;
 
   constructor(protected readonly page: Page) {
     this.resultTable = this.page.getByTestId('result-table');
@@ -22,6 +27,25 @@ export class ServiceProviderManagementBySchuleViewPage {
     this.schuleFilterInput = this.page
       .getByTestId('service-provider-management-by-schule-organisation-select')
       .locator('input');
+    this.deleteDialog = new ServiceProviderDeleteDialogPage(this.page);
+    this.errorAlertTitle = this.page.getByTestId('service-provider-management-by-schule-error-alert-title');
+    this.errorAlertText = this.page.getByTestId('service-provider-management-by-schule-error-alert-text');
+    this.errorAlertButton = this.page.getByTestId('service-provider-management-by-schule-error-alert-button');
+  }
+
+  private getRow(angebotName: string): Locator {
+    return this.page.locator('tr').filter({ hasText: angebotName });
+  }
+
+  public async openDeleteDialog(angebotName: string): Promise<ServiceProviderDeleteDialogPage> {
+    await this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon').click();
+    await this.deleteDialog.assertConfirmationVisible(angebotName);
+    return this.deleteDialog;
+  }
+
+  public async closeErrorAlertAndReturnToList(): Promise<void> {
+    await this.errorAlertButton.click();
+    await expect(this.errorAlertTitle).toBeHidden();
   }
 
   private async waitForResultTableLoad(): Promise<void> {
@@ -135,5 +159,19 @@ export class ServiceProviderManagementBySchuleViewPage {
   public async assertPaginationVisible(): Promise<void> {
     await expect(this.footer.comboboxAnzahlEintraege).toBeVisible();
     await expect(this.footer.textAktuelleSeite).toBeVisible();
+  }
+
+  public async assertServiceProviderPresent(angebotName: string): Promise<void> {
+    await expect(this.getRow(angebotName)).toBeVisible();
+  }
+
+  public async assertServiceProviderAbsent(angebotName: string): Promise<void> {
+    await expect(this.getRow(angebotName)).toHaveCount(0);
+  }
+
+  public async assertDeleteErrorAlert(expectedTitle: string, expectedText: string): Promise<void> {
+    await expect(this.errorAlertTitle).toHaveText(expectedTitle);
+    await expect(this.errorAlertText).toHaveText(expectedText);
+    await expect(this.errorAlertButton).toBeVisible();
   }
 }
