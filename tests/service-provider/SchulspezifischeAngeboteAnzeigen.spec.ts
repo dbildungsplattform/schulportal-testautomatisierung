@@ -14,7 +14,6 @@ import { generateAngebotname, generateSchulname } from '../../base/utils/generat
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { ServiceProviderManagementBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderManagementBySchuleView.page';
 
-
 interface Schule {
   id: string;
   name: string;
