@@ -22,6 +22,7 @@ import type {
   ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProviders200Response,
   ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
+  RollenArt,
   RollenSystemRechtEnum,
   ServiceProviderKategorie,
   ServiceProviderResponse,
@@ -42,6 +43,8 @@ import {
     ProviderControllerGetManageableServiceProviders200ResponseToJSON,
     ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseFromJSON,
     ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseToJSON,
+    RollenArtFromJSON,
+    RollenArtToJSON,
     RollenSystemRechtEnumFromJSON,
     RollenSystemRechtEnumToJSON,
     ServiceProviderKategorieFromJSON,
@@ -70,6 +73,7 @@ export interface ProviderControllerFindRollenerweiterungenByServiceProviderIdReq
 
 export interface ProviderControllerGetAssignableServiceProvidersForRolleRequest {
     schulstrukturknotenOfRolle: string;
+    rollenArt: RollenArt;
 }
 
 export interface ProviderControllerGetAvailableServiceProvidersRequest {
@@ -78,6 +82,7 @@ export interface ProviderControllerGetAvailableServiceProvidersRequest {
     searchStr?: string;
     organisationId?: string;
     systemrechte?: Array<RollenSystemRechtEnum>;
+    rollenArten?: Array<RollenArt>;
 }
 
 export interface ProviderControllerGetManageableLandRootServiceProvidersRequest {
@@ -179,6 +184,7 @@ export interface ProviderApiInterface {
      * Get all service-providers assignable for a role.
      * @summary 
      * @param {string} schulstrukturknotenOfRolle The id of the organisation where the service provider should be assignable on
+     * @param {RollenArt} rollenArt The rollenart of the rolle for which the service provider should be found
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
@@ -199,6 +205,7 @@ export interface ProviderApiInterface {
      * @param {string} [searchStr] The name for the angebot.
      * @param {string} [organisationId] The id of the organisation where the angebot should be available.
      * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both or IMPORT_DURCHFUEHREN.
+     * @param {Array<RollenArt>} [rollenArten] The rollenart of the rolle for which the service provider should be found
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
@@ -497,10 +504,18 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             throw new runtime.RequiredError('schulstrukturknotenOfRolle','Required parameter requestParameters.schulstrukturknotenOfRolle was null or undefined when calling providerControllerGetAssignableServiceProvidersForRolle.');
         }
 
+        if (requestParameters.rollenArt === null || requestParameters.rollenArt === undefined) {
+            throw new runtime.RequiredError('rollenArt','Required parameter requestParameters.rollenArt was null or undefined when calling providerControllerGetAssignableServiceProvidersForRolle.');
+        }
+
         const queryParameters: any = {};
 
         if (requestParameters.schulstrukturknotenOfRolle !== undefined) {
             queryParameters['schulstrukturknotenOfRolle'] = requestParameters.schulstrukturknotenOfRolle;
+        }
+
+        if (requestParameters.rollenArt !== undefined) {
+            queryParameters['rollenArt'] = requestParameters.rollenArt;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -562,6 +577,10 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
 
         if (requestParameters.systemrechte) {
             queryParameters['systemrechte'] = requestParameters.systemrechte;
+        }
+
+        if (requestParameters.rollenArten) {
+            queryParameters['rollenArten'] = requestParameters.rollenArten;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

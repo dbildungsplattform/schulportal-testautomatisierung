@@ -142,7 +142,7 @@ export interface ManageableServiceProviderResponse {
  */
 export const ManageableServiceProviderResponseRelevantSystemrechteEnum = {
     RollenVerwalten: 'ROLLEN_VERWALTEN',
-    MptRollenVerwalten: 'MPT_ROLLEN_VERWALTEN',
+    MptRollenZuordnen: 'MPT_ROLLEN_ZUORDNEN',
     PersonenSofortLoeschen: 'PERSONEN_SOFORT_LOESCHEN',
     PersonenVerwalten: 'PERSONEN_VERWALTEN',
     LandesbediensteteSuchenUndHinzufuegen: 'LANDESBEDIENSTETE_SUCHEN_UND_HINZUFUEGEN',
