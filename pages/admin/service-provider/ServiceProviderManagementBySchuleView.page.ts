@@ -169,6 +169,14 @@ export class ServiceProviderManagementBySchuleViewPage {
     await expect(this.getRow(angebotName)).toHaveCount(0);
   }
 
+  public async assertDeleteIconVisible(angebotName: string): Promise<void> {
+    await expect(this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon')).toBeVisible();
+  }
+
+  public async assertDeleteIconHidden(angebotName: string): Promise<void> {
+    await expect(this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon')).toHaveCount(0);
+  }
+
   public async assertDeleteErrorAlert(expectedTitle: string, expectedText: string): Promise<void> {
     await expect(this.errorAlertTitle).toHaveText(expectedTitle);
     await expect(this.errorAlertText).toHaveText(expectedText);

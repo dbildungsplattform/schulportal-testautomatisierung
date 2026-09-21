@@ -29,6 +29,10 @@ interface SchulspezifischesAngebotFixture {
   angebotName: string;
 }
 
+interface SchuladminEingeschraenktVerwaltenFixture extends SchulspezifischesAngebotFixture {
+  landesangebotName: string;
+}
+
 async function createSchulspezifischesAngebot(page: Page, schuleId: string, angebotName: string): Promise<string> {
   return createServiceProvider(page, {
     organisationId: schuleId,
@@ -41,6 +45,21 @@ async function createSchulspezifischesAngebot(page: Page, schuleId: string, ange
       CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
     ],
   });
+}
+
+// Provided at Land level, so it appears in every school's schulspezifische Angebotsliste without being deletable by a restricted Schuladmin.
+async function createLandweitesAngebot(page: Page): Promise<string> {
+  const organisationId: string = await getOrganisationId(page, landSH);
+  const angebotName: string = generateAngebotname();
+  await createServiceProvider(page, {
+    organisationId,
+    name: angebotName,
+    url: page.url(),
+    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+    requires2fa: false,
+    merkmale: [CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung],
+  });
+  return angebotName;
 }
 
 async function loginAsNewUserAndNavigateToAngebotManagementSchulspezifisch(
@@ -56,7 +75,7 @@ async function loginAsNewUserAndNavigateToAngebotManagementSchulspezifisch(
 
 const test = base.extend<{
   asLandesadmin: GlobalAngebotFixture;
-  asSchuladminEingeschraenktVerwalten: SchulspezifischesAngebotFixture;
+  asSchuladminEingeschraenktVerwalten: SchuladminEingeschraenktVerwaltenFixture;
   asLandesadminSchulspezifisch: SchulspezifischesAngebotFixture;
 }>({
   asLandesadmin: async ({ page }, use) => {
@@ -83,6 +102,7 @@ const test = base.extend<{
     const schuleId: string = await createSchule(page, schuleName);
     const angebotName: string = generateAngebotname();
     await createSchulspezifischesAngebot(page, schuleId, angebotName);
+    const landesangebotName: string = await createLandweitesAngebot(page);
 
     const user: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
       organisationName: schuleName,
@@ -94,7 +114,7 @@ const test = base.extend<{
     });
     const managementPage: ServiceProviderManagementBySchuleViewPage =
       await loginAsNewUserAndNavigateToAngebotManagementSchulspezifisch(page, user);
-    await use({ managementPage, schuleId, angebotName });
+    await use({ managementPage, schuleId, angebotName, landesangebotName });
   },
 
   asLandesadminSchulspezifisch: async ({ page }, use) => {
@@ -131,6 +151,23 @@ test.describe('Angebot löschen', () => {
       });
 
       await managementPage.assertServiceProviderAbsent(angebotName);
+    },
+  );
+
+  // SPSH-3619
+  test(
+    'Als Schuladmin mit dem Recht "Darf Angebote eingeschränkt verwalten" wird das Löschsymbol nur bei Angeboten auf Schulebene angezeigt',
+    { tag: [DEV, STAGE] },
+    async ({ asSchuladminEingeschraenktVerwalten }) => {
+      const { managementPage, angebotName, landesangebotName } = asSchuladminEingeschraenktVerwalten;
+
+      await test.step('Löschsymbol bei Angebot auf Schulebene ist sichtbar', async () => {
+        await managementPage.assertDeleteIconVisible(angebotName);
+      });
+
+      await test.step('Löschsymbol bei Angebot auf Landesebene ist nicht sichtbar', async () => {
+        await managementPage.assertDeleteIconHidden(landesangebotName);
+      });
     },
   );
 
