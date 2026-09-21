@@ -100,12 +100,14 @@ export async function getServiceProviderIdsMappedByName(
   page: Page,
   serviceProviderNames: string[],
   schulstrukturknotenOfRolle: string,
+  rollenArt: RollenArt,
 ): Promise<Map<string, string>> {
   try {
     const providerApi: ProviderApi = constructProviderApi(page);
     const response: ApiResponse<ServiceProviderResponse[]> =
       await providerApi.providerControllerGetAssignableServiceProvidersForRolleRaw({
         schulstrukturknotenOfRolle,
+        rollenArt,
       });
     expect(response.raw.status).toBe(200);
 
