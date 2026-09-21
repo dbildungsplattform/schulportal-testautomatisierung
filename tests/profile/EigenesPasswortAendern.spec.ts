@@ -89,7 +89,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
 
         const schuleId: string = await getOrganisationId(page, testschuleName);
         const klasseId: string = await createKlasse(page, schuleId, generateKlassenname());
-        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId, RollenArt.Lern)];
         const rolleId: string = await createRolle(
           page,
           RollenArt.Lern,

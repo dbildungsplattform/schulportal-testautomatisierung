@@ -12,7 +12,6 @@ export * from './LandesbediensteterApi';
 export * from './MeldungApi';
 export * from './MetricsApi';
 export * from './OrganisationenApi';
-export * from './PersonAdministrationApi';
 export * from './PersonInfoApi';
 export * from './PersonenApi';
 export * from './PersonenFrontendApi';
