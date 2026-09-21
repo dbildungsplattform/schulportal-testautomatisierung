@@ -114,6 +114,16 @@ export class ServiceProviderManagementBySchuleViewPage {
     await expect(this.resultTable).toContainText('Keine passenden Angebote gefunden.');
   }
 
+  /**
+   * Only checks that no offer is listed as provided by the given Schule, ignoring
+   * offers inherited from parent organisations (e.g. Land-weite Angebote) that may
+   * legitimately be present regardless of this test's own setup.
+   */
+  public async assertNoServiceProviderProvidedBySchule(schuleName: string): Promise<void> {
+    await this.waitForResultTableLoad();
+    await expect(this.dataTable.getRow(schuleName)).toHaveCount(0);
+  }
+
   public async checkHeaders(expectedHeaders: string[]): Promise<void> {
     // Unlike other tables in this project, this table hides the selection checkbox column, so no offset is needed.
     const headers: Locator = this.resultTable.locator('thead th.v-data-table__th');

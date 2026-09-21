@@ -104,8 +104,8 @@ test.describe('Schulspezifische Angebote anzeigen', () => {
     'Als Schuladmin mit 1 Schule ohne zuweisbare Angebote wird ein Hinweis angezeigt',
     { tag: [DEV, STAGE] },
     async ({ asSchuladminWithoutAngebot }) => {
-      const { managementPage } = asSchuladminWithoutAngebot;
-      await managementPage.assertNoServiceProvidersFound();
+      const { managementPage, schulen } = asSchuladminWithoutAngebot;
+      await managementPage.assertNoServiceProviderProvidedBySchule(schulen[0]!.name);
     },
   );
 
