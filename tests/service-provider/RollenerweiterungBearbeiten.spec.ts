@@ -113,6 +113,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
       ],
     });
 
