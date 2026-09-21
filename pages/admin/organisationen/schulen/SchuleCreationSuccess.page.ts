@@ -39,6 +39,7 @@ export class SchuleCreationSuccessPage {
     await expect(this.page.getByTestId('created-schule-form-label')).toBeVisible();
     await expect(this.page.getByTestId('created-schule-dienststellennummer-label')).toBeVisible();
     await expect(this.page.getByTestId('created-schule-name-label')).toBeVisible();
+    await expect(this.page.getByTestId('created-schule-emailAdress-label')).toBeVisible();
 
     // value column
     const schulform: string =
@@ -48,5 +49,6 @@ export class SchuleCreationSuccessPage {
     await expect(this.page.getByTestId('created-schule-form')).toHaveText(schulform);
     await expect(this.page.getByTestId('created-schule-dienststellennummer')).toHaveText(params.dienststellenNr);
     await expect(this.page.getByTestId('created-schule-name')).toHaveText(params.name);
+    await expect(this.page.getByTestId('created-schule-emailAdress')).toHaveText(params.emailAdress);
   }
 }
