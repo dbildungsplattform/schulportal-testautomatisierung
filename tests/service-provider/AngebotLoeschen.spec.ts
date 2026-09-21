@@ -88,7 +88,10 @@ const test = base.extend<{
       url: page.url(),
       kategorie: CreateServiceProviderBodyParamsKategorieEnum.Verwaltung,
       requires2fa: false,
-      merkmale: [CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung],
+      merkmale: [
+        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      ],
     });
     const managementPage: ServiceProviderManagementViewPage = await personManagementViewPage
       .getMenu()
