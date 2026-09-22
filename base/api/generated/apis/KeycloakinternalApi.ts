@@ -65,10 +65,10 @@ export interface KeycloakinternalApiInterface {
     keycloakInternalControllerGetExternalData(requestParameters: KeycloakInternalControllerGetExternalDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserExternalDataResponse>;
 
     /**
-    *
+     * 
      * @summary External Data about the requested user, scoped to a single Angebot.
      * @param {string} apiKey Internal API key for server-to-server communication
-    * @param {UserExternalDataV2BodyParams} userExternalDataV2BodyParams
+     * @param {UserExternalDataV2BodyParams} userExternalDataV2BodyParams 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof KeycloakinternalApiInterface
