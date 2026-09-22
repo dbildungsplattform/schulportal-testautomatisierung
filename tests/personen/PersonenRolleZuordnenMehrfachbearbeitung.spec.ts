@@ -58,7 +58,7 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         const schuleName: string = generateSchulname();
         const schuleDstNr: string = generateDienststellenNr();
         const schuleId: string = await createSchule(page, schuleName, schuleDstNr);
-        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId);
+        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId, 'LERN');
 
         // Zwei Klassen anlegen
         klasse1Name = generateKlassenname();
@@ -179,7 +179,7 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         const zweiteSchuleDstNr: string = generateDienststellenNr();
         const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName, zweiteSchuleDstNr);
 
-        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId);
+        const itslearningId: string = await getServiceProviderId(page, itslearning, schuleId, 'LERN');
 
         // Quell- und Zielklasse an der ersten Schule anlegen
         quellKlasseName = generateKlassenname();

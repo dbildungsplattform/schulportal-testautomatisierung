@@ -251,7 +251,7 @@ export interface RolleApiInterface {
      * @param {number} [limit] The requested limit for the page size.
      * @param {string} [searchStr] The name for the role.
      * @param {Array<string>} [organisationIds] OrganisationIds to filter rollen.
-     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be PERSONEN_VERWALTEN and optionally MPT_ROLLEN_VERWALTEN.
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be PERSONEN_VERWALTEN and optionally MPT_ROLLEN_ZUORDNEN.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RolleApiInterface

@@ -293,6 +293,7 @@ interface CreateRolleAndPersonWithPersonenkontextParams {
   rollenMerkmalNamen?: Set<RollenMerkmal>;
   systemrechte?: Set<RollenSystemRechtEnum>;
 }
+
 export async function createRolleAndPersonWithPersonenkontext(
   page: Page,
   params: CreateRolleAndPersonWithPersonenkontextParams,
@@ -306,6 +307,7 @@ export async function createRolleAndPersonWithPersonenkontext(
       page,
       params.serviceProviderNames,
       organisationId,
+      params.rollenArt,
     );
 
     const missingServiceProviderNames: string[] = params.serviceProviderNames.filter(

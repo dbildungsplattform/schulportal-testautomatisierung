@@ -314,8 +314,9 @@ test.describe('Rolle entziehen als Schuladmin', () => {
       const stepData: { bezeichnung: string; rolleName: string; users: UserInfo[] }[] = [];
 
       await test.step('Setup', async () => {
-        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+        const idSPs: string[] = [];
         for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
+          idSPs.push(await getServiceProviderId(page, itslearning, schuleId, rollenArt));
           const targetRolleName: string = generateRolleName();
           const targetRolleId: string = await createRolle(
             page,
@@ -365,8 +366,9 @@ test.describe('Rolle entziehen als Schuladmin', () => {
     const stepData: { bezeichnung: string; rolleName: string; users: UserInfo[] }[] = [];
 
     await test.step('Setup', async () => {
-      const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+      const idSPs: string[] = [];
       for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
+        idSPs.push(await getServiceProviderId(page, itslearning, schuleId, rollenArt));
         const targetRolleName: string = generateRolleName();
         const secondaryRolleName: string = generateRolleName();
         const targetRolleId: string = await createRolle(
@@ -438,7 +440,7 @@ test.describe('Rolle entziehen als Schuladmin', () => {
       let users: UserInfo[] = [];
 
       await test.step('Setup', async () => {
-        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+        const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId, typeSchueler)];
         zugewieseneRolleName = generateRolleName();
         nichtZugewieseneRolleName = generateRolleName();
         const zugewieseneRolleId: string = await createRolle(
@@ -495,7 +497,7 @@ test.describe('Rolle entziehen als Schuladmin', () => {
         let users: UserInfo[] = [];
 
         await test.step('Setup', async () => {
-          const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+          const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId, typeSchueler)];
           targetRolleName = generateRolleName();
           const secondaryRolleName: string = generateRolleName();
           const targetRolleId: string = await createRolle(
@@ -576,8 +578,9 @@ test.describe('Rolle entziehen als Schuladmin', () => {
       [];
 
     await test.step('Setup', async () => {
-      const idSPs: string[] = [await getServiceProviderId(page, itslearning, schuleId)];
+      const idSPs: string[] = [];
       for (const { rollenArt, bezeichnung } of ROLLE_ENTZIEHEN_TYPES) {
+        idSPs.push(await getServiceProviderId(page, itslearning, schuleId, rollenArt));
         const targetRolleName: string = generateRolleName();
         const secondaryRolleName: string = generateRolleName();
         const targetRolleId: string = await createRolle(
