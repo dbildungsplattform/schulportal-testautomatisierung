@@ -22,5 +22,4 @@ export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN: 'Darf schulische VIDIS-Angebote abrufen',
   CRON_DURCHFUEHREN: '', // no label in UI
   PERSONEN_LESEN: '', // no label in UI,
-  MPT_ROLLEN_ZUORDNEN: 'Darf Rollen für multiprofessionelle Teams verwalten',
 };

@@ -14,7 +14,6 @@ import {
   CreateServiceProviderResponse,
   RollenArt,
   ServiceProviderResponse,
-  RollenArt,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
 import { getOrganisationId } from './organisationApi';
