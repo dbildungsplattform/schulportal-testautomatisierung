@@ -4,8 +4,8 @@ import {
   CreateServiceProviderBodyParamsMerkmaleEnum,
 } from '../../base/api/generated';
 import { createSchule } from '../../base/api/organisationApi';
-import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
-import { createRolle, RollenArt, constructRolleApi } from '../../base/api/rolleApi';
+import { createPerson, UserInfo } from '../../base/api/personApi';
+import { applyRollenerweiterungChanges, createRolle, getRolleId, RollenArt } from '../../base/api/rolleApi';
 import { createServiceProvider } from '../../base/api/serviceProviderApi';
 import { test as base } from '../../base/fixtures';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
@@ -17,7 +17,7 @@ import { ServiceProviderDetailsBySchuleViewPage } from '../../pages/admin/servic
 import { ServiceProviderManagementBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderManagementBySchuleView.page';
 
 interface AngebotFixture {
-  managementPage: ServiceProviderManagementBySchuleViewPage;
+  schuladmin: UserInfo;
   angebotId: string;
   angebotLink: string;
   angebotName: string;
@@ -47,23 +47,6 @@ async function createRolleForSchule(page: Page, organisationId: string, rollenAr
   return { id, name };
 }
 
-async function addRollenerweiterungen(
-  page: Page,
-  angebotId: string,
-  organisationId: string,
-  rollen: CreatedRolle[],
-): Promise<void> {
-  const rolleApi = constructRolleApi(page);
-  await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-    angebotId,
-    organisationId,
-    applyRollenerweiterungBodyParams: {
-      addErweiterungenForRolleIds: rollen.map((rolle: CreatedRolle) => rolle.id),
-      removeErweiterungenForRolleIds: [],
-    },
-  });
-}
-
 const test = base.extend<{ angebot: AngebotFixture }>({
   angebot: async ({ page }, use) => {
     await loginAndNavigateToAdministration(page);
@@ -82,17 +65,21 @@ const test = base.extend<{ angebot: AngebotFixture }>({
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
       ],
     });
-    const schuladmin: UserInfo = await createPersonWithPersonenkontext(page, schuleName, schuladminOeffentlichRolle);
-    const managementPage: ServiceProviderManagementBySchuleViewPage =
-      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
+    const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
+    const schuladmin: UserInfo = await createPerson(page, {
+      organisationId: schuleId,
+      rolleId: schuladminRolleId,
+    });
 
-    await use({ managementPage, angebotId, angebotLink, angebotName, schuleId, schuleName });
+    await use({ schuladmin, angebotId, angebotLink, angebotName, schuleId, schuleName });
   },
 });
 
 test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
-  test('Gesamtübersicht eines Angebots öffnen und schließen', { tag: [DEV, STAGE] }, async ({ angebot }) => {
-    const { managementPage, angebotName, schuleId, schuleName } = angebot;
+  test('Gesamtübersicht eines Angebots öffnen und schließen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
+    const { schuladmin, angebotName, schuleId, schuleName } = angebot;
+    const managementPage: ServiceProviderManagementBySchuleViewPage =
+      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
 
     const detailsPage: ServiceProviderDetailsBySchuleViewPage = await test.step('Gesamtübersicht öffnen', async () => {
       return managementPage.openServiceProviderDetails(angebotName);
@@ -110,8 +97,10 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     });
   });
 
-  test('Angebotsdaten und leere Rollenerweiterungen anzeigen', { tag: [DEV, STAGE] }, async ({ angebot }) => {
-    const { managementPage, angebotLink, angebotName, schuleName } = angebot;
+  test('Angebotsdaten und leere Rollenerweiterungen anzeigen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
+    const { schuladmin, angebotLink, angebotName, schuleName } = angebot;
+    const managementPage: ServiceProviderManagementBySchuleViewPage =
+      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
     const detailsPage: ServiceProviderDetailsBySchuleViewPage =
       await managementPage.openServiceProviderDetails(angebotName);
 
@@ -133,30 +122,29 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
   });
 
   test('Nur Rollenerweiterungen der eigenen Schule anzeigen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
-    const { managementPage, angebotId, angebotName, schuleId } = angebot;
-    const eigeneRollen: CreatedRolle[] = await Promise.all([
-      createRolleForSchule(page, schuleId, RollenArt.Lern),
-      createRolleForSchule(page, schuleId, RollenArt.Lehr),
-      createRolleForSchule(page, schuleId, RollenArt.Leit),
-    ]);
+    const { schuladmin, angebotId, angebotName, schuleId } = angebot;
+    const eigeneRolle: CreatedRolle = await createRolleForSchule(page, schuleId, RollenArt.Lern);
     const fremdeSchuleId: string = await createSchule(page, generateSchulname());
     const studentRolle: CreatedRolle = await createRolleForSchule(page, fremdeSchuleId, RollenArt.Lern);
 
     await test.step('Rollenerweiterungen anlegen', async () => {
-      await addRollenerweiterungen(page, angebotId, schuleId, eigeneRollen);
-      await addRollenerweiterungen(page, angebotId, fremdeSchuleId, [studentRolle]);
+      await applyRollenerweiterungChanges(page, angebotId, schuleId, [eigeneRolle.id]);
+      await applyRollenerweiterungChanges(page, angebotId, fremdeSchuleId, [studentRolle.id]);
     });
+
+    const managementPage: ServiceProviderManagementBySchuleViewPage =
+      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
 
     await test.step('Rollen der eigenen Schule prüfen', async () => {
       const detailsPage: ServiceProviderDetailsBySchuleViewPage =
         await managementPage.openServiceProviderDetails(angebotName);
-      await detailsPage.assertRollenerweiterungenContain(eigeneRollen.map((rolle: CreatedRolle) => rolle.name));
+      await detailsPage.assertRollenerweiterungenContain([eigeneRolle.name]);
       await detailsPage.assertRollenerweiterungenNotContain([studentRolle.name]);
     });
   });
 
   test('Alle erweiterten Rollen als Chips anzeigen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
-    const { managementPage, angebotId, angebotName, schuleId } = angebot;
+    const { schuladmin, angebotId, angebotName, schuleId } = angebot;
     const rollen: CreatedRolle[] = await Promise.all([
       createRolleForSchule(page, schuleId, RollenArt.Lern),
       createRolleForSchule(page, schuleId, RollenArt.Lehr),
@@ -164,8 +152,16 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     ]);
 
     await test.step('Alle Rollenerweiterungen anlegen', async () => {
-      await addRollenerweiterungen(page, angebotId, schuleId, rollen);
+      await applyRollenerweiterungChanges(
+        page,
+        angebotId,
+        schuleId,
+        rollen.map((rolle: CreatedRolle) => rolle.id),
+      );
     });
+
+    const managementPage: ServiceProviderManagementBySchuleViewPage =
+      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
 
     await test.step('Alle Rollen als Chips prüfen', async () => {
       const detailsPage: ServiceProviderDetailsBySchuleViewPage =
