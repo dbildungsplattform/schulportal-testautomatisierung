@@ -175,31 +175,39 @@ export default async function globalTeardown(): Promise<void> {
               await wrappedResponse.value();
             if (angebote.total === 0) return [];
 
-            console.log(`${angebote.total} Angebote für ${item.id}:${item.name} löschen`);
-            return angebote.items.filter(
+            const relevanteAngebote: ManageableServiceProviderListEntryResponse[] = angebote.items.filter(
               (angebot) => angebot.name.startsWith(testDataPrefix) || angebot.administrationsebene.id === item.id,
             );
-          },
-          async (angebot: ManageableServiceProviderListEntryResponse) => {
-            const rollenIds: string[] = angebot.rollenerweiterungen.map((re) => re.rolle.id);
-            if (rollenIds.length > 0) {
-              console.log(
-                `${angebot.rollenerweiterungen.length} Rollenerweiterungen für ${angebot.id}:${angebot.name} an ${item.id}:${item.name} löschen`,
-              );
-              await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-                angebotId: angebot.id,
-                organisationId: item.id,
-                applyRollenerweiterungBodyParams: {
-                  addErweiterungenForRolleIds: [],
-                  removeErweiterungenForRolleIds: rollenIds,
-                },
-              });
+
+            // Rollenerweiterungen auch für geerbte (nicht von dieser Schule administrierte) Angebote entfernen,
+            // da diese sonst nie gelöscht werden und die cleanup-Schleife nicht terminiert.
+            for (const angebot of relevanteAngebote) {
+              const rollenIds: string[] = angebot.rollenerweiterungen.map((re) => re.rolle.id);
+              if (rollenIds.length > 0) {
+                console.log(
+                  `${angebot.rollenerweiterungen.length} Rollenerweiterungen für ${angebot.id}:${angebot.name} an ${item.id}:${item.name} löschen`,
+                );
+                await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+                  angebotId: angebot.id,
+                  organisationId: item.id,
+                  applyRollenerweiterungBodyParams: {
+                    addErweiterungenForRolleIds: [],
+                    removeErweiterungenForRolleIds: rollenIds,
+                  },
+                });
+              }
             }
 
-            if (angebot.administrationsebene.id === item.id) {
-              await providerApi.providerControllerDeleteServiceProvider({ angebotId: angebot.id });
+            const ownedAngebote: ManageableServiceProviderListEntryResponse[] = relevanteAngebote.filter(
+              (angebot) => angebot.administrationsebene.id === item.id,
+            );
+            if (ownedAngebote.length > 0) {
+              console.log(`${ownedAngebote.length} Angebote für ${item.id}:${item.name} löschen`);
             }
+            return ownedAngebote;
           },
+          async (angebot: ManageableServiceProviderListEntryResponse) =>
+            providerApi.providerControllerDeleteServiceProvider({ angebotId: angebot.id }),
         );
 
         return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
