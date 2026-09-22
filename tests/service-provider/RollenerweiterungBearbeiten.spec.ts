@@ -10,7 +10,7 @@ import {
   createPersonWithPersonenkontext,
   UserInfo,
 } from '../../base/api/personApi';
-import { constructRolleApi, createRolle, RollenArt } from '../../base/api/rolleApi';
+import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../base/api/rolleApi';
 import { constructProviderApi, createServiceProvider, deleteServiceProvider } from '../../base/api/serviceProviderApi';
 import { test } from '../../base/fixtures';
 import { testschuleName } from '../../base/organisation';
@@ -113,6 +113,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
       ],
     });
 
@@ -149,7 +150,6 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
 
     if (angebotId && testschuleId) {
       try {
-        const rolleApi = constructRolleApi(page);
         const providerApi = constructProviderApi(page);
         const rollenerweiterungen = await providerApi.providerControllerFindRollenerweiterungenByServiceProviderId({
           angebotId,
@@ -158,14 +158,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
         const rolleIds: string[] = rollenerweiterungen.items.map((rollenerweiterung) => rollenerweiterung.rolleId);
 
         if (rolleIds.length > 0) {
-          await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-            angebotId,
-            organisationId: testschuleId,
-            applyRollenerweiterungBodyParams: {
-              addErweiterungenForRolleIds: [],
-              removeErweiterungenForRolleIds: rolleIds,
-            },
-          });
+          await applyRollenerweiterungChanges(page, angebotId, testschuleId, [], rolleIds);
         }
       } catch (error) {
         console.warn('[WARN] Failed to detach rollenerweiterungen before Angebot deletion:', error);

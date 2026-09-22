@@ -1,4 +1,6 @@
 import { expect, Page } from '@playwright/test';
+import { testschuleName } from '../organisation';
+import { generateAngebotname } from '../utils/generateTestdata';
 import { constructApi } from './apiFactory';
 import {
   ProviderApi,
@@ -7,11 +9,15 @@ import {
 } from './generated/apis/ProviderApi';
 import {
   CreateServiceProviderBodyParams,
+  CreateServiceProviderBodyParamsKategorieEnum,
+  CreateServiceProviderBodyParamsMerkmaleEnum,
   CreateServiceProviderResponse,
+  RollenArt,
   ServiceProviderResponse,
   RollenArt,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
+import { getOrganisationId } from './organisationApi';
 
 export interface ServiceProviderFromRolleResponse {
   id: string;
@@ -42,6 +48,31 @@ export async function createServiceProvider(
     console.error('[ERROR] createServiceProvider failed:', error);
     throw error;
   }
+}
+
+export async function createServiceProviderForTestschule(
+  page: Page,
+  verfuegbarFuerRollenerweiterung: boolean,
+): Promise<{ id: string; name: string }> {
+  const organisationId: string = await getOrganisationId(page, testschuleName);
+  const name: string = generateAngebotname();
+  const merkmale: CreateServiceProviderBodyParamsMerkmaleEnum[] = verfuegbarFuerRollenerweiterung
+    ? [
+        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+      ]
+    : [CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar];
+
+  const id: string = await createServiceProvider(page, {
+    organisationId,
+    name,
+    url: page.url(),
+    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+    requires2fa: false,
+    merkmale,
+  });
+
+  return { id, name };
 }
 
 export async function deleteServiceProvider(page: Page, angebotId: string): Promise<void> {

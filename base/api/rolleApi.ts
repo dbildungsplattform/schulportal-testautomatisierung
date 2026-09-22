@@ -1,5 +1,11 @@
-import { Page, expect } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { constructApi } from './apiFactory';
+import {
+  RolleApi,
+  RolleControllerCreateRolleRequest,
+  RolleControllerDeleteRolleRequest,
+  RolleControllerFindRollenRequest,
+} from './generated/apis/RolleApi';
 import {
   CreateRolleBodyParams,
   RollenArt,
@@ -7,17 +13,10 @@ import {
   RolleResponse,
   RolleWithServiceProvidersResponse,
 } from './generated/models';
-import {
-  RolleApi,
-  RolleControllerCreateRolleRequest,
-  RolleControllerDeleteRolleRequest,
-  RolleControllerFindRollenRequest,
-} from './generated/apis/RolleApi';
-import { ApiResponse } from './generated/runtime';
 import { RollenSystemRechtEnum } from './generated/models/RollenSystemRechtEnum';
+import { ApiResponse } from './generated/runtime';
 
-export { RollenArt };
-export { RollenMerkmal };
+export { RollenArt, RollenMerkmal };
 
 export function constructRolleApi(page: Page): RolleApi {
   return constructApi(page, RolleApi);
@@ -105,6 +104,29 @@ export async function getRolleId(page: Page, rollenname: string): Promise<string
     return fetchedRolleId;
   } catch (error) {
     console.error('[ERROR] getRolleId failed:', error);
+    throw error;
+  }
+}
+
+export async function applyRollenerweiterungChanges(
+  page: Page,
+  angebotId: string,
+  organisationId: string,
+  addErweiterungenForRolleIds: string[],
+  removeErweiterungenForRolleIds: string[] = [],
+): Promise<void> {
+  try {
+    const rolleApi: RolleApi = constructRolleApi(page);
+    await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+      angebotId,
+      organisationId,
+      applyRollenerweiterungBodyParams: {
+        addErweiterungenForRolleIds,
+        removeErweiterungenForRolleIds,
+      },
+    });
+  } catch (error) {
+    console.error('[ERROR] applyRollenerweiterungChanges failed:', error);
     throw error;
   }
 }
