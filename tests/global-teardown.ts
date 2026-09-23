@@ -35,7 +35,7 @@ const batchSize: number = 20;
 
 async function logDeleteError(reason: unknown): Promise<void> {
   if (reason instanceof ResponseError) {
-    const body: string = await reason.response.clone().text();
+    const body: string = await reason.response.text();
     console.error(`cleanup: delete failed (${reason.response.status} ${reason.response.url})`, body);
   } else {
     console.error('cleanup: delete failed', reason);
@@ -186,11 +186,20 @@ export default async function globalTeardown(): Promise<void> {
             const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> =
               await providerApi.providerControllerGetManageableServiceProvidersForOrganisationIdRaw({
                 organisationId: item.id,
-                limit,
+                limit: 500,
               });
             const angebote: ProviderControllerGetManageableServiceProvidersForOrganisationId200Response =
               await wrappedResponse.value();
             if (angebote.total === 0) return [];
+
+            console.log(
+              `Angebote gefunden für ${item.id}:${item.name} (total=${angebote.total}, items=${angebote.items.length}):`,
+              angebote.items.map((angebot) => ({
+                id: angebot.id,
+                name: angebot.name,
+                administrationsebeneId: angebot.administrationsebene.id,
+              })),
+            );
 
             const relevanteAngebote: ManageableServiceProviderListEntryResponse[] = angebote.items.filter(
               (angebot) => angebot.name.startsWith(testDataPrefix) || angebot.administrationsebene.id === item.id,

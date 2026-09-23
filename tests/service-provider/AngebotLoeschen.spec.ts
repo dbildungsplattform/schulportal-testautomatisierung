@@ -10,6 +10,7 @@ import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../bas
 import { createServiceProvider } from '../../base/api/serviceProviderApi';
 import { test as base } from '../../base/fixtures';
 import { landSH } from '../../base/organisation';
+import { schulportaladmin } from '../../base/sp';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
@@ -114,6 +115,7 @@ const test = base.extend<{
         RollenSystemRechtEnum.RollenErweitern,
         RollenSystemRechtEnum.AngeboteEingeschraenktVerwalten,
       ]),
+      serviceProviderNames: [schulportaladmin],
     });
     const managementPage: ServiceProviderManagementBySchuleViewPage =
       await loginAsNewUserAndNavigateToAngebotManagementSchulspezifisch(page, user);
