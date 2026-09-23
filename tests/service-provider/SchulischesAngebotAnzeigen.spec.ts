@@ -63,6 +63,8 @@ const test = base.extend<{ angebot: AngebotFixture }>({
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerRollenverwaltung,
       ],
     });
     const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
