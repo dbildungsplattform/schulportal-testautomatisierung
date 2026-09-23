@@ -11,9 +11,11 @@ import {
   PersonenFrontendApi,
   PersonFrontendControllerFindPersons200Response,
   ProviderApi,
+  ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
   RolleApi,
   RolleWithServiceProvidersResponse,
+  ServiceProviderResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
 import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
@@ -34,7 +36,12 @@ async function cleanup<T>(get: () => Promise<T[]>, del: (item: T) => Promise<voi
   let items: T[] = await get();
   do {
     for (const promise of getBatchedDelPromise(items, del)) {
-      await promise;
+      const results: PromiseSettledResult<void>[] = await promise;
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          console.error('cleanup: delete failed', result.reason);
+        }
+      }
     }
     items = await get();
   } while (items.length > 0);
@@ -212,6 +219,26 @@ export default async function globalTeardown(): Promise<void> {
 
         return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
       },
+    );
+
+    // ---------------------------------------------------------------------
+    // LANDESWEITE ANGEBOTE LÖSCHEN
+    // ---------------------------------------------------------------------
+    console.log('Landesweite Angebote löschen');
+
+    await cleanup(
+      async () => {
+        const wrappedResponse: ApiResponse<ProviderControllerGetAvailableServiceProviders200Response> =
+          await providerApi.providerControllerGetManageableLandRootServiceProvidersRaw({
+            searchStr: testDataPrefix,
+            limit,
+          });
+        const response: ProviderControllerGetAvailableServiceProviders200Response = await wrappedResponse.value();
+        console.log(`${response.total} landesweite Angebote löschen`);
+        return response.items;
+      },
+      async (item: ServiceProviderResponse) =>
+        providerApi.providerControllerDeleteServiceProvider({ angebotId: item.id }),
     );
 
     console.log('Global teardown finished successfully');
