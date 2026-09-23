@@ -1,225 +1,202 @@
 ---
 name: create-playwright-test
-description: "Erstellt einen neuen Playwright-Test (.spec.ts) für das Schulportal. Berücksichtigt Projektkonventionen, Page-Objects, API-basierte Testdatenerstellung und bekannte Backend-Constraints. Use when asked to create a new test, write a test, implement a test case, neuen Test schreiben, Testfall implementieren."
+description: "Creates a new Playwright test (.spec.ts) for the Schulportal, following project conventions, page objects, API-based test-data creation, and known backend constraints. Use when asked to create a new test, write a test, implement a test case. Do not use for fixing an existing failing test (use run-and-fix-test) or for creating a page object only (use create-page-object)."
 argument-hint: "Beschreibung des Testfalls oder Pfad zur CSV mit Testschritten"
 ---
 
 # Create Playwright Test
 
-Erstellt einen neuen Playwright-Test für das Schulportal nach den Projektkonventionen.
+Creates a new Playwright test for the Schulportal following project conventions.
 
-## Use When
-- Ein neuer Playwright-Test (.spec.ts) geschrieben werden soll
-- Testschritte aus einer CSV- oder Ticket-Beschreibung umgesetzt werden sollen
-
-## Do Not Use When
-- Ein bestehender Test repariert werden soll → verwende [`run-and-fix-test`](../run-and-fix-test/SKILL.md)
-- Nur ein Page-Object erstellt werden soll → verwende [`create-page-object`](../create-page-object/SKILL.md)
-
-## See Also
-- [`run-and-fix-test`][def] — Test ausführen und iterativ reparieren
-- [`create-page-object`](../create-page-object/SKILL.md) — Neues Page-Object erstellen
-- [`extend-page-object`](../extend-page-object/SKILL.md) — Bestehendes Page-Object erweitern
-- [testdaten.md](../../../docs/testdaten.md) — Übersicht aller API-Wrapper, Generatoren und Cleanup-Helfer für Testdaten
-- [best-practices.md](../../../docs/best-practices.md) — Coding-Konventionen
-- [structure.md](../../../docs/structure.md) — Projektstruktur
-- [tags.md](../../../docs/tags.md) — Tag-Konventionen
+## Do Not Use When / See Also
+- An existing test should be fixed → use [`run-and-fix-test`](../run-and-fix-test/SKILL.md) instead
+- Only a page object should be created → use [`create-page-object`](../create-page-object/SKILL.md) instead
+- Extending an existing page object → use [`extend-page-object`](../extend-page-object/SKILL.md)
+- Further references: [testdaten.md](../../../docs/testdaten.md) (API wrappers, generators, cleanup helpers), [best-practices.md](../../../docs/best-practices.md) (coding conventions), [structure.md](../../../docs/structure.md) (project structure), [tags.md](../../../docs/tags.md) (tag conventions)
 
 ---
 
-## Projektkonventionen (Kurzfassung)
+## Project Conventions (Summary)
 
-Ausführlich in `docs/best-practices.md` und `docs/structure.md` beschrieben. Hier die wichtigsten Regeln:
+Full detail in `docs/best-practices.md` and `docs/structure.md`. Key rules here:
 
-- **Tests enthalten keine Funktionslogik** — Logik, Aktionen und Assertions gehören in Page-Objects
-- **Locators nur in Pages** — Tests greifen ausschließlich auf Page-Methoden zu
-- **Use-Case pro Datei** — Eine `.spec.ts` deckt genau einen Use-Case ab
-- **Dateiname:** PascalCase, Endung `.spec.ts` (z.B. `RolleAnlegen.spec.ts`)
-- **Describe-Blöcke:** kurz, fachlich, auf Deutsch
-- **Tags:** alphabetisch sortiert: `{ tag: [DEV, STAGE] }`
-- **`test.step()`:** nur für fachliche Hauptphasen, Step-Namen auf Deutsch
-- **Assertions:** Präfix `assert` in Page-Methoden, Web-first Assertions bevorzugen
+- **Tests contain no business logic** — logic, actions, and assertions belong in page objects
+- **Locators only in pages** — tests only access page methods
+- **One use case per file** — a `.spec.ts` covers exactly one use case
+- **File name:** PascalCase, extension `.spec.ts` (e.g. `RolleAnlegen.spec.ts`)
+- **Describe blocks:** short, business-oriented, in German
+- **Tags:** alphabetically sorted: `{ tag: [DEV, STAGE] }`
+- **`test.step()`:** only for major business phases, step names in German
+- **Assertions:** `assert` prefix in page methods, prefer web-first assertions
 
-### Reviewer-Hardening (verpflichtend)
+### Reviewer Hardening (mandatory)
 
-- **Reuse vor Neuimplementierung:** Vor neuen Page-Methoden nach bestehender, ähnlicher Logik suchen und diese bevorzugt erweitern/parametrisieren.
-- **Locator-Deduplizierung:** Wenn ein Locator-Pattern in derselben Page mehrfach vorkommt, als private Helper-Methode kapseln.
-- **Kein Dead-Code:** Neu hinzugefügte öffentliche Methoden müssen in Tests oder anderen Pages verwendet werden, sonst entfernen.
-- **Minimale Testdaten-Parameter:** Bei Helpern wie `createRolleAndPersonWithPersonenkontext(...)` optionale Felder nur setzen, wenn fachlich erforderlich.
-- **Schulstrategie bewusst entscheiden:**
-  - Standard: `createSchule(...)` mit generiertem Namen.
-  - Ausnahme (statisch/existierend) nur mit kurzer Begründung im Testkommentar oder in der Summary.
+> Shared reuse/dedup/no-dead-code checklist — canonical version lives in
+> [`extend-page-object/SKILL.md`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory).
+> Apply it here too: reuse before reimplementing, locator deduplication, no dead code.
+
+Additional checks specific to this skill:
+
+- **Minimal test-data parameters:** For helpers like `createRolleAndPersonWithPersonenkontext(...)`, only set optional fields when the business case requires them.
+- **Decide the Schule strategy deliberately:**
+  - Default: `createSchule(...)` with a generated name.
+  - Exception (static/existing) only with a short justification in the test comment or summary.
 
 ---
 
-## API-basierte Testdatenerstellung — Bekannte Backend-Constraints
+## API-Based Test-Data Creation — Known Backend Constraints
 
-Vollständige Beschreibung mit Codebeispielen: [docs/testdaten.md](../../../docs/testdaten.md).
+Full description with code examples: [docs/testdaten.md](../../../docs/testdaten.md).
 
-| Verhalten | CREATE (`POST`) | COMMIT (`PUT`) |
+| Behavior | CREATE (`POST`) | COMMIT (`PUT`) |
 |---|---|---|
-| Schüler ohne Klasse | ❌ `LERN_NOT_AT_SCHULE_AND_KLASSE` | ❌ `LERN_NOT_AT_SCHULE_AND_KLASSE` |
-| 2 Klassen, gleiche Rolle | ✅ erlaubt | ❌ `DUPLICATE_KLASSENKONTEXT_FOR_SAME_ROLLE` |
-| Versionierung (`count`/`lastModified`) | nicht nötig | ✅ erforderlich |
+| Schüler without Klasse | ❌ `LERN_NOT_AT_SCHULE_AND_KLASSE` | ❌ `LERN_NOT_AT_SCHULE_AND_KLASSE` |
+| 2 Klassen, same Rolle | ✅ allowed | ❌ `DUPLICATE_KLASSENKONTEXT_FOR_SAME_ROLLE` |
+| Versioning (`count`/`lastModified`) | not needed | ✅ required |
 
 ---
 
-## Verfügbare API-Funktionen für Testdatenerstellung
+## Available API Functions for Test-Data Creation
 
-Vollständige Übersicht inkl. Signaturen, Beispielen und Entscheidungshilfe: [docs/testdaten.md](../../../docs/testdaten.md).
+Full overview incl. signatures, examples, and decision guidance: [docs/testdaten.md](../../../docs/testdaten.md). Most-used entries:
 
-Kurzreferenz:
-
-| Funktion | Zweck |
+| Function | Purpose |
 |---|---|
-| `createPersonWithPersonenkontext` | Person an existierender Org + Rolle anlegen |
-| `createPerson` | Person mit bestehender Rolle + optional Klasse anlegen (kein neues Rollen-Anlegen; nutzen wenn Schüler eine bereits existierende Rolle teilen sollen) |
-| `createRolleAndPersonWithPersonenkontext` | Rolle + Person + Personenkontext in einem Schritt (inkl. Klasse) |
-| `createPersonWithZweiKlassenKontexte` | Person mit Schule + 2 Klassen in einem CREATE |
-| `addSecondOrganisationToPerson` | Zweite Org/Klasse per COMMIT hinzufügen (Achtung: Versionierung!) |
-| `createTeacherAndLogin` | Lehrkraft anlegen + direkt einloggen |
-| `prepareAndLoginUserWithPermissions` | User mit definierten Systemrechten anlegen + einloggen ([tests/helpers/](../../../tests/helpers/prepareAndLoginUserWithPermissions.ts)) |
-| `deletePerson` / `deletePersonenBySearchStrings` | Person(en) löschen (Cleanup) |
-| `deleteRolleById` / `deleteRolleByName` | Rolle(n) löschen (Cleanup) |
-| `deleteKlasseByName` | Klasse(n) löschen (Cleanup) |
+| `createPersonWithPersonenkontext` | Create a Person at an existing Org + Rolle |
+| `createRolleAndPersonWithPersonenkontext` | Rolle + Person + Personenkontext in one step (incl. Klasse) |
+| `createSchule` / `createKlasse` | Create a Schule / Klasse |
+| `deletePerson` / `deleteRolleById` / `deleteKlasseByName` | Cleanup helpers |
 
-Weitere Helpers:
-- `base/api/organisationApi.ts`: `createSchule`, `createKlasse`, `getKlasseId`, `getOrganisationId`
-- `base/api/rolleApi.ts`: `createRolle`, `getRolleId`, `addServiceProvidersToRolle`, `addSystemrechtToRolle` (sequentiell – optimistic locking)
-- `base/api/serviceProviderApi.ts`: `getServiceProviderId`
-- `base/testHelperDeleteTestdata.ts`: Bulk-Cleanup-Funktionen
-- `tests/helpers/`: Spezialisierte Helper für komplexere Szenarien
+See [docs/testdaten.md](../../../docs/testdaten.md) for the full list, including `createPersonWithZweiKlassenKontexte`, `createTeacherAndLogin`, `prepareAndLoginUserWithPermissions`, and the API helper modules under `base/api/`.
 
 ---
 
 ## Workflow
 
-### Phase 1 — Testbeschreibung einholen
+### Phase 1 — Gather the Test Description
 
-Ohne Testbeschreibung **nicht starten**. Pflichtangaben:
+**Do not start** without a test description. Required inputs:
 
-| Information | Pflicht | Quelle |
+| Information | Required | Source |
 |---|---|---|
-| Use-Case-Beschreibung oder Testschritte | ✅ | Benutzer / CSV / Ticket |
-| Welche Rolle agiert (Landesadmin, Schuladmin, …) | ✅ | Benutzer / Testschritte |
-| Welche Testdaten benötigt werden | ✅ | Aus Testschritten ableiten |
-| Tags (DEV, STAGE) | ⚪ | Benutzer (Default: `[DEV]`) |
+| Use-case description or test steps | ✅ | User / CSV / ticket |
+| Which role acts (Landesadmin, Schuladmin, …) | ✅ | User / test steps |
+| Which test data is needed | ✅ | Derived from test steps |
+| Tags (DEV, STAGE) | ⚪ | User (default: `[DEV]`) |
 
-Wenn die Beschreibung unklar ist → beim Benutzer nachfragen, **bevor** Page-Objects oder Tests erstellt werden.
+If the description is unclear → ask the user **before** creating page objects or tests.
 
-### Phase 2 — Page-Objects und Locators prüfen
+### Phase 2 — Check Page Objects and Locators
 
-Aus den Testschritten ableiten, welche Pages und welche Methoden/Locators benötigt werden. Dann pro Page der Reihe nach prüfen:
+Derive from the test steps which pages and which methods/locators are needed. Then check each page in turn:
 
-1. **Existiert das Page-Object** unter `pages/` oder `pages/admin/<bereich>/`?
-   - **Nein** → Skill [`create-page-object`](../create-page-object/SKILL.md) aufrufen, um die Page neu anzulegen. Erst danach hier weitermachen.
-   - **Ja** → weiter zu Schritt 2.
-2. **Sind alle benötigten Methoden/Locators in der Page vorhanden?**
-   - **Nein** → Skill [`extend-page-object`](../extend-page-object/SKILL.md) aufrufen, um die fehlenden Methoden/Locators zu ergänzen. Erst danach hier weitermachen.
-   - **Ja** → weiter zu Phase 3.
-3. **Wichtig:** Vor Ergänzungen immer Reuse-first anwenden: vorhandene Methoden erweitern/parametrisieren statt denselben Flow ein zweites Mal zu implementieren.
-4. Analog: Prüfen, ob die benötigten **API-Funktionen** für das Testdaten-Setup in `base/api/` existieren. Wenn nicht, vor dem Test ergänzen (siehe [docs/testdaten.md](../../../docs/testdaten.md)).
+1. **Does the page object exist** under `pages/` or `pages/admin/<area>/`?
+   - **No** → invoke skill [`create-page-object`](../create-page-object/SKILL.md) to create it. Only then continue here.
+   - **Yes** → continue to step 2.
+2. **Are all required methods/locators present in the page?**
+   - **No** → invoke skill [`extend-page-object`](../extend-page-object/SKILL.md) to add the missing methods/locators. Only then continue here.
+   - **Yes** → continue to Phase 3.
+3. **Important:** Always apply reuse-first before adding: extend/parameterize existing methods instead of reimplementing the same flow.
+4. Similarly: check whether the required **API functions** for test-data setup exist in `base/api/`. If not, add them before the test (see [docs/testdaten.md](../../../docs/testdaten.md)).
 
-> Diese Phase **niemals überspringen**. Tests sollen keine Locators direkt enthalten – fehlende Logik gehört zuerst in die Page-Objects.
+> **Never skip this phase.** Tests must not contain locators directly — missing logic belongs in page objects first.
 
-> **Unbekannte testids?** Nutze Playwright MCP (`run_playwright_code` / `read_page`) zur Live-Inspektion der Seite. Navigiere als passender User zum relevanten UI-State und lese die `data-testid`-Attribute aus dem DOM. Siehe [`extend-page-object`](../extend-page-object/SKILL.md) für Details.
+> **Unknown test IDs?** Use Playwright MCP (`run_playwright_code` / `read_page`) for live inspection of the page. Navigate as the appropriate user to the relevant UI state and read the `data-testid` attributes from the DOM. See [`extend-page-object`](../extend-page-object/SKILL.md) for details.
 
-### Phase 3 — Ablageort: bestehende `.spec.ts` wiederverwenden oder neu anlegen
+### Phase 3 — Storage Location: Reuse or Create a `.spec.ts`
 
-Vor dem Schreiben prüfen, ob es bereits eine passende `.spec.ts` gibt, in der der neue Testfall ergänzt werden kann.
+Before writing, check whether a suitable `.spec.ts` already exists where the new test case can be added.
 
-1. Unter `tests/<bereich>/` nach thematisch passenden Dateien suchen (z. B. `PersonAnlegen.spec.ts`, `KlasseBearbeiten.spec.ts`).
-2. **Passende Datei vorhanden?**
-  - **Ja** → neuen `test(...)`-Block in eine passende bestehende `test.describe`-Suite einfügen. Vorhandenes `beforeEach` wiederverwenden; bestehendes `afterEach` nur beibehalten, wenn dessen lokaler Cleanup fachlich erforderlich ist.
-   - **Nein** → neue Datei `tests/<bereich>/<UseCase>.spec.ts` (PascalCase) anlegen.
-3. **Vor dem Einfügen** prüfen, ob das vorhandene `beforeEach` bereits alle nötigen Testdaten anlegt:
-   - Reicht das Setup aus → Test einfach ergänzen.
-  - Es fehlen Testdaten → das `beforeEach` (oder ein eigenes inneres `test.describe` mit eigenem `beforeEach`) entsprechend erweitern. Alle Namen müssen den Generator-Präfix `TAuto-PW-…` tragen, damit das globale Teardown sie nach dem Lauf aufräumt.
+1. Search `tests/<area>/` for thematically matching files (e.g. `PersonAnlegen.spec.ts`, `KlasseBearbeiten.spec.ts`).
+2. **Matching file exists?**
+  - **Yes** → insert the new `test(...)` block into a suitable existing `test.describe` suite. Reuse the existing `beforeEach`; only keep an existing `afterEach` if its local cleanup is genuinely required.
+   - **No** → create a new file `tests/<area>/<UseCase>.spec.ts` (PascalCase).
+3. **Before inserting**, check whether the existing `beforeEach` already creates all needed test data:
+   - Setup is sufficient → just add the test.
+  - Test data is missing → extend the `beforeEach` (or add a nested `test.describe` with its own `beforeEach`) accordingly. All names must carry the generator prefix `TAuto-PW-…` so the global teardown cleans them up after the run.
 
-> **Anti-Pattern: Duplicate Describe statt Merge.**
-> Wenn ein bestehendes `beforeEach` bereits 80%+ des benötigten Setups enthält (z.B. Schule, Klassen, Rolle, Schuladmin-Login), füge fehlende Testdaten **dort** hinzu, statt einen eigenständigen Describe-Block mit nahezu identischem Setup zu erstellen. Dupliziertes Setup = längere Laufzeit + Wartungslast.
+> **Anti-pattern: duplicate describe instead of merge.**
+> If an existing `beforeEach` already covers 80%+ of the needed setup (e.g. Schule, Klassen, Rolle, Schuladmin login), add the missing test data **there** instead of creating a standalone describe block with nearly identical setup. Duplicated setup means longer runtime + maintenance burden.
 
-### Phase 4 — Test implementieren
+### Phase 4 — Implement the Test
 
-#### 4.1 — Ablageort
+#### 4.1 — Storage location
 
-`tests/<bereich>/` (z. B. `tests/personen/`, `tests/rollen/`, `tests/schulen/`).
+`tests/<area>/` (e.g. `tests/personen/`, `tests/rollen/`, `tests/schulen/`).
 
-#### 4.2 — Grundstruktur (bei neuer Datei)
+#### 4.2 — Basic structure (for a new file)
 
-Wenn eine bestehende Spec-Datei wiederverwendet wird, nur den `test(…)`-Block einfügen und ggf. das `beforeEach` erweitern – keine neue `test.describe`-Hülle bauen.
+When reusing an existing spec file, only insert the `test(…)` block and extend `beforeEach` if needed — don't build a new `test.describe` wrapper.
 
 ```ts
 import test, { expect, PlaywrightTestArgs } from '@playwright/test';
-// Imports für API-Funktionen, Pages, Testdaten-Generatoren, Tags...
+// Imports for API functions, pages, test-data generators, tags...
 
-test.describe(`<Fachlicher Use-Case Name>`, () => {
+test.describe(`<Business use-case name>`, () => {
   test.describe(`Als <Rolle>`, () => {
-    // Suite-lokale Variablen für Testdaten
+    // Suite-local variables for test data
     let someId: string;
 
     test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-      // Login und Navigation
-      // Testdaten via API anlegen
+      // Login and navigation
+      // Create test data via API
     });
 
     test(`Testfall-Beschreibung`, { tag: [DEV] }, async ({ page }: PlaywrightTestArgs) => {
-      // Test-Schritte über Page-Methoden
+      // Test steps via page methods
     });
   });
 });
 ```
 
-#### 4.3 — Testdaten-Setup
+#### 4.3 — Test-data setup
 
-- **Immer API-basiert**, nicht über die UI
-- **Setup gehört in `beforeEach`** (oder in einen `test.step('Testdaten … anlegen')` ganz am Anfang des Tests) – nicht mitten im Testablauf
-- Die Page muss vor API-Aufrufen eingeloggt sein (typisch: `loginAndNavigateToAdministration(page)` als Landesadmin), da die Wrapper über den Page-Cookie authentifizieren
-- Bei Schülern **immer Schule + Klasse** zusammen anlegen (Constraint `LERN_NOT_AT_SCHULE_AND_KLASSE`)
-- Bei Multi-Klasse-Szenarien: `createPersonWithZweiKlassenKontexte` statt CREATE+COMMIT
-- Testdaten generieren mit Funktionen aus `base/utils/generateTestdata.ts`: `generateNachname()`, `generateVorname()`, `generateSchulname()`, `generateKlassenname()`, `generateRolleName()`, `generateDienststellenNr()`, `generateKopersNr()`. Alle Generatoren erzeugen Werte mit Präfix `TAuto-PW-…` für Wiedererkennbarkeit und Kollisionsfreiheit bei parallelen Tests.
-- **Schulen werden im Test per API neu angelegt** mit `createSchule(page, generateSchulname(), generateDienststellenNr())`. Die statischen Konstanten `testschuleName` und `ersatzTestschuleName` aus [base/organisation.ts](../../../base/organisation.ts) dürfen für neue Tests **nicht** mehr verwendet werden; bei Refactorings sind sie durch frisch erzeugte Schulen zu ersetzen. Downstream-API-Funktionen wie `createPersonWithPersonenkontext`/`createRolleAndPersonWithPersonenkontext` werden mit dem dynamisch generierten `schuleName` aufgerufen.
+- **Always API-based**, never via the UI
+- **Setup belongs in `beforeEach`** (or in a `test.step('Testdaten … anlegen')` at the very start of the test) — not in the middle of the test flow
+- The page must be logged in before API calls (typically `loginAndNavigateToAdministration(page)` as Landesadmin), since the wrappers authenticate via the page cookie
+- For Schüler, **always create Schule + Klasse together** (constraint `LERN_NOT_AT_SCHULE_AND_KLASSE`)
+- For multi-Klasse scenarios: use `createPersonWithZweiKlassenKontexte` instead of CREATE+COMMIT
+- Generate test data with functions from `base/utils/generateTestdata.ts`: `generateNachname()`, `generateVorname()`, `generateSchulname()`, `generateKlassenname()`, `generateRolleName()`, `generateDienststellenNr()`, `generateKopersNr()`. All generators produce values with the prefix `TAuto-PW-…` for recognizability and collision-freedom across parallel tests.
+- **Schulen are created fresh per test via API** with `createSchule(page, generateSchulname(), generateDienststellenNr())`. The static constants `testschuleName` and `ersatzTestschuleName` from [base/organisation.ts](../../../base/organisation.ts) must **not** be used for new tests; when refactoring, replace them with freshly created Schulen. Downstream API functions like `createPersonWithPersonenkontext`/`createRolleAndPersonWithPersonenkontext` are called with the dynamically generated `schuleName`.
 
-#### 4.4 — Testlogik
+#### 4.4 — Test logic
 
-- Aktionen über Page-Methoden aufrufen, keine direkten Locator-Zugriffe
-- Navigation über `waitForPageLoad()`-Ketten
-- `test.step()` für fachliche Hauptphasen
+- Call actions via page methods, no direct locator access
+- Navigate via `waitForPageLoad()` chains
+- Use `test.step()` for major business phases
 
 #### 4.5 — Cleanup
 
-- Das globale Teardown in [tests/global-teardown.ts](../../../tests/global-teardown.ts) löscht nach dem Testlauf alle mit `TAuto-PW` erzeugten Personen, Rollen, Klassen und Schulen.
-- Neue Tests implementieren deshalb keinen eigenen `afterEach`-Cleanup und müssen keine IDs oder Usernames für diesen Zweck sammeln.
-- Ein lokaler `afterEach`-Cleanup über [base/testHelperDeleteTestdata.ts](../../../base/testHelperDeleteTestdata.ts) ist nur zulässig, wenn Daten noch vor Ende des Testlaufs gelöscht werden müssen; die Ausnahme ist im Test kurz zu begründen.
+- The global teardown in [tests/global-teardown.ts](../../../tests/global-teardown.ts) deletes all Personen, Rollen, Klassen, and Schulen created with `TAuto-PW` after the test run.
+- New tests therefore don't implement their own `afterEach` cleanup and don't need to collect IDs or usernames for that purpose.
+- A local `afterEach` cleanup via [base/testHelperDeleteTestdata.ts](../../../base/testHelperDeleteTestdata.ts) is only allowed when data must be deleted before the end of the test run; the exception must be briefly justified in the test.
 
-### Phase 5 — Validierung
+### Phase 5 — Validation
 
-1. TypeScript-Kompilierung:
+1. TypeScript compilation:
    ```bash
    npx tsc --noEmit
    ```
-2. Test ausführen:
+2. Run the test:
    ```bash
-   npx playwright test <testdatei> --reporter=list
+   npx playwright test <test-file> --reporter=list
    ```
-3. Bei Fehlern → Skill `run-and-fix-test` verwenden
-4. PR-Quick-Checks auf geänderten Dateien:
+3. On failure → use skill `run-and-fix-test`
+4. PR quick checks on changed files:
   ```bash
-  npx eslint <geänderte-dateien>
+  npx eslint <changed-files>
   ```
-  Danach kurz manuell prüfen:
-  - doppelte Locator-Strings in derselben Page
-  - neu hinzugefügte, aber ungenutzte öffentliche Methoden
+  Then briefly check manually:
+  - duplicate locator strings in the same page
+  - newly added but unused public methods
 
 ---
 
-## Referenz-Dateien
+## Reference Files
 
-| Datei | Pattern |
+| File | Pattern |
 |---|---|
-| `tests/personen/PersonAnlegen.spec.ts` | Standard-Test mit API-Setup, Landesadmin, Schuladmin |
-| `tests/personen/PersonenRolleZuordnenMehrfachbearbeitung.spec.ts` | Komplexer Test mit Multi-Klasse-Szenarien, Fehlerfall-Tests |
-| `tests/helpers/createKlassenAndSchuelerForSchulen.ts` | Helper für Massen-Testdatenerstellung |
-| `tests/helpers/prepareAndLoginUserWithPermissions.ts` | Helper für Login mit spezifischen Berechtigungen |
-
-[def]: ../run-and-fix-test/SKILL.md
+| `tests/personen/PersonAnlegen.spec.ts` | Standard test with API setup, Landesadmin, Schuladmin |
+| `tests/personen/PersonenRolleZuordnenMehrfachbearbeitung.spec.ts` | Complex test with multi-Klasse scenarios, error-case tests |
+| `tests/helpers/createKlassenAndSchuelerForSchulen.ts` | Helper for bulk test-data creation |
+| `tests/helpers/prepareAndLoginUserWithPermissions.ts` | Helper for login with specific permissions |

@@ -1,214 +1,195 @@
 ---
 name: playwright-test-workflow
-description: 'End-to-end Workflow zur Playwright-Test-Erstellung aus einer Testbeschreibung.
-  Prüft und erstellt fehlende Page Objects, erweitert bestehende bei Bedarf, generiert
-  den Test und führt ihn iterativ bis zum Grün aus. Use when: vollständigen Test-Workflow
-  starten, Test aus Beschreibung erstellen, Test von Anfang bis Ende automatisieren.'
+description: 'End-to-end workflow to create a Playwright test from a test description.
+  Checks and creates missing page objects, extends existing ones if needed, generates
+  the test, and runs it iteratively until green. Use when the user wants to start a full
+  test workflow, create a test from a description, or automate a test end-to-end. Do not
+  use for a single sub-step only — use create-page-object, extend-page-object, or
+  run-and-fix-test directly.'
 ---
 
 # Playwright Test Workflow
 
-Orchestriert den vollständigen Weg von einer Testbeschreibung bis zum grünen Test.
-Ruft die Einzelskills `create-page-object`, `extend-page-object`, `create-playwright-test`
-und `run-and-fix-test` in der richtigen Reihenfolge auf.
+Orchestrates the full path from a test description to a green test.
+Invokes the individual skills `create-page-object`, `extend-page-object`, `create-playwright-test`,
+and `run-and-fix-test` in the correct order.
 
-## Use When
-- Eine Testbeschreibung (Ticket, Szenario, fachliche Schritte) vorliegt
-  und der komplette Weg bis zum grünen Test automatisiert werden soll
-- Der Nutzer sagt: „Erstelle einen Test für …", „Implementiere diesen Testfall",
-  „Test-Workflow starten"
-
-## Do Not Use When
-- Nur ein Page-Object erstellt werden soll → [`create-page-object`](../create-page-object/SKILL.md)
-- Nur eine bestehende Page erweitert werden soll → [`extend-page-object`](../extend-page-object/SKILL.md)
-- Nur ein fehlgeschlagener Test repariert werden soll → [`run-and-fix-test`](../run-and-fix-test/SKILL.md)
-- Kein Login-Zugang zur Zielumgebung vorhanden ist
+## Do Not Use When / See Also
+- Only a page object should be created → [`create-page-object`](../create-page-object/SKILL.md)
+- Only an existing page should be extended → [`extend-page-object`](../extend-page-object/SKILL.md)
+- Only a failing test should be fixed → [`run-and-fix-test`](../run-and-fix-test/SKILL.md)
+- No login access to the target environment is available
 
 ---
 
 ## Workflow
 
-### Phase 1 — Testbeschreibung einholen
+### Phase 1 — Gather the Test Description
 
-Ohne vollständige Eingaben **nicht starten**.
+**Do not start** without complete inputs.
 
-| Information | Pflicht | Quelle |
+| Information | Required | Source |
 |---|---|---|
-| Fachliche Beschreibung des Testfalls (Schritte, Ziel) | ✅ | Nutzer / Ticket |
-| Handelnde Rolle (Landesadmin, Schuladmin, …) | ✅ | Nutzer / Beschreibung |
-| Betroffene Seite(n) / URL(s) | ✅ | Nutzer / Beschreibung |
-| Tags (DEV, STAGE) | ⚪ | Nutzer (Default: `[DEV]`) |
+| Business description of the test case (steps, goal) | ✅ | User / ticket |
+| Acting role (Landesadmin, Schuladmin, …) | ✅ | User / description |
+| Affected page(s) / URL(s) | ✅ | User / description |
+| Tags (DEV, STAGE) | ⚪ | User (default: `[DEV]`) |
 
-Wenn die Beschreibung unvollständig ist → beim Nutzer nachfragen, **bevor** mit Phase 2 begonnen wird.
+If the description is incomplete → ask the user **before** starting Phase 2.
 
-**Erwartetes Ergebnis:** Vollständige Testbeschreibung inkl. Rolle und Seiten liegt vor.
-
----
-
-### Phase 2 — Page Objects prüfen und vorbereiten
-
-Aus der Testbeschreibung alle benötigten Pages und Methoden ableiten.
-Für jede benötigte Page der Reihe nach:
-
-#### Schritt 2.1 — Existiert das Page-Object?
-
-- Unter `pages/` und `pages/admin/<bereich>/` nach der Page suchen.
-- **Nein** → Skill [`create-page-object`](../create-page-object/SKILL.md) vollständig ausführen,
-  dann mit Schritt 2.2 fortfahren.
-- **Ja** → weiter mit Schritt 2.2.
-
-#### Schritt 2.2 — Sind alle benötigten Methoden und Locators vorhanden?
-
-- Die vorhandene Page-Datei lesen und mit den Anforderungen aus der Testbeschreibung abgleichen.
-- **Reuse-first prüfen:** Bevor neue Methoden geschrieben werden, nach bestehender Logik in `pages/` suchen (z. B. ähnliche Namen wie `complete*`, `navigate*`, `setup*`, `assert*`).
-  - Wenn passende Logik existiert: bestehende Methode erweitern/parametrisieren statt duplizieren.
-  - Nur wenn keine passende Methode existiert: neue Methode hinzufügen.
-- **Fehlende Methoden / Locators** → Skill [`extend-page-object`](../extend-page-object/SKILL.md)
-  vollständig ausführen.
-- **Alles vorhanden** → direkt weiter mit Phase 3.
-
-#### Schritt 2.3 — Locator-Wiederholung und Dead-Code prüfen
-
-- Wenn derselbe Locator-Pattern in einer Page **2x oder häufiger** vorkommt, als private Helper-Methode kapseln (z. B. `getServiceProviderCard(name)`).
-- Nach Erweiterungen prüfen, ob neu hinzugefügte öffentliche Methoden tatsächlich verwendet werden.
-  - Ungenutzte Methoden entfernen oder korrekt integrieren.
-
-> **Niemals überspringen.** Tests enthalten keine Locators direkt — fehlende Logik gehört zuerst
-> in die Page-Objects.
-
-**Erwartetes Ergebnis:** Alle benötigten Page-Objects existieren und enthalten alle
-benötigten Methoden und Locators.
+**Expected result:** Complete test description including role and pages is available.
 
 ---
 
-### Phase 3 — Testdaten-Bedarf analysieren und API-Wrapper prüfen
+### Phase 2 — Check and Prepare Page Objects
 
-Aus der Testbeschreibung alle benötigten Testdaten-Konstellationen ableiten,
-**bevor** mit der Test-Implementierung begonnen wird.
+Derive from the test description all required pages and methods.
+For each required page, in turn:
 
-#### Schritt 3.1 — Testdaten-Konstellationen ableiten
+#### Step 2.1 — Does the page object exist?
 
-Für jedes Szenario aus der Beschreibung bestimmen:
+- Search `pages/` and `pages/admin/<area>/` for the page.
+- **No** → fully run skill [`create-page-object`](../create-page-object/SKILL.md),
+  then continue with step 2.2.
+- **Yes** → continue with step 2.2.
 
-| Was | Frage |
+#### Step 2.2 — Are all required methods and locators present?
+
+- Read the existing page file and compare it against the requirements from the test description.
+- **Check reuse-first:** before writing new methods, search `pages/` for existing logic (e.g. similar names like `complete*`, `navigate*`, `setup*`, `assert*`).
+  - If matching logic exists: extend/parameterize the existing method instead of duplicating.
+  - Only add a new method if no matching method exists.
+- **Missing methods / locators** → fully run skill [`extend-page-object`](../extend-page-object/SKILL.md).
+- **Everything present** → continue directly with Phase 3.
+
+#### Step 2.3 — Check locator repetition and dead code
+
+> See [`extend-page-object`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory) for
+> the full reuse/dedup/no-dead-code checklist — apply it here too.
+
+**Expected result:** All required page objects exist and contain all
+required methods and locators.
+
+---
+
+### Phase 3 — Analyze Test-Data Needs and Check API Wrappers
+
+Derive all required test-data constellations from the test description,
+**before** starting the test implementation.
+
+#### Step 3.1 — Derive test-data constellations
+
+For each scenario in the description, determine:
+
+| What | Question |
 |---|---|
-| Entitäten | Welche Personen, Schulen, Klassen, Rollen, Admins werden benötigt? |
-| Konstellationen | Positivfälle, Konfliktfälle, Mehrklassen-Szenarien? |
-| Vorbedingungen | Müssen bestimmte Rollen/Kontexte bereits vor dem Test existieren? |
-| Cleanup | Welche Entitäten erzeugt das globale Teardown anhand des `TAuto-PW`-Präfixes? Ist ausnahmsweise ein lokaler Cleanup vor Testlaufende erforderlich? |
+| Entities | Which Personen, Schulen, Klassen, Rollen, admins are needed? |
+| Constellations | Positive cases, conflict cases, multi-Klasse scenarios? |
+| Preconditions | Must certain roles/contexts already exist before the test? |
+| Cleanup | Which entities does the global teardown remove via the `TAuto-PW` prefix? Is a local cleanup before test-run end exceptionally required? |
 
-#### Schritt 3.2 — Benötigte API-Wrapper prüfen
+#### Step 3.2 — Check required API wrappers
 
-In `base/api/` und `tests/helpers/` prüfen, ob alle Hilfsfunktionen für das Testdaten-Setup vorhanden sind.
-Referenz: [docs/testdaten.md](../../../docs/testdaten.md).
+Check in `base/api/` and `tests/helpers/` whether all helper functions for test-data setup exist.
+Reference: [docs/testdaten.md](../../../docs/testdaten.md).
 
-- **Alle Wrapper vorhanden** → weiter mit Schritt 3.3.
-- **Fehlende Wrapper** → vor der Test-Implementierung in `base/api/` ergänzen, dann weiter mit Schritt 3.3.
+- **All wrappers present** → continue with step 3.3.
+- **Missing wrappers** → add them to `base/api/` before the test implementation, then continue with step 3.3.
 
-> **Constraint-Erinnerung:** Schüler immer mit Schule + Klasse anlegen (`LERN_NOT_AT_SCHULE_AND_KLASSE`).
-> Multi-Klasse-Szenarien: `createPersonWithZweiKlassenKontexte` statt CREATE+COMMIT.
-> Schulen immer dynamisch per API anlegen — keine statischen Konstanten aus `base/organisation.ts`.
+> **Constraint reminder:** Always create Schüler with Schule + Klasse together (`LERN_NOT_AT_SCHULE_AND_KLASSE`).
+> Multi-Klasse scenarios: `createPersonWithZweiKlassenKontexte` instead of CREATE+COMMIT.
+> Always create Schulen dynamically via API — no static constants from `base/organisation.ts`.
 
-#### Schritt 3.3 — Testdaten-Plan dem Nutzer zur Freigabe vorlegen
+#### Step 3.3 — Present the test-data plan to the user for approval
 
-**Vor dem Erstellen der Testdaten den Plan strukturiert ausgeben und auf Bestätigung warten.**
+**Before creating test data, output the plan in structured form and wait for confirmation.**
 
-Ausgabeformat:
+Output format:
 
 ```
-## Testdaten-Plan — Bitte prüfen und bestätigen
+## Test-Data Plan — Please review and confirm
 
-### Szenarien und Konstellationen
-| Szenario | Entitäten | Konstellation | Cleanup |
+### Scenarios and constellations
+| Scenario | Entities | Constellation | Cleanup |
 |---|---|---|---|
-| Szenario 1 | 1x Schule, 2x Klasse, 3x Schüler (1 Klasse), 1x Schuladmin | Positivfall | Schüler, Schule, Klassen |
+| Scenario 1 | 1x Schule, 2x Klasse, 3x Schüler (1 Klasse), 1x Schuladmin | Positive case | Schüler, Schule, Klassen |
 | ... | ... | ... | ... |
 
-### API-Funktionen (beforeEach)
+### API functions (beforeEach)
 - `createSchule(...)` → schoolA
 - `createKlasse(...)` → classA1, classA2
 - `createRolleAndPersonWithPersonenkontext(...)` × 3 → studentsSingleClass_A
 - ...
 
 ### Cleanup
-- Globales Teardown löscht nach dem Testlauf Personen, Rollen, Klassen und Schulen mit dem Präfix `TAuto-PW`.
-- Lokalen `afterEach`-Cleanup nur bei begründeter Notwendigkeit aufführen, wenn Daten noch vor Testlaufende entfernt werden müssen.
+- Global teardown deletes Personen, Rollen, Klassen, and Schulen with the prefix `TAuto-PW` after the test run.
+- Only list a local `afterEach` cleanup when there is a justified need, i.e. data must be removed before the test run ends.
 
 ---
-Bitte bestätigen (ja) oder Änderungen angeben.
+Please confirm (yes) or specify changes.
 ```
 
-> **Warte auf Freigabe durch den Nutzer, bevor mit Phase 4 begonnen wird.**
-> Bei Änderungswünschen: Plan anpassen und erneut vorlegen.
+> **Wait for the user's approval before starting Phase 4.**
+> On change requests: adjust the plan and present it again.
 
-#### Schritt 3.4 — Freigegebenen Testdaten-Plan speichern
+#### Step 3.4 — Keep the approved test-data plan for Phase 4
 
-Nach Freigabe durch den Nutzer:
-1. Datei `.github/skills/create-playwright-test/testdaten` vollständig leeren (bestehenden Inhalt löschen — es handelt sich um eine Arbeitsdatei).
-2. Den finalisierten Plan in die geleerte Datei schreiben.
+Once the user approves, keep the finalized plan in context — no working file is needed;
+it is passed directly to `create-playwright-test` in Phase 4.
 
-Der Skill `create-playwright-test` liest diese Datei als Grundlage für das `beforeEach`-Setup.
-
-**Erwartetes Ergebnis:** Nutzer hat den Testdaten-Plan freigegeben und er ist unter
-`.github/skills/create-playwright-test/testdaten` gespeichert.
-Das `beforeEach`-Setup wird in Phase 4 exakt nach diesem Plan implementiert.
+**Expected result:** The user has approved the test-data plan.
+The `beforeEach` setup will be implemented in Phase 4 exactly per this plan.
 
 ---
 
-### Phase 4 — Test erstellen
+### Phase 4 — Create the Test
 
-Skill [`create-playwright-test`](../create-playwright-test/SKILL.md) vollständig ausführen.
-Testbeschreibung aus Phase 1 und den gespeicherten Testdaten-Plan aus
-`.github/skills/create-playwright-test/testdaten` als Input übergeben.
+Fully run skill [`create-playwright-test`](../create-playwright-test/SKILL.md).
+Pass the test description from Phase 1 and the approved test-data plan from Phase 3 as input.
 
-**Erwartetes Ergebnis:** Neue `.spec.ts`-Datei wurde erstellt (oder ein bestehender Describe-Block
-wurde erweitert) — inkl. vollständigem `beforeEach`-Setup; die Daten werden durch das globale Teardown bereinigt.
-
----
-
-### Phase 5 — Test ausführen und reparieren
-
-Skill [`run-and-fix-test`](../run-and-fix-test/SKILL.md) vollständig ausführen.
-Pfad zur Testdatei aus Phase 4 als Input übergeben.
-
-**Erwartetes Ergebnis:** Test läuft grün. Kurze Zusammenfassung: was wurde erstellt,
-was wurde geändert.
+**Expected result:** A new `.spec.ts` file was created (or an existing describe block
+was extended) — including a complete `beforeEach` setup; the data is cleaned up by the global teardown.
 
 ---
 
-### Phase 6 — PR-Härtung (vor Abschluss verpflichtend)
+### Phase 5 — Run and Fix the Test
 
-Bevor der Workflow als „fertig“ gilt, folgende Checks durchführen:
+Fully run skill [`run-and-fix-test`](../run-and-fix-test/SKILL.md).
+Pass the test file path from Phase 4 as input.
 
-1. **TypeScript-Check:** `npx tsc --noEmit`
-2. **Lint auf betroffene Dateien:** `npx eslint <geänderte-dateien>`
-3. **Duplicate-Locator-Schnellcheck:** neu hinzugefügte Locator-Strings auf Wiederholungen in derselben Page prüfen und ggf. extrahieren.
-4. **Dead-Method-Schnellcheck:** neu hinzugefügte öffentliche Methoden auf tatsächliche Nutzung prüfen.
-5. **Testdaten-Parameter minimieren:** Bei Helpern wie `createRolleAndPersonWithPersonenkontext(...)` optionale Felder (`familienname`, `vorname`, `rollenName`) nur setzen, wenn der Test sie fachlich benötigt.
-6. **Schulstrategie bewusst wählen und begründen:**
-  - Standard: dynamische Schule per API.
-  - Ausnahme: bestehende/statische Schule nur bei klarer Begründung (z. B. Lifecycle/Cleanup-Risiko oder explizite Fachvorgabe).
-
-**Erwartetes Ergebnis:** Test ist grün **und** der Code ist reviewer-ready (geringe Duplikation, kein Dead-Code, klare Testdaten-Entscheidungen).
+**Expected result:** Test runs green. Brief summary: what was created,
+what was changed.
 
 ---
 
-## Ablaufübersicht
+### Phase 6 — PR Hardening (mandatory before completion)
+
+Before the workflow counts as "done", run the following checks:
+
+1. **TypeScript check:** `npx tsc --noEmit`
+2. **Lint affected files:** `npx eslint <changed-files>`
+3. **Reuse/dedup/no-dead-code checklist:** see [`extend-page-object`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory).
+4. **Minimize test-data parameters and decide the Schule strategy:** see [`create-playwright-test`](../create-playwright-test/SKILL.md#reviewer-hardening-mandatory).
+
+**Expected result:** Test is green **and** the code is reviewer-ready (low duplication, no dead code, clear test-data decisions).
+
+---
+
+## Flow Overview
 
 ```mermaid
 flowchart TD
-    A[Testbeschreibung] --> B[Phase 1: Eingaben prüfen]
-    B --> C{Page Object\nvorhanden?}
-    C -- Nein --> D[create-page-object]
-    D --> E{Methoden\nvollständig?}
-    C -- Ja --> E
-    E -- Nein --> F[extend-page-object]
-    F --> G[Phase 3: Testdaten analysieren]
-    E -- Ja --> G
-    G --> G2{API-Wrapper
-vorhanden?}
-    G2 -- Nein --> G3[Wrapper ergänzen]
+    A[Test description] --> B[Phase 1: check inputs]
+    B --> C{Page object\nexists?}
+    C -- No --> D[create-page-object]
+    D --> E{Methods\ncomplete?}
+    C -- Yes --> E
+    E -- No --> F[extend-page-object]
+    F --> G[Phase 3: analyze test data]
+    E -- Yes --> G
+    G --> G2{API wrapper\npresent?}
+    G2 -- No --> G3[Add wrapper]
     G3 --> H[create-playwright-test]
-    G2 -- Ja --> H
+    G2 -- Yes --> H
     H --> I[run-and-fix-test]
-    I --> J[Test grün ✅]
+    I --> J[Test green ✅]

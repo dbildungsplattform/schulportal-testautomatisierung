@@ -1,116 +1,111 @@
 ---
 name: run-and-fix-test
-description: "Führt einen Playwright-Test aus, analysiert Fehler bei Fehlschlag und behebt den Code automatisch. Wiederholt diesen Zyklus bis der Test erfolgreich durchläuft. Use when: a test is failing, fix failing test, run test and fix errors, iterate until test passes, debug playwright test, test reparieren, Test ausführen und Fehler beheben."
+description: "Runs a Playwright test, analyzes failures, and automatically fixes the code, repeating the cycle until the test passes. Use when: a test is failing, fix failing test, run test and fix errors, iterate until test passes, debug playwright test. Do not use when the test is already green, or when the failure is outside the test code (e.g. backend unreachable, missing .env variables) — inform the user instead."
 argument-hint: "Pfad zur Testdatei, z.B. tests/personen/PersonAnlegen.spec.ts"
 ---
 
 # Run and Fix Test
 
-Führt einen Playwright-Test wiederholt aus und behebt automatisch Fehler, bis er erfolgreich durchläuft.
+Runs a Playwright test repeatedly and automatically fixes failures until it passes.
 
-## Use When
-- Ein Playwright-Test fehlschlägt und automatisch repariert werden soll
-- Iteratives Debugging gewünscht ist: Test → Fehler analysieren → Fix → Test
-- Der Nutzer sagt: „Starte den Test und behebe Fehler", „fix the failing test", „Test reparieren"
-
-## Do Not Use When
-- Der Test bereits grün ist
-- Der Fehler außerhalb des Testcodes liegt (z.B. Backend nicht erreichbar, fehlende `.env`-Variablen) — dann Nutzer informieren
+## Do Not Use When / See Also
+- The test is already green
+- The failure is outside the test code (e.g. backend unreachable, missing `.env` variables) — inform the user instead
 
 ---
 
 ## Procedure
 
-### Schritt 1: maxFailures deaktivieren
-Setze in `playwright.config.ts` den Wert `maxFailures` auf `0`, damit der Testlauf nicht vorzeitig bei Fehlern abbricht und alle Tests ausgeführt werden:
+### Step 1: Disable maxFailures
+Set `maxFailures` to `0` in `playwright.config.ts` so the run doesn't abort early on failures and all tests execute:
 ```
 maxFailures: 0,
 ```
 
-### Schritt 2: Testdatei bestimmen
-Wurde ein Pfad als Argument übergeben? Wenn nicht, frage den Nutzer:
-> „Welche Testdatei soll ausgeführt und repariert werden?"
+### Step 2: Determine the test file
+Was a path passed as an argument? If not, ask the user:
+> "Which test file should be executed and fixed?"
 
-### Schritt 3: Test ausführen
-Führe den Test mit dem folgenden Befehl aus:
+### Step 3: Run the test
+Run the test with the following command:
 
 ```bash
-npx playwright test <testdatei> --reporter=list
+npx playwright test <test-file> --reporter=list
 ```
 
-Bei einem einzelnen Test-Case (`test.only` oder per Titelfilter):
+For a single test case (`test.only` or via title filter):
 ```bash
-npx playwright test <testdatei> --reporter=list -g "<Testname>"
+npx playwright test <test-file> --reporter=list -g "<test name>"
 ```
 
-**Wichtig — Timeout:** Wenn der Test über einen Subagent (`execution_subagent`) ausgeführt wird, setze den Timeout explizit auf **mindestens 600000 ms (10 min)**. Global setup/teardown plus ein einzelner Test brauchen leicht 2–3 Minuten; der Subagent-Default von 120 s bricht sonst mitten im Lauf ab und die Fehlerdetails gehen verloren.
+**Important — timeout:** When the test is run via a subagent (`execution_subagent`), explicitly set the timeout to **at least 600000 ms (10 min)**. Global setup/teardown plus a single test can easily take 2–3 minutes; the subagent default of 120 s would otherwise abort mid-run and the error details would be lost.
 
-### Schritt 4: Ergebnis auswerten
+### Step 4: Evaluate the result
 
-**Erfolgreich (Exit Code 0):**
-→ Weiter mit Schritt 8 (maxFailures wiederherstellen). Melde dem Nutzer: Test läuft grün. Beschreibe kurz, was geändert wurde (falls Fixes gemacht wurden).
+**Success (exit code 0):**
+→ Continue with step 8 (restore maxFailures). Tell the user: test is green. Briefly describe what changed (if fixes were made).
 
-**Fehlgeschlagen:**
-→ Weiter mit Schritt 5.
+**Failed:**
+→ Continue with step 5.
 
-### Schritt 5: Fehler analysieren
-- Lese die vollständige Fehlerausgabe aus dem Terminal.
-- **Lese immer zuerst die Fehler-Artefakte unter `test-results/<test-ordner>/`:**
-  - `error-context.md` (Page-Snapshot zum Fehlerzeitpunkt — zeigt den tatsächlichen DOM-State)
-  - `test-failed-1.png` (Screenshot — via `view_image` öffnen, um den UI-State zu sehen)
-  Diese geben oft schneller Aufschluss als der reine Stack-Trace, ob z.B. eine Aktion gar nicht im DOM ankam oder ein erwarteter Text leicht abweicht.
-- Identifiziere: Fehlermeldung, Stack-Trace, betroffene Datei und Zeile.
-- Lese die betroffene Datei, um den Kontext zu verstehen.
-- Klassifiziere den Fehler:
+### Step 5: Analyze the error
+- Read the full error output from the terminal.
+- **Always read the failure artifacts under `test-results/<test-folder>/` first:**
+  - `error-context.md` (page snapshot at the time of failure — shows the actual DOM state)
+  - `test-failed-1.png` (screenshot — open via `view_image` to see the UI state)
+  These often clarify faster than the raw stack trace whether, e.g., an action never reached the DOM or an expected text is slightly off.
+- Identify: error message, stack trace, affected file and line.
+- Read the affected file to understand the context.
+- Classify the error:
 
-| Fehlertyp | Typische Ursache | Fix-Strategie |
+| Error type | Typical cause | Fix strategy |
 |-----------|------------------|---------------|
-| `TimeoutError` / `locator.waitFor` | Locator falsch, `data-testid` geändert, fehlende `await` | Locator korrigieren, `await` ergänzen |
-| `expect(...).toHaveText` fehlgeschlagen | Text im UI geändert, falscher Locator | Erwartungstext im Spec anpassen |
-| TypeScript-Kompilierfehler | Falsche Typen, fehlende Imports | Typen/Imports korrigieren |
-| `Cannot find element` | Seite lädt nicht, falscher URL/Pfad | Navigation prüfen |
-| `Error: page.goto` | `baseURL` oder Routing-Problem | URL/Route prüfen |
-| `toBeChecked()` schlägt nach Wrapper-`click()` fehl | Vuetify Radio/Checkbox: Klick auf `[data-testid]` trifft nur das Label-Wrapper, nicht den Input | `.locator('input').click()` oder `.check({ force: true })` direkt auf dem Input |
-| `toContainText` mit ähnlicher, aber umgestellter Zeichenkette | UI-Wortlaut weicht von hardcodiertem Erwartungstext im Spec ab | Erwartungstext im **Spec** an UI angleichen — nicht umgekehrt |
-| `TimeoutError` auf Close-Button nach vorherigem Dialog-Close | Übergeordneter Dialog schließt sich automatisch bei Bestätigung eines Unterdialogs (Vuetify Modal-Stack) | Close-Aufruf entfernen; ggf. mit `waitFor({ state: 'hidden' })` verifizieren, dass der Dialog bereits weg ist |
+| `TimeoutError` / `locator.waitFor` | Wrong locator, `data-testid` changed, missing `await` | Fix the locator, add the missing `await` |
+| `expect(...).toHaveText` failed | Text changed in the UI, wrong locator | Adjust the expected text in the spec |
+| TypeScript compile error | Wrong types, missing imports | Fix types/imports |
+| `Cannot find element` | Page not loading, wrong URL/path | Check navigation |
+| `Error: page.goto` | `baseURL` or routing problem | Check URL/route |
+| `toBeChecked()` fails after wrapper `click()` | Vuetify radio/checkbox: clicking `[data-testid]` only hits the label wrapper, not the input | Use `.locator('input').click()` or `.check({ force: true })` directly on the input |
+| `toContainText` with a similar but reordered string | UI wording deviates from the hardcoded expected text in the spec | Align the expected text in the **spec** with the UI — not the other way around |
+| `TimeoutError` on a close button after a previous dialog close | The parent dialog closes automatically when confirming a sub-dialog (Vuetify modal stack) | Remove the close call; optionally verify with `waitFor({ state: 'hidden' })` that the dialog is already gone |
 
-### Schritt 6: Fix implementieren
-- Behebe ausschließlich den identifizierten Fehler — keine spekulativen oder unrequested Änderungen.
-- Typische Fixes:
-  - Locator korrigieren (`getByTestId`, `getByRole`, `getByText`)
-  - Fehlende `await` ergänzen
-  - Erwarteten Text aktualisieren
-  - Import hinzufügen
+### Step 6: Implement the fix
+- Fix only the identified error — no speculative or unrequested changes.
+- Typical fixes:
+  - Correct the locator (`getByTestId`, `getByRole`, `getByText`)
+  - Add a missing `await`
+  - Update the expected text
+  - Add an import
 
-### Schritt 7: Zurück zu Schritt 3
-Führe den Test erneut aus. Wiederhole den Zyklus.
+### Step 7: Back to step 3
+Run the test again. Repeat the cycle.
 
-### Schritt 8: maxFailures wiederherstellen
-Wenn alle Tests grün sind, setze in `playwright.config.ts` den Wert `maxFailures` wieder auf `2` zurück:
+### Step 8: Restore maxFailures
+Once all tests are green, reset `maxFailures` back to `2` in `playwright.config.ts`:
 ```
 maxFailures: 2,
 ```
-Dies stellt sicher, dass die ursprüngliche Konfiguration erhalten bleibt und nur während der Fehlerbehebung deaktiviert war.
+This ensures the original configuration is preserved and was only disabled during the fix cycle.
 
 ---
 
-## Abbruchbedingungen
+## Termination Conditions
 
-| Bedingung | Aktion |
+| Condition | Action |
 |-----------|--------|
-| Test grün | maxFailures auf 2 zurücksetzen (Schritt 8), Erfolg melden, Summary der Änderungen |
-| 5 Iterationen ohne Fortschritt | Anhalten, Fehlerbild beschreiben, Nutzer um Entscheidung bitten |
-| Infrastruktur-Fehler (Backend, Env) | Sofort stoppen, Nutzer informieren |
-| Fehler in generiertem API-Code (`base/api/generated/`) | Nicht manuell fixen — `npm run generate-api` empfehlen |
+| Test green | Reset maxFailures to 2 (step 8), report success, summarize changes |
+| 5 iterations without progress | Stop, describe the failure pattern, ask the user for a decision |
+| Infrastructure error (backend, env) | Stop immediately, inform the user |
+| Error in generated API code (`base/api/generated/`) | Don't fix manually — recommend `npm run generate-api` |
 
 ---
 
-## Projekt-Kontext
+## Project Context
 
-- **Test-Framework:** Playwright mit TypeScript
-- **Testverzeichnis:** `tests/`
-- **Page-Objects:** `pages/`
-- **Playwright-Config:** `playwright.config.ts`
-- **Befehl für Typ-Prüfung:** `npm run type-check`
-- **Locator-Konvention:** bevorzugt `getByTestId('<data-testid>')` aus dem DOM
-- **Timeout (global):** 90 Sekunden pro Test, 10 Sekunden für `expect`
+- **Test framework:** Playwright with TypeScript
+- **Test directory:** `tests/`
+- **Page objects:** `pages/`
+- **Playwright config:** `playwright.config.ts`
+- **Type-check command:** `npm run type-check`
+- **Locator convention:** prefer `getByTestId('<data-testid>')` from the DOM
+- **Timeout (global):** 90 seconds per test, 10 seconds for `expect`

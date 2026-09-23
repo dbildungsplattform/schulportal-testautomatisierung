@@ -1,6 +1,6 @@
 ---
 name: extend-service-provider-tests
-description: "Extends the ServiceProvider visibility test with a new provider for a RollenArt. Use when adding a service provider to ServiceProviderAufStartseite.spec.ts, updating its fixture data, and registering the provider constant in base/sp.ts."
+description: "Extends the ServiceProvider visibility test with a new provider for a RollenArt. Use when adding a service provider to ServiceProviderAufStartseite.spec.ts, updating its fixture data, and registering the provider constant in base/sp.ts. Do not use when the request changes application UI/behavior, targets a different test file, or needs multi-role visibility."
 argument-hint: "Provider display name, camelCase constant name, and target RollenArt"
 ---
 
@@ -8,17 +8,10 @@ argument-hint: "Provider display name, camelCase constant name, and target Rolle
 
 Adds one ServiceProvider to the start-page visibility coverage for exactly one `RollenArt`.
 
-## Use When
-
-- A new ServiceProvider must be covered by `tests/start/ServiceProviderAufStartseite.spec.ts`.
-- The provider must be visible for one role and hidden for all other roles covered by the fixture.
-- The related constant, fixture data, and complete provider list must be updated together.
-
-## Do Not Use When
-
-- The request changes the application UI or ServiceProvider behavior.
-- A different test file owns the requested visibility behavior.
-- The provider should be available for multiple roles; clarify the intended scope first.
+## Do Not Use When / See Also
+- The request changes the application UI or ServiceProvider behavior
+- A different test file owns the requested visibility behavior
+- The provider should be available for multiple roles; clarify the intended scope first
 
 ## Required Inputs
 

@@ -1,164 +1,162 @@
 ---
 name: extend-page-object
-description: 'Erweitert eine bestehende Playwright Page-Object-Klasse um neue Locators und Methoden für eine Admin-Seite im Schulportal. Liest die Bestandsdatei, inspiziert die Zielseite per Playwright MCP als Landesadmin und fügt neue Elemente korrekt und konfliktfrei ein. Use when asked to extend, update, or add methods to an existing page object class in the schulportal test automation project.'
+description: 'Extends an existing Playwright page-object class with new locators and methods for an admin page in the Schulportal. Reads the existing file, inspects the target page live via Playwright MCP as Landesadmin, and adds new elements correctly and without conflicts. Use when asked to extend, update, or add methods to an existing page object class. Do not use for creating a brand-new page class (use create-page-object).'
 ---
 
 # Extend Page Object
 
-Dieser Skill erweitert eine bestehende Playwright Page-Object-Klasse um neue Locators und Methoden. Er analysiert zunächst die Bestandsdatei, inspiziert dann die Zielseite live per Playwright MCP und ergänzt anschließend die TypeScript-Klasse nach den Projektkonventionen — ohne bestehenden Code zu verändern.
+Extends an existing Playwright page-object class with new locators and methods. First analyzes the existing file, then inspects the target page live via Playwright MCP, then adds to the TypeScript class per project conventions — without changing existing code.
 
-## Use When
-- Eine bestehende Page-Klasse um neue Methoden oder Locators erweitert werden soll
-- Neue UI-Elemente in eine vorhandene Page eingebunden werden sollen
-- Die `data-testid`-Attribute neuer Elemente unbekannt sind und per MCP ermittelt werden müssen
-
-## Do Not Use When
-- Eine komplett neue Page-Klasse erstellt werden soll → verwende stattdessen [`create-page-object`](../create-page-object/SKILL.md)
-- Kein Login-Zugang zur Zielseite vorhanden ist
+## Do Not Use When / See Also
+- A completely new page class should be created → use [`create-page-object`](../create-page-object/SKILL.md) instead
+- No login access to the target page is available
 
 ---
 
-## Projektkonventionen
+## Project Conventions
 
-Vollständige Konventionen: [docs/best-practices.md](../../../docs/best-practices.md)
+Full conventions: [docs/best-practices.md](../../../docs/best-practices.md)
 
-### Blockreihenfolge in einer Page-Klasse
+### Block Order in a Page Class
 ```
-1. Felder (private readonly Locators, Hilfsklassen)
+1. Fields (private readonly locators, helper classes)
 2. constructor
-3. /* actions */   ← read- und edit-Methoden, waitForPageLoad()
-4. /* assertions */ ← Methoden mit assert-Präfix
+3. /* actions */   ← read and edit methods, waitForPageLoad()
+4. /* assertions */ ← methods with assert prefix
 ```
 
-### Reviewer-Hardening (verpflichtend)
+### Reviewer Hardening (mandatory)
 
-- **Reuse vor Neuimplementierung:** Vor neuen Methoden zuerst in der Zieldatei und in benachbarten Pages nach bestehender Logik suchen (`complete*`, `navigate*`, `setup*`, `assert*`).
-- **Locator-Deduplizierung:** Wenn ein Locator-Pattern in derselben Page mehrfach vorkommt, als private Helper-Methode oder Feld kapseln.
-- **Kein Dead-Code:** Neu hinzugefügte öffentliche Methoden müssen aufrufbar genutzt werden (Spec/Page) oder wieder entfernt werden.
-- **Minimal-invasive Erweiterung:** Bestehende Methoden nur erweitern/parametrisieren, wenn dadurch Duplikation reduziert wird; keine parallelen Doppel-Implementierungen.
+> This is the canonical version of this checklist. `create-playwright-test` and
+> `playwright-test-workflow` link back here instead of repeating it in full.
+
+- **Reuse before reimplementing:** Before writing new methods, search the target file and neighboring pages for existing logic (`complete*`, `navigate*`, `setup*`, `assert*`).
+- **Locator deduplication:** If a locator pattern occurs multiple times in the same page, encapsulate it as a private helper method or field.
+- **No dead code:** Newly added public methods must actually be called (spec/page) or be removed again.
+- **Minimally invasive extension:** Only extend/parameterize existing methods when this reduces duplication; no parallel duplicate implementations.
 
 ---
 
 ## Workflow
 
-### Phase 1 — Eingaben sammeln
+### Phase 1 — Collect Inputs
 
-Folgende Informationen sind erforderlich, bevor mit der Implementierung begonnen wird:
+The following information is required before implementation begins:
 
-| Information | Pflicht | Quelle |
+| Information | Required | Source |
 |-------------|---------|--------|
-| Zieldatei (Pfad zur `.page.ts`-Datei) | ✅ | Benutzer |
-| Was soll hinzugefügt werden? (Beschreibung neuer Aktionen / Assertions) | ✅ | Benutzer |
-| URL der Zielseite | ✅ | Benutzer |
-| Login-Credentials oder Test-User | ✅ | Benutzer / `global-setup.ts` |
+| Target file (path to the `.page.ts` file) | ✅ | User |
+| What should be added? (description of new actions / assertions) | ✅ | User |
+| URL of the target page | ✅ | User |
+| Login credentials or test user | ✅ | User / `global-setup.ts` |
 
-> **Warte auf alle Pflicht-Informationen, bevor du mit Phase 2 beginnst.**
+> **Wait for all required information before starting Phase 2.**
 
 ---
 
-### Phase 2 — Bestandsanalyse der Zieldatei
+### Phase 2 — Analyze the Existing File
 
-Lese die angegebene Datei vollständig ein und erstelle eine strukturierte Übersicht:
+Read the specified file in full and create a structured overview:
 
-#### 2.1 — Klassentyp ermitteln
-| Klassendeklaration | Typ |
+#### 2.1 — Determine class type
+| Class declaration | Type |
 |--------------------|-----|
 | `export class XPage extends AbstractAdminPage` | extends AbstractAdminPage |
 | `export class XPage` | Standalone |
 
-#### 2.2 — Bestehende Felder inventarisieren
-Liste alle `private readonly`- und `public readonly`-Felder auf. Diese **dürfen nicht** durch neue Felder mit demselben Namen überschrieben werden.
+#### 2.2 — Inventory existing fields
+List all `private readonly` and `public readonly` fields. These **must not** be overwritten by new fields with the same name.
 
-#### 2.3 — Bestehende Methoden inventarisieren
-Liste alle `public` und `private`-Methoden auf. Keine Methodennamen doppelt verwenden.
+#### 2.3 — Inventory existing methods
+List all `public` and `private` methods. Never reuse a method name.
 
-Zusätzlich prüfen:
-- Gibt es bereits eine Methode, die den gewünschten Flow ganz oder teilweise abdeckt?
-- Kann die bestehende Methode mit optionalen Parametern erweitert werden statt eine neue, ähnliche Methode einzuführen?
+Also check:
+- Does a method already exist that fully or partially covers the desired flow?
+- Can the existing method be extended with optional parameters instead of introducing a new, similar method?
 
-#### 2.4 — Bestehende Imports inventarisieren
-Liste alle aktuellen Imports auf, damit nur wirklich fehlende hinzugefügt werden.
+#### 2.4 — Inventory existing imports
+List all current imports so only genuinely missing ones get added.
 
-#### 2.5 — Wiederholte Locator-Patterns identifizieren
-Suche nach bereits vorhandenen Locator-Patterns, die durch die neuen Anforderungen erneut verwendet würden.
+#### 2.5 — Identify repeated locator patterns
+Look for locator patterns that would be reused by the new requirements.
 
-- Bei 2x+ Nutzung desselben Patterns: über gemeinsames Feld oder private Helper-Methode kapseln.
-- Keine mehrfachen Inline-Varianten desselben Selektors in verschiedenen Methoden einführen.
+- If the same pattern is used 2+ times: encapsulate via a shared field or private helper method.
+- Don't introduce multiple inline variants of the same selector across different methods.
 
-**Erwartetes Ergebnis:** Vollständige Liste der vorhandenen Felder, Methoden und Imports als Grundlage für den Konfliktcheck.
-
----
-
-### Phase 3 — MCP-Inspektion der Zielseite
-
-Inspiziere die Zielseite immer als **Landesadmin** — dieser sieht alle UI-Elemente unabhängig von Systemrechten.
-
-1. **Browser öffnen** — Zur Login-Seite der Anwendung navigieren
-2. **Einloggen** — Login-Workflow durchführen (Credentials aus `global-setup.ts` oder vom Benutzer)
-3. **Zur Zielseite navigieren** — Die vom Benutzer angegebene URL aufrufen
-4. **Snapshot erstellen** — `browser_snapshot` ausführen
-5. **Neue `data-testid`-Attribute dokumentieren** — Nur Elemente, die für die gewünschte neue Funktionalität relevant sind und **noch nicht** in der Klasse vorhanden sind:
-   - Buttons (neue Aktionen)
-   - Formularfelder
-   - Dialoge / Modals
-   - Tabellen, Dropdowns, Autocomplete-Felder
-6. **Interaktionstyp bestimmen** — Für jedes neue Element: lesend, editierbar oder Aktion auslösend?
-
-**Erwartetes Ergebnis:** Liste aller neuen `data-testid`-Werte mit Bedeutung und Interaktionstyp.
+**Expected result:** Complete list of existing fields, methods, and imports as the basis for the conflict check.
 
 ---
 
-### Phase 4 — Implementierung
+### Phase 3 — MCP Inspection of the Target Page
 
-Ergänze die bestehende Datei gezielt. Ändere **niemals** vorhandene Zeilen — nur Ergänzungen.
+Always inspect the target page as **Landesadmin** — this role sees all UI elements regardless of system permissions.
 
-#### 4.1 — Imports ergänzen
-Nur hinzufügen, was tatsächlich neu benötigt wird und noch nicht importiert ist:
-- `Page`, `Locator`, `expect` aus `@playwright/test`
-- Hilfsklassen (`DataTable`, `Autocomplete`, `SearchFilter` etc.) nur wenn neu genutzt
+1. **Open browser** — Navigate to the application's login page
+2. **Log in** — Perform the login workflow (credentials from `global-setup.ts` or from the user)
+3. **Navigate to the target page** — Open the URL specified by the user
+4. **Create snapshot** — Run `browser_snapshot`
+5. **Document new `data-testid` attributes** — Only elements relevant to the desired new functionality that are **not yet** present in the class:
+   - Buttons (new actions)
+   - Form fields
+   - Dialogs / modals
+   - Tables, dropdowns, autocomplete fields
+6. **Determine interaction type** — For each new element: read-only, editable, or action-triggering?
 
-#### 4.2 — Neue Felder im Konstruktor ergänzen
-Nur wenn ein Locator in **mehreren** neuen Methoden genutzt wird:
+**Expected result:** List of all new `data-testid` values with meaning and interaction type.
+
+---
+
+### Phase 4 — Implementation
+
+Extend the existing file precisely. **Never** change existing lines — additions only.
+
+#### 4.1 — Add imports
+Only add what is genuinely newly needed and not yet imported:
+- `Page`, `Locator`, `expect` from `@playwright/test`
+- Helper classes (`DataTable`, `Autocomplete`, `SearchFilter`, etc.) only if newly used
+
+#### 4.2 — Add new fields in the constructor
+Only when a locator is used in **multiple** new methods:
 ```ts
 private readonly neuerButton: Locator;
-// ...im constructor:
+// ...in the constructor:
 this.neuerButton = this.page.getByTestId('neuer-button-test-id');
 ```
-Bei Autocomplete oder DataTable entsprechend:
+Similarly for autocomplete or DataTable:
 ```ts
 private readonly neueAutocomplete: Autocomplete;
-// ...im constructor:
+// ...in the constructor:
 this.neueAutocomplete = new Autocomplete(this.page, this.page.getByTestId('neue-autocomplete-test-id'));
 ```
 
-#### 4.3 — Neue Methoden einfügen
+#### 4.3 — Insert new methods
 
-**Im `/* actions */`-Block** — neue Aktionsmethoden:
+**In the `/* actions */` block** — new action methods:
 ```ts
 public async neueAktion(param: string): Promise<void> {
-  // Locator methoden-lokal wenn nur hier genutzt
+  // locator kept method-local when only used here
   const locator: Locator = this.page.getByTestId('element-test-id');
   await locator.click();
 }
 ```
 
-**Im `/* assertions */`-Block** — neue Assertion-Methoden (`assert`-Präfix):
+**In the `/* assertions */` block** — new assertion methods (`assert` prefix):
 ```ts
 public async assertNeuesElementSichtbar(): Promise<void> {
   await expect(this.page.getByTestId('element-test-id')).toBeVisible();
 }
 ```
 
-**Best Practices für Assertions:**
+**Best practices for assertions:**
 ```ts
-// Web-first Assertions bevorzugen
+// Prefer web-first assertions
 await expect(locator).toBeVisible();           // ✅
 await locator.waitFor(); expect(true).toBe(true); // ❌
 
-// expect.soft() für nicht-kritische Mehrfachprüfungen
+// expect.soft() for non-critical multi-checks
 await expect.soft(locator).toHaveText('...');
 
-// Zusammengehörige Assertions in einer Methode bündeln
+// Bundle related assertions into one method
 public async assertDialogInhalte(): Promise<void> {
   await expect.soft(this.headline).toBeVisible();
   await expect.soft(this.saveButton).toBeEnabled();
@@ -167,32 +165,32 @@ public async assertDialogInhalte(): Promise<void> {
 
 ---
 
-### Phase 5 — Validierung
+### Phase 5 — Validation
 
-1. **TypeScript-Kompilierung prüfen:**
+1. **Check TypeScript compilation:**
    ```bash
    npx tsc --noEmit
    ```
-2. **Lint auf betroffene Datei ausführen:**
+2. **Run lint on the affected file:**
   ```bash
-  npx eslint <zieldatei>
+  npx eslint <target-file>
   ```
-3. **Import-Pfade verifizieren** — Relative Pfade müssen korrekt sein
-4. **Konfliktcheck wiederholen** — Kein bestehender Code darf verändert worden sein
-5. **Reviewer-Quick-Checks:**
-  - Keine neu eingeführte, ungenutzte öffentliche Methode
-  - Keine unnötig duplizierten Locator-Strings
-  - Bei ähnlicher vorhandener Logik: begründet erweitert/parametrisiert statt dupliziert
+3. **Verify import paths** — Relative paths must be correct
+4. **Repeat the conflict check** — No existing code may have been changed
+5. **Reviewer quick checks:**
+  - No newly introduced, unused public method
+  - No unnecessarily duplicated locator strings
+  - Similar existing logic was extended/parameterized with justification instead of duplicated
 
 ---
 
-## Referenz-Beispiel
+## Reference Example
 
-### Ausgangslage: PersonManagementViewPage
+### Starting point: PersonManagementViewPage
 
-Die Datei [pages/admin/personen/PersonManagementView.page.ts](../../../pages/admin/personen/PersonManagementView.page.ts) ist ein gutes Referenz-Beispiel für eine komplexe Page-Klasse mit `extends AbstractAdminPage`, mehreren Hilfsklassen und beiden Methodenblöcken.
+The file [pages/admin/personen/PersonManagementView.page.ts](../../../pages/admin/personen/PersonManagementView.page.ts) is a good reference example for a complex page class with `extends AbstractAdminPage`, several helper classes, and both method blocks.
 
-**Bestehende Felder (Auszug):**
+**Existing fields (excerpt):**
 ```ts
 private readonly personTable: DataTable;
 private readonly organisationAutocomplete: Autocomplete;
@@ -201,29 +199,29 @@ private readonly schuelerVersetzenDialogCard: Locator;
 public readonly menu: MenuBarPage;
 ```
 
-**Beispiel: Neues Feld + Methode korrekt ergänzen**
+**Example: correctly adding a new field + method**
 
-Ausgangslage — Konstruktor endet mit:
+Starting point — constructor ends with:
 ```ts
     this.passwortZuruecksetzenDialogCard = this.page.getByTestId('password-reset-layout-card');
   }
 ```
 
-Erweiterung — neues Feld im Konstruktor:
+Extension — new field in the constructor:
 ```ts
     this.passwortZuruecksetzenDialogCard = this.page.getByTestId('password-reset-layout-card');
-    this.lockUserDialogCard = this.page.getByTestId('lock-user-layout-card');  // NEU
+    this.lockUserDialogCard = this.page.getByTestId('lock-user-layout-card');  // NEW
   }
 ```
 
-Neue Methode im `/* actions */`-Block am Ende des Blocks:
+New method in the `/* actions */` block at the end of the block:
 ```ts
   public async lockUser(): Promise<void> {
     await this.lockUserDialogCard.getByTestId('lock-user-submit-button').click();
   }
 ```
 
-Neue Assertion im `/* assertions */`-Block:
+New assertion in the `/* assertions */` block:
 ```ts
   public async assertLockDialogVisible(): Promise<void> {
     await expect(this.lockUserDialogCard).toBeVisible();
@@ -232,56 +230,34 @@ Neue Assertion im `/* assertions */`-Block:
 
 ---
 
-## Weitere Referenz-Dateien im Projekt
+## Other Reference Files in the Project
 
-| Datei | Pattern |
+| File | Pattern |
 |-------|---------|
-| [pages/admin/rollen/RolleDetailsView.page.ts](../../../pages/admin/rollen/RolleDetailsView.page.ts) | Detailseite mit Edit- und Delete-Aktionen |
+| [pages/admin/rollen/RolleDetailsView.page.ts](../../../pages/admin/rollen/RolleDetailsView.page.ts) | Detail page with edit and delete actions |
 | [pages/admin/service-provider/ServiceProviderManagementView.page.ts](../../../pages/admin/service-provider/ServiceProviderManagementView.page.ts) | extends AbstractAdminPage, DataTable |
-| [pages/components/DataTable.page.ts](../../../pages/components/DataTable.page.ts) | Wiederverwendbare DataTable-Komponente |
-| [pages/components/Autocomplete.ts](../../../pages/components/Autocomplete.ts) | Autocomplete-Komponente |
+| [pages/components/DataTable.page.ts](../../../pages/components/DataTable.page.ts) | Reusable DataTable component |
+| [pages/components/Autocomplete.ts](../../../pages/components/Autocomplete.ts) | Autocomplete component |
 
 ---
 
-## Bekannte Vuetify-Pitfalls bei Autocomplete/Dropdown-Interaktionen
+## Known Vuetify Pitfalls with Autocomplete/Dropdown Interactions
 
-### Problem: „Keine Daten gefunden." bei Dropdown-Öffnung
+- **"No data found" on dropdown open:** Vuetify autocomplete fields often load data via API only once the field becomes visible/active; opening the dropdown before the response arrives shows a false empty state. Call `waitUntilLoadingIsDone()` after opening the dropdown, before accessing content.
+- **DOM detachment during `pressSequentially`:** each keystroke can trigger an API search that re-renders the result list, detaching the element between find and click. Use `click({ force: true })` to skip Playwright's stability check (accepted pattern, see `Autocomplete.openModal()`).
+- **Stale overlays:** Vuetify keeps previous overlay elements in the DOM, so a global selector like `.v-overlay .v-list-item` can match already-closed dropdowns. Scope to the active overlay only: `div.v-overlay--active`.
 
-Vuetify-Autocomplete-Felder laden Daten oft erst per API-Call, wenn das Feld sichtbar/aktiv wird. Wenn die Page das Dropdown öffnet, bevor die API-Antwort da ist, zeigt es „Keine Daten gefunden." und `waitForData()` in der `Autocomplete`-Klasse schlägt fehl.
-
-**Lösung:** Nach dem Öffnen des Dropdowns `waitUntilLoadingIsDone()` aufrufen, bevor auf Inhalte zugegriffen wird. Das wartet, bis der Lade-Spinner verschwindet.
-
-### Problem: DOM-Detachment bei `pressSequentially`
-
-`pressSequentially` tippt Zeichen für Zeichen. Jeder Tastendruck kann eine API-Suche triggern, die das DOM der Ergebnisliste neu rendert. Zwischen dem Finden des Elements und dem Klick wird das Element durch ein Re-Render aus dem DOM entfernt → `element was detached from the DOM, retrying` → Timeout.
-
-**Lösung:** `click({ force: true })` verwenden, um Playwright's Stability-Check zu überspringen. Dies ist ein akzeptiertes Pattern im Projekt (siehe `Autocomplete.openModal()`).
-
-### Problem: Stale Overlays – falsches Dropdown wird angesprochen
-
-Vuetify hält vorherige Overlay-Elemente im DOM. Der globale Selektor `.v-overlay .v-list-item` matched auch Items aus bereits geschlossenen Dropdowns (Org, Rolle), die noch unsichtbar im DOM liegen.
-
-**Lösung:** Nur das **aktive** Overlay ansprechen:
+**Robust pattern for Vuetify autocomplete selection:**
 ```ts
-// ❌ Matched alle Overlays (inkl. stale)
-this.page.locator('.v-overlay .v-list-item')
-
-// ✅ Nur das aktive Overlay
-this.page.locator('div.v-overlay--active').getByRole('option')
-```
-
-### Zusammenfassung: Robustes Pattern für Vuetify-Autocomplete-Auswahl
-
-```ts
-// 1. Input klicken und Text tippen (triggert API-Suche)
+// 1. Click input and type text (triggers API search)
 await selectLocator.locator('input').click();
 await selectLocator.locator('input').pressSequentially(suchtext);
 
-// 2. Warten bis Laden abgeschlossen
+// 2. Wait until loading is done
 const autocomplete = new Autocomplete(this.page, selectLocator);
 await autocomplete.waitUntilLoadingIsDone();
 
-// 3. Nur im aktiven Overlay suchen, force-click wegen DOM-Instabilität
+// 3. Only search within the active overlay, force-click due to DOM instability
 const option = this.page.locator('div.v-overlay--active')
   .getByRole('option')
   .filter({ hasText: suchtext });
