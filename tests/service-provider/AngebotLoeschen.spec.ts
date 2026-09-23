@@ -44,6 +44,7 @@ async function createSchulspezifischesAngebot(page: Page, schuleId: string, ange
     merkmale: [
       CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
       CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
     ],
   });
 }
@@ -58,7 +59,10 @@ async function createLandweitesAngebot(page: Page): Promise<string> {
     url: page.url(),
     kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
     requires2fa: false,
-    merkmale: [CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung],
+    merkmale: [
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
+    ],
   });
   return angebotName;
 }
@@ -92,6 +96,7 @@ const test = base.extend<{
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
         CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
       ],
     });
     const managementPage: ServiceProviderManagementViewPage = await personManagementViewPage
