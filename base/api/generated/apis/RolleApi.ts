@@ -16,21 +16,27 @@
 import * as runtime from '../runtime';
 import type {
   ApplyRollenerweiterungBodyParams,
+  ApplyRollenerweiterungChangesBodyParams,
   CreateRolleBodyParams,
   CreateRollenerweiterungBodyParams,
   DbiamApplyRollenerweiterungMultiError,
   DbiamRolleError,
+  RolleControllerFindRollenAvailableForPersonAdministration200Response,
   RolleServiceProviderResponse,
   RolleWithServiceProvidersResponse,
   RollenArt,
+  RollenMerkmal,
   RollenSystemRechtEnum,
   RollenerweiterungResponse,
+  ServiceProviderResponse,
   SystemRechtResponse,
   UpdateRolleBodyParams,
 } from '../models';
 import {
     ApplyRollenerweiterungBodyParamsFromJSON,
     ApplyRollenerweiterungBodyParamsToJSON,
+    ApplyRollenerweiterungChangesBodyParamsFromJSON,
+    ApplyRollenerweiterungChangesBodyParamsToJSON,
     CreateRolleBodyParamsFromJSON,
     CreateRolleBodyParamsToJSON,
     CreateRollenerweiterungBodyParamsFromJSON,
@@ -39,21 +45,33 @@ import {
     DbiamApplyRollenerweiterungMultiErrorToJSON,
     DbiamRolleErrorFromJSON,
     DbiamRolleErrorToJSON,
+    RolleControllerFindRollenAvailableForPersonAdministration200ResponseFromJSON,
+    RolleControllerFindRollenAvailableForPersonAdministration200ResponseToJSON,
     RolleServiceProviderResponseFromJSON,
     RolleServiceProviderResponseToJSON,
     RolleWithServiceProvidersResponseFromJSON,
     RolleWithServiceProvidersResponseToJSON,
     RollenArtFromJSON,
     RollenArtToJSON,
+    RollenMerkmalFromJSON,
+    RollenMerkmalToJSON,
     RollenSystemRechtEnumFromJSON,
     RollenSystemRechtEnumToJSON,
     RollenerweiterungResponseFromJSON,
     RollenerweiterungResponseToJSON,
+    ServiceProviderResponseFromJSON,
+    ServiceProviderResponseToJSON,
     SystemRechtResponseFromJSON,
     SystemRechtResponseToJSON,
     UpdateRolleBodyParamsFromJSON,
     UpdateRolleBodyParamsToJSON,
 } from '../models';
+
+export interface RolleControllerApplyRollenerweiterungChangesForRolleRequest {
+    rolleId: string;
+    organisationId: string;
+    applyRollenerweiterungChangesBodyParams: ApplyRollenerweiterungChangesBodyParams;
+}
 
 export interface RolleControllerCreateRolleRequest {
     createRolleBodyParams: CreateRolleBodyParams;
@@ -75,10 +93,26 @@ export interface RolleControllerFindRollenRequest {
     offset?: number;
     limit?: number;
     searchStr?: string;
-    organisationId?: string;
+    organisationContextForOperation?: string;
+    organisationenForFilter?: Array<string>;
     rolleIds?: Array<string>;
     systemrechte?: Array<RollenSystemRechtEnum>;
     rollenarten?: Array<RollenArt>;
+    merkmale?: Array<RollenMerkmal>;
+    serviceProviderIds?: Array<string>;
+}
+
+export interface RolleControllerFindRollenAvailableForPersonAdministrationRequest {
+    offset?: number;
+    limit?: number;
+    searchStr?: string;
+    organisationIds?: Array<string>;
+    systemrechte?: Array<RollenSystemRechtEnum>;
+}
+
+export interface RolleControllerFindRollenerweiterungenForRolleAndOrgaRequest {
+    rolleId: string;
+    organisationId: string;
 }
 
 export interface RolleControllerGetRolleServiceProviderIdsRequest {
@@ -103,6 +137,24 @@ export interface RollenerweiterungControllerApplyRollenerweiterungChangesRequest
  * @interface RolleApiInterface
  */
 export interface RolleApiInterface {
+    /**
+     * Apply Erweiterte Angebote changes for a rolle.
+     * @summary 
+     * @param {string} rolleId The rolleId of the rolle.
+     * @param {string} organisationId The organisationId of the organisation.
+     * @param {ApplyRollenerweiterungChangesBodyParams} applyRollenerweiterungChangesBodyParams 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RolleApiInterface
+     */
+    rolleControllerApplyRollenerweiterungChangesForRolleRaw(requestParameters: RolleControllerApplyRollenerweiterungChangesForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
+
+    /**
+     * Apply Erweiterte Angebote changes for a rolle.
+     * 
+     */
+    rolleControllerApplyRollenerweiterungChangesForRolle(requestParameters: RolleControllerApplyRollenerweiterungChangesForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
+
     /**
      * Create a new rolle.
      * @summary 
@@ -173,10 +225,13 @@ export interface RolleApiInterface {
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
      * @param {string} [searchStr] The name for the role.
-     * @param {string} [organisationId] The id of the organisation where the role should be available.
+     * @param {string} [organisationContextForOperation] Only relevant when systemrechte contains ROLLEN_ERWEITERN or IMPORT_DURCHFUEHREN. Provides the organisation context for the requested workflow operation. If provided, only roles available for that organisation will be returned. Mutually exclusive with organisationenForFilter.
+     * @param {Array<string>} [organisationenForFilter] Only relevant when systemrechte contains ROLLEN_VERWALTEN or no systemrechte is provided. Filters the result to roles administered by any of the given organisations. Mutually exclusive with organisationContextForOperation.
      * @param {Array<string>} [rolleIds] The ids of the selected Rollen. If provided, these Rollen will be returned regardless of the other filters since they are required by the frontend
-     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both or IMPORT_DURCHFUEHREN.
-     * @param {Array<RollenArt>} [rollenarten] Filter roles by their role types.
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] Determines the authorization context for this request. Use ROLLEN_VERWALTEN (default) with organisationIdsForFilter for general role administration. Use ROLLEN_ERWEITERN or IMPORT_DURCHFUEHREN with organisationIdContextForOperation for workflow-specific role lookups. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both, or IMPORT_DURCHFUEHREN.
+     * @param {Array<RollenArt>} [rollenarten] Filter roles by rollenart.
+     * @param {Array<RollenMerkmal>} [merkmale] Filter roles by merkmal.
+     * @param {Array<string>} [serviceProviderIds] Filter roles by service provider ids.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof RolleApiInterface
@@ -188,6 +243,43 @@ export interface RolleApiInterface {
      * 
      */
     rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>>;
+
+    /**
+     * List rollen available for person administration.
+     * @summary 
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {string} [searchStr] The name for the role.
+     * @param {Array<string>} [organisationIds] OrganisationIds to filter rollen.
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be PERSONEN_VERWALTEN and optionally MPT_ROLLEN_ZUORDNEN.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RolleApiInterface
+     */
+    rolleControllerFindRollenAvailableForPersonAdministrationRaw(requestParameters: RolleControllerFindRollenAvailableForPersonAdministrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollenAvailableForPersonAdministration200Response>>;
+
+    /**
+     * List rollen available for person administration.
+     * 
+     */
+    rolleControllerFindRollenAvailableForPersonAdministration(requestParameters: RolleControllerFindRollenAvailableForPersonAdministrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollenAvailableForPersonAdministration200Response>;
+
+    /**
+     * Get Erweiterte Angebote for a rolle.
+     * @summary 
+     * @param {string} rolleId The id for the rolle.
+     * @param {string} organisationId The id of the organisation where the role should be available.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RolleApiInterface
+     */
+    rolleControllerFindRollenerweiterungenForRolleAndOrgaRaw(requestParameters: RolleControllerFindRollenerweiterungenForRolleAndOrgaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
+
+    /**
+     * Get Erweiterte Angebote for a rolle.
+     * 
+     */
+    rolleControllerFindRollenerweiterungenForRolleAndOrga(requestParameters: RolleControllerFindRollenerweiterungenForRolleAndOrgaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
 
     /**
      * Get all systemrechte for rollen.
@@ -261,6 +353,62 @@ export interface RolleApiInterface {
  * 
  */
 export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
+
+    /**
+     * Apply Erweiterte Angebote changes for a rolle.
+     * 
+     */
+    async rolleControllerApplyRollenerweiterungChangesForRolleRaw(requestParameters: RolleControllerApplyRollenerweiterungChangesForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+        if (requestParameters.rolleId === null || requestParameters.rolleId === undefined) {
+            throw new runtime.RequiredError('rolleId','Required parameter requestParameters.rolleId was null or undefined when calling rolleControllerApplyRollenerweiterungChangesForRolle.');
+        }
+
+        if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
+            throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling rolleControllerApplyRollenerweiterungChangesForRolle.');
+        }
+
+        if (requestParameters.applyRollenerweiterungChangesBodyParams === null || requestParameters.applyRollenerweiterungChangesBodyParams === undefined) {
+            throw new runtime.RequiredError('applyRollenerweiterungChangesBodyParams','Required parameter requestParameters.applyRollenerweiterungChangesBodyParams was null or undefined when calling rolleControllerApplyRollenerweiterungChangesForRolle.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/rolle/{rolleId}/organisation/{organisationId}/apply`.replace(`{${"rolleId"}}`, encodeURIComponent(String(requestParameters.rolleId))).replace(`{${"organisationId"}}`, encodeURIComponent(String(requestParameters.organisationId))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: ApplyRollenerweiterungChangesBodyParamsToJSON(requestParameters.applyRollenerweiterungChangesBodyParams),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ServiceProviderResponseFromJSON));
+    }
+
+    /**
+     * Apply Erweiterte Angebote changes for a rolle.
+     * 
+     */
+    async rolleControllerApplyRollenerweiterungChangesForRolle(requestParameters: RolleControllerApplyRollenerweiterungChangesForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
+        const response = await this.rolleControllerApplyRollenerweiterungChangesForRolleRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Create a new rolle.
@@ -466,8 +614,12 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             queryParameters['searchStr'] = requestParameters.searchStr;
         }
 
-        if (requestParameters.organisationId !== undefined) {
-            queryParameters['organisationId'] = requestParameters.organisationId;
+        if (requestParameters.organisationContextForOperation !== undefined) {
+            queryParameters['organisationContextForOperation'] = requestParameters.organisationContextForOperation;
+        }
+
+        if (requestParameters.organisationenForFilter) {
+            queryParameters['organisationenForFilter'] = requestParameters.organisationenForFilter;
         }
 
         if (requestParameters.rolleIds) {
@@ -480,6 +632,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
 
         if (requestParameters.rollenarten) {
             queryParameters['rollenarten'] = requestParameters.rollenarten;
+        }
+
+        if (requestParameters.merkmale) {
+            queryParameters['merkmale'] = requestParameters.merkmale;
+        }
+
+        if (requestParameters.serviceProviderIds) {
+            queryParameters['serviceProviderIds'] = requestParameters.serviceProviderIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -513,6 +673,120 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      */
     async rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>> {
         const response = await this.rolleControllerFindRollenRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * List rollen available for person administration.
+     * 
+     */
+    async rolleControllerFindRollenAvailableForPersonAdministrationRaw(requestParameters: RolleControllerFindRollenAvailableForPersonAdministrationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollenAvailableForPersonAdministration200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.searchStr !== undefined) {
+            queryParameters['searchStr'] = requestParameters.searchStr;
+        }
+
+        if (requestParameters.organisationIds) {
+            queryParameters['organisationIds'] = requestParameters.organisationIds;
+        }
+
+        if (requestParameters.systemrechte) {
+            queryParameters['systemrechte'] = requestParameters.systemrechte;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/rolle/for-person-administration`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollenAvailableForPersonAdministration200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * List rollen available for person administration.
+     * 
+     */
+    async rolleControllerFindRollenAvailableForPersonAdministration(requestParameters: RolleControllerFindRollenAvailableForPersonAdministrationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollenAvailableForPersonAdministration200Response> {
+        const response = await this.rolleControllerFindRollenAvailableForPersonAdministrationRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get Erweiterte Angebote for a rolle.
+     * 
+     */
+    async rolleControllerFindRollenerweiterungenForRolleAndOrgaRaw(requestParameters: RolleControllerFindRollenerweiterungenForRolleAndOrgaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+        if (requestParameters.rolleId === null || requestParameters.rolleId === undefined) {
+            throw new runtime.RequiredError('rolleId','Required parameter requestParameters.rolleId was null or undefined when calling rolleControllerFindRollenerweiterungenForRolleAndOrga.');
+        }
+
+        if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
+            throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling rolleControllerFindRollenerweiterungenForRolleAndOrga.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.organisationId !== undefined) {
+            queryParameters['organisationId'] = requestParameters.organisationId;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/rolle/{rolleId}/angebote-via-rollenerweiterungen`.replace(`{${"rolleId"}}`, encodeURIComponent(String(requestParameters.rolleId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ServiceProviderResponseFromJSON));
+    }
+
+    /**
+     * Get Erweiterte Angebote for a rolle.
+     * 
+     */
+    async rolleControllerFindRollenerweiterungenForRolleAndOrga(requestParameters: RolleControllerFindRollenerweiterungenForRolleAndOrgaRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
+        const response = await this.rolleControllerFindRollenerweiterungenForRolleAndOrgaRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

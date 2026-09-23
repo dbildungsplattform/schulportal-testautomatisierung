@@ -10,18 +10,19 @@ import {
   createPersonWithPersonenkontext,
   UserInfo,
 } from '../../base/api/personApi';
-import {
-  constructRolleApi,
-  createRolle,
-  RollenArt,
-} from '../../base/api/rolleApi';
+import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../base/api/rolleApi';
 import { constructProviderApi, createServiceProvider, deleteServiceProvider } from '../../base/api/serviceProviderApi';
 import { test } from '../../base/fixtures';
 import { testschuleName } from '../../base/organisation';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
-import { DEV } from '../../base/tags';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
-import { generateAngebotname, generateKlassenname, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
+import {
+  generateAngebotname,
+  generateKlassenname,
+  generateRolleName,
+  generateSchulname,
+} from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { ServiceProviderDetailsBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsBySchuleView.page';
 import { ServiceProviderManagementBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderManagementBySchuleView.page';
@@ -67,23 +68,14 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     const loginPage = await landingPage.navigateToLogin();
     const startViewPage = await loginPage.loginNewUserWithPasswordChange(user.username, user.password);
     const schuladminPersonManagementViewPage: PersonManagementViewPage = await startViewPage.navigateToAdministration();
-    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotSchulspezifisch();
+    return schuladminPersonManagementViewPage.getMenu().navigateToAngebotManagementSchulspezifisch();
   }
 
-  async function attachSecondSchuleToSchuladmin(
-    page: Page,
-    user: UserInfo,
-    ersteSchuleId: string,
-  ): Promise<void> {
+  async function attachSecondSchuleToSchuladmin(page: Page, user: UserInfo, ersteSchuleId: string): Promise<void> {
     const zweiteSchuleName: string = generateSchulname();
     const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName);
 
-    await addOrganisationenToPerson(
-      page,
-      user.personId,
-      [ersteSchuleId, zweiteSchuleId],
-      user.rolleId,
-    );
+    await addOrganisationenToPerson(page, user.personId, [ersteSchuleId, zweiteSchuleId], user.rolleId);
   }
 
   async function getServiceProviderManagementPage(
@@ -121,6 +113,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
       ],
     });
 
@@ -144,7 +137,6 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     });
 
     usersForVisibilityCheck = [lehrUser, lernUser];
-
   });
 
   test.afterEach(async ({ page }) => {
@@ -158,7 +150,6 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
 
     if (angebotId && testschuleId) {
       try {
-        const rolleApi = constructRolleApi(page);
         const providerApi = constructProviderApi(page);
         const rollenerweiterungen = await providerApi.providerControllerFindRollenerweiterungenByServiceProviderId({
           angebotId,
@@ -167,14 +158,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
         const rolleIds: string[] = rollenerweiterungen.items.map((rollenerweiterung) => rollenerweiterung.rolleId);
 
         if (rolleIds.length > 0) {
-          await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-            angebotId,
-            organisationId: testschuleId,
-            applyRollenerweiterungBodyParams: {
-              addErweiterungenForRolleIds: [],
-              removeErweiterungenForRolleIds: rolleIds,
-            },
-          });
+          await applyRollenerweiterungChanges(page, angebotId, testschuleId, [], rolleIds);
         }
       } catch (error) {
         console.warn('[WARN] Failed to detach rollenerweiterungen before Angebot deletion:', error);
@@ -197,7 +181,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
   ];
 
   for (const { hasMultipleSchulen, bezeichnung } of schuladminScenarios) {
-    test(`SPSH-3313 Schritte 1-6 prüfen (${bezeichnung})`, { tag: [DEV] }, async ({ page }) => {
+    test(`SPSH-3313 Schritte 1-6 prüfen (${bezeichnung})`, { tag: [DEV, STAGE] }, async ({ page }) => {
       const managementBySchuleViewPage: ServiceProviderManagementBySchuleViewPage =
         await getServiceProviderManagementPage(page, hasMultipleSchulen);
       const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = hasMultipleSchulen
@@ -216,7 +200,7 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
       });
     });
 
-    test(`SPSH-3313 Schritte 7-15 prüfen (${bezeichnung})`, { tag: [DEV] }, async ({ page }) => {
+    test(`SPSH-3313 Schritte 7-15 prüfen (${bezeichnung})`, { tag: [DEV, STAGE] }, async ({ page }) => {
       const managementBySchuleViewPage: ServiceProviderManagementBySchuleViewPage =
         await getServiceProviderManagementPage(page, hasMultipleSchulen);
       const detailsViewPage: ServiceProviderDetailsBySchuleViewPage = hasMultipleSchulen

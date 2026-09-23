@@ -4,7 +4,10 @@ import { KATEGORIE_LABEL } from '../../../base/sp';
 import { MenuBarPage } from '../../components/MenuBar.page';
 import { RollenArt } from '../../../base/api/rolleApi';
 
-interface GroupCounter { selected: number; total: number }
+interface GroupCounter {
+  selected: number;
+  total: number;
+}
 
 interface CreatedRolle {
   id: string;
@@ -348,19 +351,11 @@ export class ServiceProviderDetailsBySchuleViewPage {
     );
 
     const lernBeforeUncheck = await this.selectGroupAndAssertAllSelected('LERN');
-    await this.deselectRolesAndAssertPartialSelection(
-      'LERN',
-      [lernRollen[0]!.name],
-      lernBeforeUncheck,
-    );
+    await this.deselectRolesAndAssertPartialSelection('LERN', [lernRollen[0]!.name], lernBeforeUncheck);
 
     const leitBeforeUncheck = await this.selectGroupAndAssertAllSelected('LEIT');
     await this.toggleGroupExpand('LEIT');
     await this.assertGroupExpanded('LEIT', true);
-    await this.deselectRolesAndAssertPartialSelection(
-      'LEIT',
-      [leitRollen[0]!.name],
-      leitBeforeUncheck,
-    );
+    await this.deselectRolesAndAssertPartialSelection('LEIT', [leitRollen[0]!.name], leitBeforeUncheck);
   }
 }
