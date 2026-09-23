@@ -13,6 +13,7 @@ import {
   ProviderApi,
   ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
+  ResponseError,
   RolleApi,
   RolleWithServiceProvidersResponse,
   ServiceProviderResponse,
@@ -32,6 +33,15 @@ const personDataPrefix = `TAuto-PW-S${shardLetter}`;
 const limit: number = 100;
 const batchSize: number = 20;
 
+async function logDeleteError(reason: unknown): Promise<void> {
+  if (reason instanceof ResponseError) {
+    const body: string = await reason.response.clone().text();
+    console.error(`cleanup: delete failed (${reason.response.status} ${reason.response.url})`, body);
+  } else {
+    console.error('cleanup: delete failed', reason);
+  }
+}
+
 async function cleanup<T>(get: () => Promise<T[]>, del: (item: T) => Promise<void>): Promise<void> {
   let items: T[] = await get();
   do {
@@ -39,7 +49,7 @@ async function cleanup<T>(get: () => Promise<T[]>, del: (item: T) => Promise<voi
       const results: PromiseSettledResult<void>[] = await promise;
       for (const result of results) {
         if (result.status === 'rejected') {
-          console.error('cleanup: delete failed', result.reason);
+          await logDeleteError(result.reason);
         }
       }
     }
