@@ -11,9 +11,14 @@ import {
   PersonenFrontendApi,
   PersonFrontendControllerFindPersons200Response,
   ProviderApi,
+  ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
+  ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
+  ResponseError,
   RolleApi,
+  RollenerweiterungWithExtendedDataResponse,
   RolleWithServiceProvidersResponse,
+  ServiceProviderResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
 import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
@@ -30,11 +35,25 @@ const personDataPrefix = `TAuto-PW-S${shardLetter}`;
 const limit: number = 100;
 const batchSize: number = 20;
 
+async function logDeleteError(reason: unknown): Promise<void> {
+  if (reason instanceof ResponseError) {
+    const body: string = await reason.response.text();
+    console.error(`cleanup: delete failed (${reason.response.status} ${reason.response.url})`, body);
+  } else {
+    console.error('cleanup: delete failed', reason);
+  }
+}
+
 async function cleanup<T>(get: () => Promise<T[]>, del: (item: T) => Promise<void>): Promise<void> {
   let items: T[] = await get();
   do {
     for (const promise of getBatchedDelPromise(items, del)) {
-      await promise;
+      const results: PromiseSettledResult<void>[] = await promise;
+      for (const result of results) {
+        if (result.status === 'rejected') {
+          await logDeleteError(result.reason);
+        }
+      }
     }
     items = await get();
   } while (items.length > 0);
@@ -109,6 +128,48 @@ export default async function globalTeardown(): Promise<void> {
     );
 
     // ---------------------------------------------------------------------
+    // LANDESWEITE ANGEBOTE LÖSCHEN
+    // ---------------------------------------------------------------------
+    // Muss vor dem Löschen der Schulen passieren: Schulen können offenbar nicht gelöscht werden,
+    // solange irgendein Angebot (auch nur geerbt/sichtbar, nicht direkt administriert) existiert.
+    console.log('Landesweite Angebote löschen');
+
+    await cleanup(
+      async () => {
+        const wrappedResponse: ApiResponse<ProviderControllerGetAvailableServiceProviders200Response> =
+          await providerApi.providerControllerGetManageableLandRootServiceProvidersRaw({
+            searchStr: testDataPrefix,
+            limit,
+          });
+        const response: ProviderControllerGetAvailableServiceProviders200Response = await wrappedResponse.value();
+        console.log(`${response.total} landesweite Angebote löschen`);
+        return response.items;
+      },
+      async (item: ServiceProviderResponse) => {
+        await cleanup(
+          async () => {
+            const wrappedResponse: ApiResponse<ProviderControllerFindRollenerweiterungenByServiceProviderId200Response> =
+              await providerApi.providerControllerFindRollenerweiterungenByServiceProviderIdRaw({
+                angebotId: item.id,
+                limit: 500,
+              });
+            return (await wrappedResponse.value()).items;
+          },
+          async (rollenerweiterung: RollenerweiterungWithExtendedDataResponse) =>
+            rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+              angebotId: item.id,
+              organisationId: rollenerweiterung.organisationId,
+              applyRollenerweiterungBodyParams: {
+                addErweiterungenForRolleIds: [],
+                removeErweiterungenForRolleIds: [rollenerweiterung.rolleId],
+              },
+            }),
+        );
+        await providerApi.providerControllerDeleteServiceProvider({ angebotId: item.id });
+      },
+    );
+
+    // ---------------------------------------------------------------------
     // KLASSEN LÖSCHEN
     // ---------------------------------------------------------------------
     console.log('Klassen löschen');
@@ -169,37 +230,54 @@ export default async function globalTeardown(): Promise<void> {
             const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> =
               await providerApi.providerControllerGetManageableServiceProvidersForOrganisationIdRaw({
                 organisationId: item.id,
-                limit,
+                limit: 500,
               });
             const angebote: ProviderControllerGetManageableServiceProvidersForOrganisationId200Response =
               await wrappedResponse.value();
             if (angebote.total === 0) return [];
 
-            console.log(`${angebote.total} Angebote für ${item.id}:${item.name} löschen`);
-            return angebote.items.filter(
+            console.log(
+              `Angebote gefunden für ${item.id}:${item.name} (total=${angebote.total}, items=${angebote.items.length}):`,
+              angebote.items.map((angebot) => ({
+                id: angebot.id,
+                name: angebot.name,
+                administrationsebeneId: angebot.administrationsebene.id,
+              })),
+            );
+
+            const relevanteAngebote: ManageableServiceProviderListEntryResponse[] = angebote.items.filter(
               (angebot) => angebot.name.startsWith(testDataPrefix) || angebot.administrationsebene.id === item.id,
             );
-          },
-          async (angebot: ManageableServiceProviderListEntryResponse) => {
-            const rollenIds: string[] = angebot.rollenerweiterungen.map((re) => re.rolle.id);
-            if (rollenIds.length > 0) {
-              console.log(
-                `${angebot.rollenerweiterungen.length} Rollenerweiterungen für ${angebot.id}:${angebot.name} an ${item.id}:${item.name} löschen`,
-              );
-              await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-                angebotId: angebot.id,
-                organisationId: item.id,
-                applyRollenerweiterungBodyParams: {
-                  addErweiterungenForRolleIds: [],
-                  removeErweiterungenForRolleIds: rollenIds,
-                },
-              });
+
+            // Rollenerweiterungen auch für geerbte (nicht von dieser Schule administrierte) Angebote entfernen,
+            // da diese sonst nie gelöscht werden und die cleanup-Schleife nicht terminiert.
+            for (const angebot of relevanteAngebote) {
+              const rollenIds: string[] = angebot.rollenerweiterungen.map((re) => re.rolle.id);
+              if (rollenIds.length > 0) {
+                console.log(
+                  `${angebot.rollenerweiterungen.length} Rollenerweiterungen für ${angebot.id}:${angebot.name} an ${item.id}:${item.name} löschen`,
+                );
+                await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+                  angebotId: angebot.id,
+                  organisationId: item.id,
+                  applyRollenerweiterungBodyParams: {
+                    addErweiterungenForRolleIds: [],
+                    removeErweiterungenForRolleIds: rollenIds,
+                  },
+                });
+              }
             }
 
-            if (angebot.administrationsebene.id === item.id) {
-              await providerApi.providerControllerDeleteServiceProvider({ angebotId: angebot.id });
+            const ownedAngebote: ManageableServiceProviderListEntryResponse[] = relevanteAngebote.filter(
+              (angebot) => angebot.administrationsebene.id === item.id,
+            );
+            if (ownedAngebote.length > 0) {
+              console.log(`${ownedAngebote.length} Angebote für ${item.id}:${item.name} löschen`);
             }
+            return ownedAngebote;
           },
+          async (angebot: ManageableServiceProviderListEntryResponse) =>
+            providerApi.providerControllerDeleteServiceProvider({ angebotId: angebot.id }),
         );
 
         return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
