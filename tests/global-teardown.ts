@@ -11,10 +11,12 @@ import {
   PersonenFrontendApi,
   PersonFrontendControllerFindPersons200Response,
   ProviderApi,
+  ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
   ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
   ResponseError,
   RolleApi,
+  RollenerweiterungWithExtendedDataResponse,
   RolleWithServiceProvidersResponse,
   ServiceProviderResponse,
 } from '../base/api/generated';
@@ -123,6 +125,48 @@ export default async function globalTeardown(): Promise<void> {
       },
       async (item: RolleWithServiceProvidersResponse) =>
         await rolleApi.rolleControllerDeleteRolle({ rolleId: item.id }),
+    );
+
+    // ---------------------------------------------------------------------
+    // LANDESWEITE ANGEBOTE LÖSCHEN
+    // ---------------------------------------------------------------------
+    // Muss vor dem Löschen der Schulen passieren: Schulen können offenbar nicht gelöscht werden,
+    // solange irgendein Angebot (auch nur geerbt/sichtbar, nicht direkt administriert) existiert.
+    console.log('Landesweite Angebote löschen');
+
+    await cleanup(
+      async () => {
+        const wrappedResponse: ApiResponse<ProviderControllerGetAvailableServiceProviders200Response> =
+          await providerApi.providerControllerGetManageableLandRootServiceProvidersRaw({
+            searchStr: testDataPrefix,
+            limit,
+          });
+        const response: ProviderControllerGetAvailableServiceProviders200Response = await wrappedResponse.value();
+        console.log(`${response.total} landesweite Angebote löschen`);
+        return response.items;
+      },
+      async (item: ServiceProviderResponse) => {
+        await cleanup(
+          async () => {
+            const wrappedResponse: ApiResponse<ProviderControllerFindRollenerweiterungenByServiceProviderId200Response> =
+              await providerApi.providerControllerFindRollenerweiterungenByServiceProviderIdRaw({
+                angebotId: item.id,
+                limit: 500,
+              });
+            return (await wrappedResponse.value()).items;
+          },
+          async (rollenerweiterung: RollenerweiterungWithExtendedDataResponse) =>
+            rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+              angebotId: item.id,
+              organisationId: rollenerweiterung.organisationId,
+              applyRollenerweiterungBodyParams: {
+                addErweiterungenForRolleIds: [],
+                removeErweiterungenForRolleIds: [rollenerweiterung.rolleId],
+              },
+            }),
+        );
+        await providerApi.providerControllerDeleteServiceProvider({ angebotId: item.id });
+      },
     );
 
     // ---------------------------------------------------------------------
@@ -238,26 +282,6 @@ export default async function globalTeardown(): Promise<void> {
 
         return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
       },
-    );
-
-    // ---------------------------------------------------------------------
-    // LANDESWEITE ANGEBOTE LÖSCHEN
-    // ---------------------------------------------------------------------
-    console.log('Landesweite Angebote löschen');
-
-    await cleanup(
-      async () => {
-        const wrappedResponse: ApiResponse<ProviderControllerGetAvailableServiceProviders200Response> =
-          await providerApi.providerControllerGetManageableLandRootServiceProvidersRaw({
-            searchStr: testDataPrefix,
-            limit,
-          });
-        const response: ProviderControllerGetAvailableServiceProviders200Response = await wrappedResponse.value();
-        console.log(`${response.total} landesweite Angebote löschen`);
-        return response.items;
-      },
-      async (item: ServiceProviderResponse) =>
-        providerApi.providerControllerDeleteServiceProvider({ angebotId: item.id }),
     );
 
     console.log('Global teardown finished successfully');
