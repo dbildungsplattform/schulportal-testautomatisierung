@@ -56,13 +56,7 @@ interface AdminFixture {
       header = new HeaderPage(page);
       personManagementViewPage = await loginAndNavigateToAdministration(page);
 
-      admin = await createPersonWithPersonenkontext(
-        page,
-        organisationsName,
-        rolleName,
-        undefined,
-        undefined,
-      );
+      admin = await createPersonWithPersonenkontext(page, organisationsName, rolleName, undefined, undefined);
       schuleParams = {
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),

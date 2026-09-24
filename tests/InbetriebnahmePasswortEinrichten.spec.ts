@@ -45,7 +45,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
-          rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
+          rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });
@@ -87,7 +87,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
-          rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
+          rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });

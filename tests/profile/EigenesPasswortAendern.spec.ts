@@ -83,7 +83,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
-          rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
+          rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email],
           koPersNr: generateKopersNr(),
         });
