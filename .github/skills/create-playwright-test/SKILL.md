@@ -1,6 +1,6 @@
 ---
 name: create-playwright-test
-description: "Creates a new Playwright test (.spec.ts) for the Schulportal, following project conventions, page objects, API-based test-data creation, and known backend constraints. Use when asked to create a new test, write a test, implement a test case. Do not use for fixing an existing failing test (use run-and-fix-test) or for creating a page object only (use create-page-object)."
+description: "Creates a new Playwright test (.spec.ts) for the Schulportal, following project conventions, page objects, API-based test-data creation, and known backend constraints. Use when asked to create a new test. Do not use for fixing an existing failing test (use run-and-fix-test) or only creating/extending a page object (use create-page-object)."
 argument-hint: "Beschreibung des Testfalls oder Pfad zur CSV mit Testschritten"
 ---
 
@@ -10,8 +10,7 @@ Creates a new Playwright test for the Schulportal following project conventions.
 
 ## Do Not Use When / See Also
 - An existing test should be fixed → use [`run-and-fix-test`](../run-and-fix-test/SKILL.md) instead
-- Only a page object should be created → use [`create-page-object`](../create-page-object/SKILL.md) instead
-- Extending an existing page object → use [`extend-page-object`](../extend-page-object/SKILL.md)
+- Only a page object should be created or extended → use [`create-page-object`](../create-page-object/SKILL.md) instead
 - Further references: [testdaten.md](../../../docs/testdaten.md) (API wrappers, generators, cleanup helpers), [best-practices.md](../../../docs/best-practices.md) (coding conventions), [structure.md](../../../docs/structure.md) (project structure), [tags.md](../../../docs/tags.md) (tag conventions)
 
 ---
@@ -32,7 +31,7 @@ Full detail in `docs/best-practices.md` and `docs/structure.md`. Key rules here:
 ### Reviewer Hardening (mandatory)
 
 > Shared reuse/dedup/no-dead-code checklist — canonical version lives in
-> [`extend-page-object/SKILL.md`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory).
+> [`create-page-object/SKILL.md`](../create-page-object/SKILL.md#3-check-reuse-and-conflicts).
 > Apply it here too: reuse before reimplementing, locator deduplication, no dead code.
 
 Additional checks specific to this skill:
@@ -91,17 +90,17 @@ If the description is unclear → ask the user **before** creating page objects 
 Derive from the test steps which pages and which methods/locators are needed. Then check each page in turn:
 
 1. **Does the page object exist** under `pages/` or `pages/admin/<area>/`?
-   - **No** → invoke skill [`create-page-object`](../create-page-object/SKILL.md) to create it. Only then continue here.
-   - **Yes** → continue to step 2.
+  - **No** → invoke [`create-page-object`](../create-page-object/SKILL.md) in create mode. Only then continue here.
+  - **Yes** → continue to step 2.
 2. **Are all required methods/locators present in the page?**
-   - **No** → invoke skill [`extend-page-object`](../extend-page-object/SKILL.md) to add the missing methods/locators. Only then continue here.
+  - **No** → invoke [`create-page-object`](../create-page-object/SKILL.md) in extend mode. Only then continue here.
    - **Yes** → continue to Phase 3.
 3. **Important:** Always apply reuse-first before adding: extend/parameterize existing methods instead of reimplementing the same flow.
 4. Similarly: check whether the required **API functions** for test-data setup exist in `base/api/`. If not, add them before the test (see [docs/testdaten.md](../../../docs/testdaten.md)).
 
 > **Never skip this phase.** Tests must not contain locators directly — missing logic belongs in page objects first.
 
-> **Unknown test IDs?** Use Playwright MCP (`run_playwright_code` / `read_page`) for live inspection of the page. Navigate as the appropriate user to the relevant UI state and read the `data-testid` attributes from the DOM. See [`extend-page-object`](../extend-page-object/SKILL.md) for details.
+> **Unknown test IDs?** Use Playwright MCP (`run_playwright_code` / `read_page`) for live inspection of the page. Navigate as the appropriate user to the relevant UI state and read the `data-testid` attributes from the DOM. See [`create-page-object`](../create-page-object/SKILL.md) for details.
 
 ### Phase 3 — Storage Location: Reuse or Create a `.spec.ts`
 

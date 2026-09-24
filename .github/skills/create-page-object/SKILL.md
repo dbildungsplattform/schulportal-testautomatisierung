@@ -1,229 +1,94 @@
 ---
 name: create-page-object
-description: 'Creates a new Playwright page object for an admin page in the Schulportal via live MCP inspection (Playwright MCP) of the target page (data-testid attributes, interactive elements), then generates the TypeScript file per project conventions. Use when asked to create a new page object, add a page class, or implement a new page for the schulportal test automation project. Do not use for extending an existing page class (use extend-page-object) or for static/offline page-object generation from existing source (use create-playwright-page).'
+description: 'Creates or extends a Schulportal Playwright page object through live UI inspection and targeted frontend/backend source inspection. Use for a new page class, or to add page-object actions, assertions, or locators. Do not use for static/offline generation from source alone (use create-playwright-page), test creation, or fixing a failing test.'
 ---
 
 # Create Page Object
 
-Creates a new Playwright page object for an admin page of the Schulportal. Inspects the target page live via Playwright MCP, then generates the TypeScript class per project conventions.
+Creates a missing page object or extends an existing one. Inspect only the behavior requested, then make the smallest page-object change that exposes it to tests.
 
 ## Do Not Use When / See Also
-- Only extending or renaming an existing class → use [`extend-page-object`](../extend-page-object/SKILL.md) instead
-- No login access to the target page is available
+- Creating a Playwright spec → [`create-playwright-test`](../create-playwright-test/SKILL.md)
+- Fixing an existing failing test → [`run-and-fix-test`](../run-and-fix-test/SKILL.md)
+- Generating a page object from source without live inspection → use `create-playwright-page`
+- No authenticated access to the target behavior and source inspection cannot establish it → ask the user for access or clarification
 
----
+## Required Outcome
 
-## Project Conventions
-
-### File Naming Convention
-| Type | Pattern | Example |
-|-----|--------|---------|
-| Convention | `<Name>.page.ts` | `PersonDetailsView.page.ts` |
-| Standalone (no extend) | `<Name>.ts` or `<Name>.page.ts` | `SchulischeAngebotsverwaltungView.ts` |
-
-### Storage Locations
-```
-pages/admin/personen/          ← Person views
-pages/admin/organisationen/    ← Schools, Klassen (school classes)
-pages/admin/rollen/            ← Rolle views
-pages/admin/service-provider/  ← Service provider offerings
-pages/components/              ← Reusable UI components
-```
-
-### Class Structure — with AbstractAdminPage (default)
-```ts
-import { expect, Page } from '@playwright/test';
-import { AbstractAdminPage } from '../AbstractAdmin.page';
-import { MenuBarPage } from '../../components/MenuBar.page';
-// ... weitere Imports
-
-export class MyViewPage extends AbstractAdminPage {
-  private readonly someLocator: Locator;
-  public readonly menu: MenuBarPage;
-
-  constructor(protected readonly page: Page) {
-    super(page);
-    this.someLocator = this.page.getByTestId('some-test-id');
-    this.menu = new MenuBarPage(this.page);
-  }
-
-  /* actions */
-  public async waitForPageLoad(): Promise<MyViewPage> {
-    await expect(this.page.getByTestId('layout-card-headline')).toHaveText('...');
-    return this;
-  }
-
-  /* assertions */
-  public async assertSomething(): Promise<void> {
-    await expect(this.someLocator).toBeVisible();
-  }
-}
-```
-
-### Class Structure — Standalone (no extends)
-Same shape, but: no `extends AbstractAdminPage`, no `super(page)` call, no `AbstractAdminPage` import.
-
-### Available Helper Classes
-| Class | Import | Usage |
-|--------|--------|-----------|
-| `DataTable` | `../../components/DataTable.page` | Tables with sorting, pagination, row selection |
-| `Autocomplete` | `../../components/Autocomplete` | Search/filter dropdowns |
-| `SearchFilter` | `../../components/SearchFilter` | Free-text search |
-| `MenuBarPage` | `../../components/MenuBar.page` | Navigation menu |
-| `AbstractAdminPage` | `../AbstractAdmin.page` | Base class for admin views |
-
----
+- One frontend view per page object.
+- Locators stay inside the page object; tests use public actions and `assert*` methods.
+- Every page object exposes `waitForPageLoad()` and navigation methods return the destination page type.
+- One-off locators stay method-local; locators reused by multiple methods become fields or private helpers.
+- Requested public methods count as intended API usage; do not require an existing spec call site.
+- Prefer project helpers such as `DataTable`, `Autocomplete`, `SearchFilter`, `MenuBarPage`, and `AbstractAdminPage` when the neighboring implementation establishes their use.
+- Follow the compact structures in [page-object-patterns.md](./references/page-object-patterns.md) when needed.
 
 ## Workflow
 
-### Phase 1 — Collect Inputs
+### 1. Resolve Inputs and Mode
 
-The following information is required before implementation begins:
+From the request and repository evidence, resolve the requested behavior, acting role, target URL/view, target class, path, and whether the page object already exists. Ask only for values that cannot be derived reliably.
 
-| Information | Required | Source |
-|-------------|---------|--------|
-| Class name of the new page | ✅ | User |
-| File name (`*.page.ts`) | ✅ | User |
-| Storage location in the project | ✅ | User |
-| URL of the target page | ✅ | User |
-| Which actions to cover (read / edit / delete) | ✅ | User |
-| Login credentials or test user | ✅ | User / `global-setup.ts` |
+- Existing class: **extend mode**. Read the complete target file and inspect only nearby pages needed to find reusable behavior.
+- Missing class: **create mode**. Infer name, path, and inheritance from the route and neighboring page objects. Ask when multiple choices remain plausible.
 
-> **Wait for all required information before starting Phase 2.**
+Do not require the user to confirm values already established by code. Never request credentials through chat; use the configured authenticated workflow or ask the user to enter secrets directly when required.
 
-### Mandatory Question — Class Type
+### 2. Inspect the Owning Surfaces
 
-**Ask this question explicitly before starting implementation — even if the user didn't answer it unprompted:**
+Inspect the live page as the actual acting role. Navigate to the required state and collect only selectors and interaction semantics needed by the requested methods. Prefer `getByTestId`; use role, label, placeholder, or text only when no test ID exists.
 
-> "Should the class use `extends AbstractAdminPage` (default for admin views with header/menu base functionality), or should it be a **standalone class** without inheritance?"
+Use source inspection only when it resolves uncertainty:
 
-Wait for the answer. Only then proceed to Phase 2.
+| Repository | Path | Read-only purpose |
+|---|---|---|
+| E2E | current repository | Existing page objects, helpers, specs, and API wrappers |
+| Frontend | `../schulportal-client` | Routes, permissions, view/component behavior, labels, and `data-testid` values |
+| Backend | `../dbildungs-iam-server` | Controllers, DTOs, Swagger annotations, permissions, and endpoint behavior |
 
-| Answer | Class declaration | `super(page)` in constructor | `AbstractAdminPage` import |
-|---------|-------------------|------------------------------|---------------------------|
-| `extends AbstractAdminPage` | `export class XPage extends AbstractAdminPage` | ✅ yes | ✅ yes |
-| Standalone | `export class XPage` | ❌ no | ❌ no |
+Before reading another repository, read its instructions: `../schulportal-client/AGENTS.md` for the frontend and `../dbildungs-iam-server/.github/copilot-instructions.md` for the backend. Frontend and backend access is read-only: report missing test IDs, application defects, or contract changes; do not edit those repositories. Load backend context only when frontend/live inspection cannot resolve API behavior, authorization, DTO shape, or API-backed setup.
 
----
+For Vuetify autocomplete instability, load [vuetify-autocomplete.md](./references/vuetify-autocomplete.md).
 
-### Phase 2 — MCP Inspection of the Target Page
+### 3. Check Reuse and Conflicts
 
-Use Playwright MCP to inspect the live page.
+In extend mode, inventory only what affects the requested change: relevant imports, fields, methods, and repeated locator patterns.
 
-1. **Open browser** — Navigate to the application's login page
-2. **Log in** — Perform the login workflow (credentials from `global-setup.ts` or from the user)
-3. **Navigate to the target page** — Open the URL specified by the user
-4. **Create snapshot** — Run `browser_snapshot` to capture the DOM state
-5. **Document `data-testid` attributes** — List all relevant test IDs:
-   - Headlines
-   - Form fields and labels
-   - Buttons (save, cancel, edit, delete)
-   - Tables
-   - Dropdowns / autocomplete fields
-   - Dialogs / modals
-6. **Determine interaction type** — Distinguish between:
-   - Read-only (display-only)
-   - Editable (input, select, checkbox)
-   - Action-triggering (button, link)
+- Reuse existing actions and assertions before adding new ones.
+- Narrowly parameterize or refactor an existing method when that removes duplication while preserving current behavior.
+- Do not add a parallel implementation of the same flow.
+- Do not overwrite field or method names.
 
-**Expected result:** A list of all found `data-testid` values with their meaning.
+### 4. Implement
 
----
+- Preserve block order: fields, constructor, `/* actions */`, `/* assertions */`.
+- Import only used symbols and helpers.
+- Use explicit member visibility and return types.
+- Add `AbstractAdminPage`, `MenuBarPage`, and helper classes only when needed.
+- Use web-first assertions and await every Playwright operation.
+- Keep the change limited to requested behavior.
 
-### Phase 3 — Implement the Page Object
+### 5. Detect API-Client Drift and Hand Off
 
-Create the TypeScript file at the specified storage location.
+Generated clients are read-only. Treat the client as missing or stale only with concrete evidence, such as a backend operation/type absent from generated code or a signature mismatch. Backend modification time alone is not evidence.
 
-#### 3.1 — Choose imports
-Only add imports that are actually needed (no dead code):
-- `Page`, `Locator`, `expect` from `@playwright/test`
-- Helper classes (`DataTable`, `Autocomplete`, etc.) only if used
-- `AbstractAdminPage` only for the `extends` variant
+If drift blocks the work, stop and tell the user:
 
-#### 3.2 — Class declaration
-```ts
-export class <Name>Page {                   // Standalone
-export class <Name>Page extends AbstractAdminPage {   // with extends
+> The generated API client appears missing or stale.
+> E2E client: run `npm run generate-api` in `schulportal-testautomatisierung`.
+> Frontend client: run `npm run generate-client` in `schulportal-client` if the frontend consumes the changed contract.
+> Generated files will not be edited manually.
+
+Do not run generation from this skill. Resume after the user completes or explicitly delegates the handoff.
+
+### 6. Validate
+
+After every TypeScript edit, check editor TypeScript and ESLint diagnostics. With explicit user approval for commands, run the documented checks:
+
+```bash
+npm run type-check
+npx eslint <target-file>
 ```
 
-#### 3.3 — Constructor
-- Declare all locators as `private readonly` fields
-- Use `getByTestId(...)` for every test ID found
-- Add `MenuBarPage` as `public readonly menu`
-- For autocomplete fields: `new Autocomplete(this.page, this.page.getByTestId('...'))`
-- For tables: `new DataTable(this.page, this.page.getByTestId('...'))`
-
-#### 3.4 — Implement methods
-
-**Required methods:**
-```ts
-public async waitForPageLoad(): Promise<MyViewPage> {
-  // Wait for at least one characteristic headline or element
-  // Best practice: check at least one unique headline with toHaveText()
-  await expect(this.page.getByTestId('admin-headline')).toHaveText('Administrationsbereich');
-  await expect(this.someCard).toBeVisible();
-  await expect(this.headline).toContainText('...');
-  return this;
-}
-```
-
-**Read methods** (when data is only displayed):
-```ts
-public async getFieldValue(): Promise<string> {
-  return await this.someLocator.innerText();
-}
-```
-
-**Edit methods** (when fields are editable):
-```ts
-public async editField(value: string): Promise<void> {
-  await this.someInput.fill(value);
-}
-public async saveChanges(): Promise<void> {
-  await this.saveButton.click();
-}
-```
-
-**Assertion methods** (`assert` prefix — per best-practices.md):
-```ts
-public async assertPageIsVisible(): Promise<void> {
-  await expect(this.headline).toBeVisible();
-}
-public async assertFieldValue(expected: string): Promise<void> {
-  await expect(this.someLocator).toHaveText(expected);
-}
-```
-
-#### 3.5 — Comment method blocks
-```ts
-/* actions */
-// read and edit methods
-
-/* assertions */
-// assert methods
-```
-
----
-
-### Phase 4 — Validation
-
-1. **Check TypeScript compilation:**
-   ```bash
-   npx tsc --noEmit
-   ```
-2. **Verify import paths** — Relative paths must be correct
-3. **Optional re-check via MCP** — Run `waitForPageLoad()` on the real page and confirm it does not throw
-
----
-
-## Reference Files in the Project
-
-| File | Pattern |
-|-------|---------|
-| [pages/admin/service-provider/ServiceProviderManagementBySchuleView.page.ts](../../../pages/admin/service-provider/ServiceProviderManagementBySchuleView.page.ts) | Standalone class with filter autocomplete |
-| [pages/admin/service-provider/ServiceProviderManagementView.page.ts](../../../pages/admin/service-provider/ServiceProviderManagementView.page.ts) | extends AbstractAdminPage, DataTable |
-| [pages/admin/personen/PersonManagementView.page.ts](../../../pages/admin/personen/PersonManagementView.page.ts) | Complex example: DataTable, filter, dialogs, navigation to detail page |
-| [pages/admin/rollen/RolleDetailsView.page.ts](../../../pages/admin/rollen/RolleDetailsView.page.ts) | Detail page with edit and delete actions |
-
-Use these as worked examples instead of a separate inline sample output.
+When practical, re-run the changed page-object behavior against the live page as the acting role. Confirm imports resolve, no requested method duplicates existing behavior, and locator strings are not unnecessarily repeated.
 

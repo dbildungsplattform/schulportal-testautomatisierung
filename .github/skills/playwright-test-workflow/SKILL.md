@@ -1,22 +1,19 @@
 ---
 name: playwright-test-workflow
-description: 'End-to-end workflow to create a Playwright test from a test description.
-  Checks and creates missing page objects, extends existing ones if needed, generates
-  the test, and runs it iteratively until green. Use when the user wants to start a full
-  test workflow, create a test from a description, or automate a test end-to-end. Do not
-  use for a single sub-step only — use create-page-object, extend-page-object, or
+description: 'End-to-end workflow that orchestrates create-page-object,
+  create-playwright-test, and run-and-fix-test to turn a test description into a green
+  Playwright test. Use when the user wants to automate a test end-to-end from a
+  description. Do not use for a single sub-step only — use create-page-object or
   run-and-fix-test directly.'
 ---
 
 # Playwright Test Workflow
 
 Orchestrates the full path from a test description to a green test.
-Invokes the individual skills `create-page-object`, `extend-page-object`, `create-playwright-test`,
-and `run-and-fix-test` in the correct order.
+Invokes `create-page-object`, `create-playwright-test`, and `run-and-fix-test` in the correct order.
 
 ## Do Not Use When / See Also
-- Only a page object should be created → [`create-page-object`](../create-page-object/SKILL.md)
-- Only an existing page should be extended → [`extend-page-object`](../extend-page-object/SKILL.md)
+- Only a page object should be created or extended → [`create-page-object`](../create-page-object/SKILL.md)
 - Only a failing test should be fixed → [`run-and-fix-test`](../run-and-fix-test/SKILL.md)
 - No login access to the target environment is available
 
@@ -46,12 +43,11 @@ If the description is incomplete → ask the user **before** starting Phase 2.
 Derive from the test description all required pages and methods.
 For each required page, in turn:
 
-#### Step 2.1 — Does the page object exist?
+#### Step 2.1 — Create or extend the page object
 
 - Search `pages/` and `pages/admin/<area>/` for the page.
-- **No** → fully run skill [`create-page-object`](../create-page-object/SKILL.md),
-  then continue with step 2.2.
-- **Yes** → continue with step 2.2.
+- **Missing page object** → run [`create-page-object`](../create-page-object/SKILL.md) in create mode.
+- **Existing page object** → read it and continue with step 2.2.
 
 #### Step 2.2 — Are all required methods and locators present?
 
@@ -59,12 +55,12 @@ For each required page, in turn:
 - **Check reuse-first:** before writing new methods, search `pages/` for existing logic (e.g. similar names like `complete*`, `navigate*`, `setup*`, `assert*`).
   - If matching logic exists: extend/parameterize the existing method instead of duplicating.
   - Only add a new method if no matching method exists.
-- **Missing methods / locators** → fully run skill [`extend-page-object`](../extend-page-object/SKILL.md).
+- **Missing methods / locators** → run [`create-page-object`](../create-page-object/SKILL.md) in extend mode.
 - **Everything present** → continue directly with Phase 3.
 
 #### Step 2.3 — Check locator repetition and dead code
 
-> See [`extend-page-object`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory) for
+> See [`create-page-object`](../create-page-object/SKILL.md#3-check-reuse-and-conflicts) for
 > the full reuse/dedup/no-dead-code checklist — apply it here too.
 
 **Expected result:** All required page objects exist and contain all
@@ -168,7 +164,7 @@ Before the workflow counts as "done", run the following checks:
 
 1. **TypeScript check:** `npx tsc --noEmit`
 2. **Lint affected files:** `npx eslint <changed-files>`
-3. **Reuse/dedup/no-dead-code checklist:** see [`extend-page-object`](../extend-page-object/SKILL.md#reviewer-hardening-mandatory).
+3. **Reuse/dedup/no-dead-code checklist:** see [`create-page-object`](../create-page-object/SKILL.md#3-check-reuse-and-conflicts).
 4. **Minimize test-data parameters and decide the Schule strategy:** see [`create-playwright-test`](../create-playwright-test/SKILL.md#reviewer-hardening-mandatory).
 
 **Expected result:** Test is green **and** the code is reviewer-ready (low duplication, no dead code, clear test-data decisions).
@@ -184,7 +180,7 @@ flowchart TD
     C -- No --> D[create-page-object]
     D --> E{Methods\ncomplete?}
     C -- Yes --> E
-    E -- No --> F[extend-page-object]
+    E -- No --> F[create-page-object: extend mode]
     F --> G[Phase 3: analyze test data]
     E -- Yes --> G
     G --> G2{API wrapper\npresent?}

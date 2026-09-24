@@ -1,6 +1,6 @@
 ---
 name: run-and-fix-test
-description: "Runs a Playwright test, analyzes failures, and automatically fixes the code, repeating the cycle until the test passes. Use when: a test is failing, fix failing test, run test and fix errors, iterate until test passes, debug playwright test. Do not use when the test is already green, or when the failure is outside the test code (e.g. backend unreachable, missing .env variables) — inform the user instead."
+description: "Runs a Playwright test, analyzes failures, and automatically fixes the code, repeating until the test passes. Use when a test is failing and should be fixed automatically. Do not use when the test is already green, or when the failure is outside the test code (e.g. backend unreachable, missing .env variables) — inform the user instead."
 argument-hint: "Pfad zur Testdatei, z.B. tests/personen/PersonAnlegen.spec.ts"
 ---
 

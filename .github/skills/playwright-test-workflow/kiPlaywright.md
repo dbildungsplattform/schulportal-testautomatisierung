@@ -6,7 +6,7 @@
 
 ## Überblick
 
-GitHub Copilot übernimmt den gesamten Weg von einer fachlichen Testbeschreibung bis zum grünen, automatisierten E2E-Test. Der Workflow ist in **5 Phasen** unterteilt und orchestriert vier spezialisierte Skills, die jeweils eine klar abgegrenzte Aufgabe erfüllen.
+GitHub Copilot übernimmt den gesamten Weg von einer fachlichen Testbeschreibung bis zum grünen, automatisierten E2E-Test. Der Workflow ist in **5 Phasen** unterteilt und orchestriert drei spezialisierte Skills, die jeweils eine klar abgegrenzte Aufgabe erfüllen.
 
 **Kernidee:**  
 Ein Entwickler oder Tester liefert nur die *fachliche Beschreibung* des Testfalls — Copilot erledigt den Rest: Page Objects erstellen, fehlende Locators ergänzen, Testdaten planen, Testcode schreiben und Fehler iterativ beheben.
@@ -35,11 +35,11 @@ Falls Informationen fehlen, fragt Copilot nach — bevor irgendein Code geschrie
 Copilot leitet aus der Beschreibung ab, welche **Page-Object-Klassen** benötigt werden, und prüft für jede:
 
 1. **Existiert das Page-Object?**  
-   - Nein → Skill `create-page-object` ausführen  
+   - Nein → Skill `create-page-object` im Erstellungsmodus ausführen  
    - Ja → weiter mit Schritt 2
 
 2. **Sind alle benötigten Methoden und Locators vorhanden?**  
-   - Fehlende Elemente → Skill `extend-page-object` ausführen  
+   - Fehlende Elemente → Skill `create-page-object` im Erweiterungsmodus ausführen  
    - Alles vorhanden → direkt weiter mit Phase 3
 
 > Tests enthalten **keine** Locators oder Logik direkt — alles gehört in die Page-Objects.
@@ -95,7 +95,7 @@ flowchart TD
     C -- Nein --> D[create-page-object]
     D --> E{Methoden\nvollständig?}
     C -- Ja --> E
-    E -- Nein --> F[extend-page-object]
+   E -- Nein --> F[create-page-object: Erweiterungsmodus]
     F --> G[Phase 3: Testdaten analysieren]
     E -- Ja --> G
     G --> G2{API-Wrapper\nvorhanden?}
@@ -108,31 +108,19 @@ flowchart TD
 
 ---
 
-## Die 4 Skills im Detail
+## Die 3 Skills im Detail
 
 ### `create-page-object`
 
-**Zweck:** Erstellt eine neue TypeScript-Klasse für eine Admin-Seite im Schulportal.
+**Zweck:** Erstellt eine neue Page-Klasse oder erweitert eine bestehende Klasse um benötigte Locators und Methoden.
 
 **Vorgehen:**
-1. Copilot öffnet die Zielseite per **Playwright MCP** im Browser (Live-Inspektion)
-2. Alle `data-testid`-Attribute und interaktiven Elemente werden automatisch ermittelt
-3. Die TypeScript-Klasse wird nach Projektkonventionen generiert und in `pages/admin/<bereich>/` abgelegt
+1. Copilot prüft, ob das Page-Object bereits existiert, und wählt Erstellungs- oder Erweiterungsmodus
+2. Copilot öffnet die Zielseite als handelnde Rolle per **Playwright MCP** und ermittelt nur die benötigten Elemente
+3. Bei Bedarf werden Frontend und Backend gezielt und ausschließlich lesend untersucht
+4. Die TypeScript-Klasse wird nach Projektkonventionen erstellt oder minimal erweitert
 
-**Ergebnis:** Eine vollständige `*.page.ts`-Datei mit Konstruktor, Locators, Aktionsmethoden (`/* actions */`) und Assertions (`/* assertions */`).
-
----
-
-### `extend-page-object`
-
-**Zweck:** Erweitert eine bestehende Page-Klasse um neue Locators und Methoden — ohne bestehenden Code zu verändern.
-
-**Vorgehen:**
-1. Bestandsdatei lesen und analysieren (vorhandene Felder, Methoden, Blockreihenfolge)
-2. Zielseite per **Playwright MCP** live inspizieren — gezielt nach den neuen `data-testid`-Attributen suchen
-3. Neue Felder und Methoden konfliktfrei einfügen (Blockreihenfolge: Felder → Constructor → actions → assertions)
-
-**Ergebnis:** Bestehende Page-Datei wurde erweitert; kein bestehender Code wurde geändert.
+**Ergebnis:** Eine vollständige oder gezielt erweiterte `*.page.ts`-Datei ohne duplizierte Abläufe.
 
 ---
 
