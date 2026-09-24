@@ -13,6 +13,7 @@ import { PersonManagementViewPage } from '../pages/admin/personen/PersonManageme
 import { HeaderPage } from '../pages/components/Header.page';
 import { LoginViewPage } from '../pages/LoginView.page';
 import { ProfileViewPage } from '../pages/ProfileView.page';
+import { RollenMerkmal } from '../base/api/generated';
 
 test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
   test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
@@ -44,6 +45,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
+          rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });
@@ -85,6 +87,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
+          rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email, uem],
           koPersNr: generateKopersNr(),
         });

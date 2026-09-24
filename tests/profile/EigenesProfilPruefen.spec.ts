@@ -60,7 +60,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
     });
   });
 
-  for (const { actor, personalData, zuordnungen, serviceProviders } of testData) {
+  for (const { actor, personalData, zuordnungen, serviceProviders, rollenMerkmalNamen } of testData) {
     test(
       `Als ${actor} das eigene Profil öffnen und auf Vollständigkeit prüfen`,
       { tag: [STAGE, DEV] },
@@ -73,6 +73,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
           const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
             organisationName: zuordnungen[0].organisationsname,
             rollenArt: zuordnungen[0].rollenart,
+            rollenMerkmalNamen,
             familienname: personalData.nachname,
             vorname: personalData.vorname,
             serviceProviderNames: serviceProviders,

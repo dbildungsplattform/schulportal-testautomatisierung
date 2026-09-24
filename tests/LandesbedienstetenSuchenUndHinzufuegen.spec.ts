@@ -11,7 +11,7 @@ import {
   UserInfo,
   waitForEmailByPersonId,
 } from '../base/api/personApi';
-import { getRolleId } from '../base/api/rolleApi';
+import { getRolleId, RollenMerkmal } from '../base/api/rolleApi';
 import {
   ersatzTestschuleName,
   testschule665DstNrUndName,
@@ -469,6 +469,7 @@ test.describe('Funktions- und UI Testfälle zu Landesbediensteten suchen und hin
       lehrkraftMitEmail = await createRolleAndPersonWithPersonenkontext(page, {
         organisationName: testschuleName,
         rollenArt: typeLehrer,
+        rollenMerkmalNamen:  new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
         serviceProviderNames: [emailServiceProvider],
         koPersNr: generateKopersNr(),
       });

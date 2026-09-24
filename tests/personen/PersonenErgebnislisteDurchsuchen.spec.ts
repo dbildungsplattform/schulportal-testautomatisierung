@@ -62,7 +62,6 @@ interface AdminFixture {
         rolleName,
         undefined,
         undefined,
-        generateDienststellenNr(),
       );
       schuleParams = {
         name: generateSchulname(),
@@ -103,7 +102,6 @@ interface AdminFixture {
           ['Nachname', (): string => admin.nachname],
           ['Vorname', (): string => admin.vorname],
           ['Benutzername', (): string => admin.username],
-          ['Kopersnummer', (): string => admin.kopersnummer],
         ] as [string, () => string][]) {
           test(`Suche nach ${key}`, async () => {
             const value: string = getValue();
@@ -255,7 +253,6 @@ test.describe(`Schulfilter in der Benutzerübersicht für Schuladmin mit einer S
       schuladminOeffentlichRolle,
       undefined,
       undefined,
-      generateDienststellenNr(),
     );
 
     landingPage = await header.logout();
