@@ -19,6 +19,22 @@ In `global-setup` we use the base admin to create one admin per worker and setup
 SharedCredentialManager.getUsername(process.env['TEST_PARALLEL_INDEX']);
 ```
 
+## Bootstrap user per shard
+
+Each GitHub Actions shard must log in with its own bootstrap admin so that the generated OTPs do not clash. The reusable workflow resolves the user name from the configured `USER` prefix and the shard index automatically:
+
+```text
+playwrighttestadmin1
+playwrighttestadmin2
+playwrighttestadmin3
+```
+
+The GitHub Actions secret `USER` contains the prefix, for example `playwrighttestadmin`. The workflow appends the shard number automatically, so shard 1 uses `playwrighttestadmin1`, shard 2 uses `playwrighttestadmin2`, and shard 3 uses `playwrighttestadmin3`.
+
+The target environments must provide these bootstrap admins. For dev, the users are provided through the backend seed data. For stage, the users must be provisioned in the target environment. PrivacyIDEA token data is handled separately. Additional data can be found in the 1Password SPSH staging vault.
+
+The same password and the same OTP seed can be reused for all three bootstrap admins if the target system accepts the token setup for each user individually. The important requirement is that each shard uses a different username; the password and seed can remain shared if the 2FA implementation is bound per user account.
+
 ## Details
 
 Workers in Playwright are generally isolated. Any changes to `process.env`, that happens via a worker will only exist for the lifetime of said worker. If a test fails the worker is scrapped and a new one is started and the changes to the environment are lost. To work around this you can setup the environment in `global-setup` as the environment created here will persist, even if workers are restarted. Since this requires the developer to be aware of when and where code is executed, we opted to use a **file-based approach** instead, which behaves more predictably and also persists across worker-restarts. To determine which file belongs to which worker/admin we use the provided `TEST_PARALLEL_INDEX` by Playwright.
