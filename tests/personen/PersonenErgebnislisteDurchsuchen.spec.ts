@@ -56,14 +56,7 @@ interface AdminFixture {
       header = new HeaderPage(page);
       personManagementViewPage = await loginAndNavigateToAdministration(page);
 
-      admin = await createPersonWithPersonenkontext(
-        page,
-        organisationsName,
-        rolleName,
-        undefined,
-        undefined,
-        generateDienststellenNr(),
-      );
+      admin = await createPersonWithPersonenkontext(page, organisationsName, rolleName, undefined, undefined);
       schuleParams = {
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
@@ -103,7 +96,6 @@ interface AdminFixture {
           ['Nachname', (): string => admin.nachname],
           ['Vorname', (): string => admin.vorname],
           ['Benutzername', (): string => admin.username],
-          ['Kopersnummer', (): string => admin.kopersnummer],
         ] as [string, () => string][]) {
           test(`Suche nach ${key}`, async () => {
             const value: string = getValue();
@@ -255,7 +247,6 @@ test.describe(`Schulfilter in der Benutzerübersicht für Schuladmin mit einer S
       schuladminOeffentlichRolle,
       undefined,
       undefined,
-      generateDienststellenNr(),
     );
 
     landingPage = await header.logout();
