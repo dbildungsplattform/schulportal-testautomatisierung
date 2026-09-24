@@ -49,7 +49,6 @@ import { HeaderPage } from '../../pages/components/Header.page';
         rolleName,
         undefined,
         undefined,
-        generateDienststellenNr(),
       );
     });
 
