@@ -62,6 +62,14 @@ This repository also provides editor-invoked helpers under `.github/skills/` (e.
 
 Whenever a prompt references a ticket matching `SPSH-\d+`, **MUST** immediately call the Jira MCP tool (`jira_get_issue` or `jira_search`) to fetch current ticket data before responding. Never answer from memory or context alone.
 
+### Ordinary ticket lookup
+
+For requests such as "get the content of SPSH-XXXX", "what does SPSH-XXXX say", or "show me SPSH-XXXX":
+- Use `jira_get_issue` with the fields necessary to answer the request.
+- If the response is readable inline, present it directly.
+- Do **not** run shell commands (`jq`, `python3`, `node`, etc.) to reformat or re-parse MCP output.
+- Do **not** fetch Xray test steps unless the user explicitly asks for all/complete/every test step.
+
 ### Fetching complete Xray test steps
 
 Only when explicitly asked for **all/complete/every** test step of a ticket (Xray "Manuelle Testschritte", `customfield_12204`):
