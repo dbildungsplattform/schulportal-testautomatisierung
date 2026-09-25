@@ -17,16 +17,28 @@ import * as runtime from '../runtime';
 import type {
   UserExternalDataBodyParams,
   UserExternalDataResponse,
+  UserExternalDataV2BodyParams,
+  UserExternalDataV2Response,
 } from '../models';
 import {
     UserExternalDataBodyParamsFromJSON,
     UserExternalDataBodyParamsToJSON,
     UserExternalDataResponseFromJSON,
     UserExternalDataResponseToJSON,
+    UserExternalDataV2BodyParamsFromJSON,
+    UserExternalDataV2BodyParamsToJSON,
+    UserExternalDataV2ResponseFromJSON,
+    UserExternalDataV2ResponseToJSON,
 } from '../models';
 
 export interface KeycloakInternalControllerGetExternalDataRequest {
+    apiKey: string;
     userExternalDataBodyParams: UserExternalDataBodyParams;
+}
+
+export interface KeycloakInternalControllerGetExternalDataV2V2Request {
+    apiKey: string;
+    userExternalDataV2BodyParams: UserExternalDataV2BodyParams;
 }
 
 /**
@@ -39,6 +51,7 @@ export interface KeycloakinternalApiInterface {
     /**
      * 
      * @summary External Data about requested in user.
+     * @param {string} apiKey Internal API key for server-to-server communication
      * @param {UserExternalDataBodyParams} userExternalDataBodyParams 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
@@ -51,6 +64,22 @@ export interface KeycloakinternalApiInterface {
      */
     keycloakInternalControllerGetExternalData(requestParameters: KeycloakInternalControllerGetExternalDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserExternalDataResponse>;
 
+    /**
+     * 
+     * @summary External Data about the requested user, scoped to a single Angebot.
+     * @param {string} apiKey Internal API key for server-to-server communication
+     * @param {UserExternalDataV2BodyParams} userExternalDataV2BodyParams 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof KeycloakinternalApiInterface
+     */
+    keycloakInternalControllerGetExternalDataV2V2Raw(requestParameters: KeycloakInternalControllerGetExternalDataV2V2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserExternalDataV2Response>>;
+
+    /**
+     * External Data about the requested user, scoped to a single Angebot.
+     */
+    keycloakInternalControllerGetExternalDataV2V2(requestParameters: KeycloakInternalControllerGetExternalDataV2V2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserExternalDataV2Response>;
+
 }
 
 /**
@@ -62,6 +91,10 @@ export class KeycloakinternalApi extends runtime.BaseAPI implements Keycloakinte
      * External Data about requested in user.
      */
     async keycloakInternalControllerGetExternalDataRaw(requestParameters: KeycloakInternalControllerGetExternalDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserExternalDataResponse>> {
+        if (requestParameters.apiKey === null || requestParameters.apiKey === undefined) {
+            throw new runtime.RequiredError('apiKey','Required parameter requestParameters.apiKey was null or undefined when calling keycloakInternalControllerGetExternalData.');
+        }
+
         if (requestParameters.userExternalDataBodyParams === null || requestParameters.userExternalDataBodyParams === undefined) {
             throw new runtime.RequiredError('userExternalDataBodyParams','Required parameter requestParameters.userExternalDataBodyParams was null or undefined when calling keycloakInternalControllerGetExternalData.');
         }
@@ -71,6 +104,10 @@ export class KeycloakinternalApi extends runtime.BaseAPI implements Keycloakinte
         const headerParameters: runtime.HTTPHeaders = {};
 
         headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters.apiKey !== undefined && requestParameters.apiKey !== null) {
+            headerParameters['api-key'] = String(requestParameters.apiKey);
+        }
 
         const response = await this.request({
             path: `/keycloakinternal/externaldata`,
@@ -88,6 +125,47 @@ export class KeycloakinternalApi extends runtime.BaseAPI implements Keycloakinte
      */
     async keycloakInternalControllerGetExternalData(requestParameters: KeycloakInternalControllerGetExternalDataRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserExternalDataResponse> {
         const response = await this.keycloakInternalControllerGetExternalDataRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * External Data about the requested user, scoped to a single Angebot.
+     */
+    async keycloakInternalControllerGetExternalDataV2V2Raw(requestParameters: KeycloakInternalControllerGetExternalDataV2V2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<UserExternalDataV2Response>> {
+        if (requestParameters.apiKey === null || requestParameters.apiKey === undefined) {
+            throw new runtime.RequiredError('apiKey','Required parameter requestParameters.apiKey was null or undefined when calling keycloakInternalControllerGetExternalDataV2V2.');
+        }
+
+        if (requestParameters.userExternalDataV2BodyParams === null || requestParameters.userExternalDataV2BodyParams === undefined) {
+            throw new runtime.RequiredError('userExternalDataV2BodyParams','Required parameter requestParameters.userExternalDataV2BodyParams was null or undefined when calling keycloakInternalControllerGetExternalDataV2V2.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (requestParameters.apiKey !== undefined && requestParameters.apiKey !== null) {
+            headerParameters['api-key'] = String(requestParameters.apiKey);
+        }
+
+        const response = await this.request({
+            path: `/v2/keycloakinternal/externaldata`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: UserExternalDataV2BodyParamsToJSON(requestParameters.userExternalDataV2BodyParams),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => UserExternalDataV2ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * External Data about the requested user, scoped to a single Angebot.
+     */
+    async keycloakInternalControllerGetExternalDataV2V2(requestParameters: KeycloakInternalControllerGetExternalDataV2V2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<UserExternalDataV2Response> {
+        const response = await this.keycloakInternalControllerGetExternalDataV2V2Raw(requestParameters, initOverrides);
         return await response.value();
     }
 

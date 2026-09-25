@@ -1,6 +1,6 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 import { createPerson, createRolleAndPersonWithPersonenkontext, UserInfo } from '../base/api/personApi';
-import { createRolle, RollenArt } from '../base/api/rolleApi';
+import { createRolle, RollenArt, RollenMerkmal } from '../base/api/rolleApi';
 import { getServiceProviderId } from '../base/api/serviceProviderApi';
 import { createKlasse, getOrganisationId } from '../base/api/organisationApi';
 import { landSH, testschule665Name, testschuleName } from '../base/organisation';
@@ -46,12 +46,14 @@ test.describe('Zwei-Faktor-Authentifizierung über eigenes Profil einrichten', (
       const login: LoginViewPage = new LoginViewPage(page);
       const profileView: ProfileViewPage = new ProfileViewPage(page);
       const rollenart: RollenArt = typeLehrer;
+      const rollenMerkmalNamen = new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]);
       const kopersnummer: string = generateKopersNr();
 
       await test.step('Lehrer via API anlegen und mit diesem anmelden', async () => {
         const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: rollenart,
+          rollenMerkmalNamen,
           serviceProviderNames: [email],
           koPersNr: kopersnummer,
         });
@@ -122,7 +124,7 @@ test.describe('Zwei-Faktor-Authentifizierung als Admin einrichten', () => {
         rollenname,
         undefined,
         undefined,
-        new Set([await getServiceProviderId(page, itslearning, schuleId)]),
+        new Set([await getServiceProviderId(page, itslearning, schuleId, RollenArt.Lern)]),
       );
       const userInfo: UserInfo = await createPerson(page, {
         organisationId: schuleId,

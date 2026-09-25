@@ -1,4 +1,6 @@
 import { expect, Page } from '@playwright/test';
+import { testschuleName } from '../organisation';
+import { generateAngebotname } from '../utils/generateTestdata';
 import { constructApi } from './apiFactory';
 import {
   ProviderApi,
@@ -7,10 +9,14 @@ import {
 } from './generated/apis/ProviderApi';
 import {
   CreateServiceProviderBodyParams,
+  CreateServiceProviderBodyParamsKategorieEnum,
+  CreateServiceProviderBodyParamsMerkmaleEnum,
   CreateServiceProviderResponse,
+  RollenArt,
   ServiceProviderResponse,
 } from './generated/models';
 import { ApiResponse } from './generated/runtime';
+import { getOrganisationId } from './organisationApi';
 
 export interface ServiceProviderFromRolleResponse {
   id: string;
@@ -43,6 +49,31 @@ export async function createServiceProvider(
   }
 }
 
+export async function createServiceProviderForTestschule(
+  page: Page,
+  verfuegbarFuerRollenerweiterung: boolean,
+): Promise<{ id: string; name: string }> {
+  const organisationId: string = await getOrganisationId(page, testschuleName);
+  const name: string = generateAngebotname();
+  const merkmale: CreateServiceProviderBodyParamsMerkmaleEnum[] = verfuegbarFuerRollenerweiterung
+    ? [
+        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+      ]
+    : [CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar];
+
+  const id: string = await createServiceProvider(page, {
+    organisationId,
+    name,
+    url: page.url(),
+    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+    requires2fa: false,
+    merkmale,
+  });
+
+  return { id, name };
+}
+
 export async function deleteServiceProvider(page: Page, angebotId: string): Promise<void> {
   try {
     const requestParameters: ProviderControllerDeleteServiceProviderRequest = {
@@ -62,12 +93,14 @@ export async function getServiceProviderId(
   page: Page,
   serviceProviderName: string,
   schulstrukturknotenOfRolle: string,
+  rollenArt: RollenArt,
 ): Promise<string> {
   try {
     const providerApi: ProviderApi = constructProviderApi(page);
     const response: ApiResponse<ServiceProviderResponse[]> =
       await providerApi.providerControllerGetAssignableServiceProvidersForRolleRaw({
         schulstrukturknotenOfRolle,
+        rollenArt,
       });
     expect(response.raw.status).toBe(200);
 
@@ -97,12 +130,14 @@ export async function getServiceProviderIdsMappedByName(
   page: Page,
   serviceProviderNames: string[],
   schulstrukturknotenOfRolle: string,
+  rollenArt: RollenArt,
 ): Promise<Map<string, string>> {
   try {
     const providerApi: ProviderApi = constructProviderApi(page);
     const response: ApiResponse<ServiceProviderResponse[]> =
       await providerApi.providerControllerGetAssignableServiceProvidersForRolleRaw({
         schulstrukturknotenOfRolle,
+        rollenArt,
       });
     expect(response.raw.status).toBe(200);
 
