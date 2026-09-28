@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import {
   CreateServiceProviderBodyParamsKategorieEnum,
   CreateServiceProviderBodyParamsMerkmaleEnum,
+  ResponseError,
   RollenSystemRechtEnum,
 } from '../../base/api/generated';
 import { createSchule, getOrganisationId } from '../../base/api/organisationApi';
@@ -96,7 +97,6 @@ const test = base.extend<{
       merkmale: [
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
         CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
-        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
       ],
     });
     const managementPage: ServiceProviderManagementViewPage = await personManagementViewPage
@@ -110,7 +110,14 @@ const test = base.extend<{
     const schuleName: string = generateSchulname();
     const schuleId: string = await createSchule(page, schuleName);
     const angebotName: string = generateAngebotname();
-    await createSchulspezifischesAngebot(page, schuleId, angebotName);
+    try {
+      await createSchulspezifischesAngebot(page, schuleId, angebotName);
+    } catch (e) {
+      if (e instanceof ResponseError) {
+        console.error('Response body:', await e.response.text());
+      }
+      throw e;
+    }
     const landesangebotName: string = await createLandweitesAngebot(page);
 
     const user: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
@@ -132,8 +139,14 @@ const test = base.extend<{
     const schuleName: string = generateSchulname();
     const schuleId: string = await createSchule(page, schuleName);
     const angebotName: string = generateAngebotname();
-    await createSchulspezifischesAngebot(page, schuleId, angebotName);
-
+    try {
+      await createSchulspezifischesAngebot(page, schuleId, angebotName);
+    } catch (e) {
+      if (e instanceof ResponseError) {
+        console.error('Response body:', await e.response.text());
+      }
+      throw e;
+    }
     const managementPage: ServiceProviderManagementBySchuleViewPage = await personManagementViewPage
       .getMenu()
       .navigateToAngebotManagementSchulspezifisch();

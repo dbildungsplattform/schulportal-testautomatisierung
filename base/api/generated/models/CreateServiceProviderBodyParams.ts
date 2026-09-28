@@ -112,8 +112,7 @@ export const CreateServiceProviderBodyParamsMerkmaleEnum = {
     NachtraeglichZuweisbar: 'NACHTRAEGLICH_ZUWEISBAR',
     VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG',
     AnbietenInSchulischerAngebotsverwaltung: 'ANBIETEN_IN_SCHULISCHER_ANGEBOTSVERWALTUNG',
-    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG',
-    AnbietenInLandesweiterAngebotsverwaltung: 'ANBIETEN_IN_LANDESWEITER_ANGEBOTSVERWALTUNG'
+    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG'
 } as const;
 export type CreateServiceProviderBodyParamsMerkmaleEnum = typeof CreateServiceProviderBodyParamsMerkmaleEnum[keyof typeof CreateServiceProviderBodyParamsMerkmaleEnum];
 
