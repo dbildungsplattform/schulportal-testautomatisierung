@@ -44,8 +44,9 @@ async function createSchulspezifischesAngebot(page: Page, schuleId: string, ange
     requires2fa: false,
     merkmale: [
       CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+      // required by the backend for the Angebot to appear in the schulspezifische Angebotsliste at all
+      CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
       CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
-      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
     ],
   });
 }
@@ -60,10 +61,7 @@ async function createLandweitesAngebot(page: Page): Promise<string> {
     url: page.url(),
     kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
     requires2fa: false,
-    merkmale: [
-      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
-      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInLandesweiterAngebotsverwaltung,
-    ],
+    merkmale: [CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung],
   });
   return angebotName;
 }
@@ -126,6 +124,7 @@ const test = base.extend<{
       systemrechte: new Set([
         RollenSystemRechtEnum.RollenErweitern,
         RollenSystemRechtEnum.AngeboteEingeschraenktVerwalten,
+        RollenSystemRechtEnum.PersonenVerwalten,
       ]),
       serviceProviderNames: [schulportaladmin],
     });
