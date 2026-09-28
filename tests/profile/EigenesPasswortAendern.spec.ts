@@ -2,7 +2,7 @@ import { PlaywrightTestArgs, test } from '@playwright/test';
 
 import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
 import { createPerson, createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
-import { createRolle, RollenArt } from '../../base/api/rolleApi';
+import { createRolle, RollenArt, RollenMerkmal } from '../../base/api/rolleApi';
 import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { testschuleName } from '../../base/organisation';
 import { typeLehrer } from '../../base/rollentypen';
@@ -83,6 +83,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
         userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: testschuleName,
           rollenArt: typeLehrer,
+          rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
           serviceProviderNames: [email],
           koPersNr: generateKopersNr(),
         });
@@ -154,6 +155,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
 
       const organisation: string = testschuleName;
       const rollenart: RollenArt = typeLehrer;
+      const rollenMerkmalNamen = new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]);
       let username: string = '';
       const kopersnummer: string = generateKopersNr();
 
@@ -161,6 +163,7 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
         const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
           organisationName: organisation,
           rollenArt: rollenart,
+          rollenMerkmalNamen,
           serviceProviderNames: [itslearning],
           koPersNr: kopersnummer,
         });
