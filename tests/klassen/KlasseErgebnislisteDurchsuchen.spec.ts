@@ -120,7 +120,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           `Als ${bezeichnung}: Ergebnisliste Klassen nach Spalte Klasse sortieren können`,
           { tag: [DEV, STAGE] },
           async () => {
-              await test.step(`Schule filtern oder validieren`, async () => {
+            await test.step(`Schule filtern oder validieren`, async () => {
                 if (hasMultipleSchulen) {
                 await klasseManagementViewPage.filterBySchule(schuleParams.name);
               } else {
