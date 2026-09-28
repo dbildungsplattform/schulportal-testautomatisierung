@@ -121,7 +121,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           { tag: [DEV, STAGE] },
           async () => {
             await test.step(`Schule filtern oder validieren`, async () => {
-                if (hasMultipleSchulen) {
+              if (hasMultipleSchulen) {
                 await klasseManagementViewPage.filterBySchule(schuleParams.name);
               } else {
                 await klasseManagementViewPage.checkIfSchuleIsCorrect(schuleParams.name, schuleParams.dienststellenNr);
