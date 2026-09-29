@@ -47,33 +47,41 @@ async function createRolleForSchule(page: Page, organisationId: string, rollenAr
   return { id, name };
 }
 
-const test = base.extend<{ angebot: AngebotFixture }>({
-  angebot: async ({ page }, use) => {
-    await loginAndNavigateToAdministration(page);
-    const schuleName: string = generateSchulname();
-    const schuleId: string = await createSchule(page, schuleName);
-    const angebotName: string = generateAngebotname();
-    const angebotLink: string = page.url();
-    const angebotId: string = await createServiceProvider(page, {
-      organisationId: schuleId,
-      name: angebotName,
-      url: angebotLink,
-      kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
-      requires2fa: false,
-      merkmale: [
-        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
-        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
-        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
-        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerRollenverwaltung,
-      ],
-    });
-    const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
-    const schuladmin: UserInfo = await createPerson(page, {
-      organisationId: schuleId,
-      rolleId: schuladminRolleId,
-    });
+async function createAngebotFixture(page: Page, logoId?: number): Promise<AngebotFixture> {
+  await loginAndNavigateToAdministration(page);
+  const schuleName: string = generateSchulname();
+  const schuleId: string = await createSchule(page, schuleName);
+  const angebotName: string = generateAngebotname();
+  const angebotLink: string = page.url();
+  const angebotId: string = await createServiceProvider(page, {
+    organisationId: schuleId,
+    name: angebotName,
+    url: angebotLink,
+    ...(logoId === undefined ? {} : { logoId }),
+    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+    requires2fa: false,
+    merkmale: [
+      CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+      CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerRollenverwaltung,
+    ],
+  });
+  const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
+  const schuladmin: UserInfo = await createPerson(page, {
+    organisationId: schuleId,
+    rolleId: schuladminRolleId,
+  });
 
-    await use({ schuladmin, angebotId, angebotLink, angebotName, schuleId, schuleName });
+  return { schuladmin, angebotId, angebotLink, angebotName, schuleId, schuleName };
+}
+
+const test = base.extend<{ angebot: AngebotFixture; angebotMitCloudLogo: AngebotFixture }>({
+  angebot: async ({ page }, use) => {
+    await use(await createAngebotFixture(page));
+  },
+  angebotMitCloudLogo: async ({ page }, use) => {
+    await use(await createAngebotFixture(page, 1));
   },
 });
 
@@ -90,6 +98,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     await test.step('Gesamtübersicht prüfen', async () => {
       await detailsPage.assertServiceProviderDetailsHeadline(schuleName);
       await detailsPage.assertPageIsVisible();
+      await detailsPage.assertCloseButtonVisible();
       await detailsPage.assertUrlContainsOrganisationId(schuleId);
     });
 
@@ -99,29 +108,35 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     });
   });
 
-  test('Angebotsdaten und leere Rollenerweiterungen anzeigen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
-    const { schuladmin, angebotLink, angebotName, schuleName } = angebot;
-    const managementPage: ServiceProviderManagementBySchuleViewPage =
-      await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
-    const detailsPage: ServiceProviderDetailsBySchuleViewPage =
-      await managementPage.openServiceProviderDetails(angebotName);
+  test(
+    'Angebotsdaten und leere Rollenerweiterungen anzeigen',
+    { tag: [DEV, STAGE] },
+    async ({ angebotMitCloudLogo, page }) => {
+      const { schuladmin, angebotLink, angebotName, schuleName } = angebotMitCloudLogo;
+      const managementPage: ServiceProviderManagementBySchuleViewPage =
+        await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
+      const detailsPage: ServiceProviderDetailsBySchuleViewPage =
+        await managementPage.openServiceProviderDetails(angebotName);
 
-    await test.step('Angebotsdaten prüfen', async () => {
-      await detailsPage.assertServiceProviderDetails({
-        name: angebotName,
-        administrationsebene: schuleName,
-        requires2fa: 'Nein',
-        canBeAssignedToRollen: 'Ja',
-        kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
-        link: angebotLink,
-        rollenerweiterung: 'Ja',
+      await test.step('Angebotsdaten prüfen', async () => {
+        await detailsPage.assertServiceProviderDetails({
+          name: angebotName,
+          administrationsebene: schuleName,
+          requires2fa: 'Nein',
+          canBeAssignedToRollen: 'Ja',
+          vidisAngebot: 'Nein',
+          kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+          link: angebotLink,
+          rollenerweiterung: 'Ja',
+        });
+        await detailsPage.assertCloudLogoVisible();
       });
-    });
 
-    await test.step('Leere Rollenerweiterungen prüfen', async () => {
-      await detailsPage.assertRollenerweiterungen('Keine');
-    });
-  });
+      await test.step('Leere Rollenerweiterungen prüfen', async () => {
+        await detailsPage.assertRollenerweiterungen('Keine');
+      });
+    },
+  );
 
   test('Nur Rollenerweiterungen der eigenen Schule anzeigen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
     const { schuladmin, angebotId, angebotName, schuleId } = angebot;
@@ -153,7 +168,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
       createRolleForSchule(page, schuleId, RollenArt.Leit),
     ]);
 
-    await test.step('Alle Rollenerweiterungen anlegen', async () => {
+    await test.step('Rollenerweiterungen anlegen', async () => {
       await applyRollenerweiterungChanges(
         page,
         angebotId,
@@ -165,7 +180,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     const managementPage: ServiceProviderManagementBySchuleViewPage =
       await loginAsSchuladminAndNavigateToAngebotManagement(page, schuladmin);
 
-    await test.step('Alle Rollen als Chips prüfen', async () => {
+    await test.step('Alle erweiterten Rollen als Chips prüfen', async () => {
       const detailsPage: ServiceProviderDetailsBySchuleViewPage =
         await managementPage.openServiceProviderDetails(angebotName);
       await detailsPage.assertRollenerweiterungenContain(rollen.map((rolle: CreatedRolle) => rolle.name));

@@ -22,6 +22,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
   private readonly administrationsebeneField: Locator;
   private readonly requires2faField: Locator;
   private readonly canBeAssignedToRollenField: Locator;
+  private readonly vidisAngebotField: Locator;
   private readonly kategorieField: Locator;
   private readonly linkField: Locator;
   private readonly rollenerweiterungField: Locator;
@@ -52,6 +53,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     this.administrationsebeneField = this.page.getByTestId('service-provider-administrationsebene');
     this.requires2faField = this.page.getByTestId('service-provider-requires-2fa');
     this.canBeAssignedToRollenField = this.page.getByTestId('service-provider-can-be-assigned-to-rollen');
+    this.vidisAngebotField = this.page.getByTestId('service-provider-vidis-angebot');
     this.kategorieField = this.page.getByTestId('service-provider-kategorie');
     this.linkField = this.page.getByTestId('service-provider-link');
     this.rollenerweiterungField = this.page.getByTestId('service-provider-rollenerweiterung');
@@ -250,6 +252,17 @@ export class ServiceProviderDetailsBySchuleViewPage {
     await expect(this.serviceProviderDetailsHeadline).toContainText('Angebot bearbeiten');
   }
 
+  public async assertCloseButtonVisible(): Promise<void> {
+    await expect(this.closeButton).toBeVisible();
+    await expect(this.closeButton).toHaveText('Schließen');
+  }
+
+  public async assertCloudLogoVisible(): Promise<void> {
+    const cloudLogo: Locator = this.page.getByTestId('service-provider-logo').getByAltText('provider-logo');
+    await expect(cloudLogo).toBeVisible();
+    await expect(cloudLogo).toHaveAttribute('src', /Cloud/);
+  }
+
   public async assertRollenerweiterungBearbeitenVisible(): Promise<void> {
     await expect(this.rollenerweiterungBearbeitenButton).toBeVisible();
   }
@@ -303,6 +316,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     administrationsebene?: string;
     requires2fa?: string;
     canBeAssignedToRollen?: string;
+    vidisAngebot?: string;
     kategorie?: ServiceProviderKategorie;
     link?: string;
     rollenerweiterung?: string;
@@ -314,6 +328,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     if (expected.requires2fa) await expect(this.requires2faField).toHaveText(expected.requires2fa);
     if (expected.canBeAssignedToRollen)
       await expect(this.canBeAssignedToRollenField).toHaveText(expected.canBeAssignedToRollen);
+    if (expected.vidisAngebot) await expect(this.vidisAngebotField).toHaveText(expected.vidisAngebot);
     if (expected.kategorie) await expect(this.kategorieField).toHaveText(KATEGORIE_LABEL[expected.kategorie]);
     if (expected.link) await expect(this.linkField).toHaveText(expected.link);
     if (expected.rollenerweiterung) await expect(this.rollenerweiterungField).toHaveText(expected.rollenerweiterung);
