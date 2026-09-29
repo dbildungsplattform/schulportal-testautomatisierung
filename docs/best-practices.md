@@ -70,7 +70,7 @@ Module-level mutable state (e.g. `let usernames: string[] = []`) is error-prone 
 - Use variables only test-locally (`test`) or suite-locally (`test.describe`).
 - Do not use global arrays/objects for created data.
 
-Furthermore, relying on global data can pollute your test with state from other tests. Each test should create a seperate, unique school, and assign all its data to that school.
+Furthermore, relying on global data can pollute your test with state from other tests. Each test should create a separate, unique school, and assign all its data to that school.
 - For reusable setup/teardown, use Playwright custom fixtures (`test.extend`).
 - Use the global school fixtures only for pure read-only tests.
 - When asserting lists, filter by your school where possible to avoid reading globally visible data.
