@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker/locale/de';
-import { generateRandomString, CharacterSetType } from 'ts-randomstring/lib/index.js';
-import { format, addDays, addMonths } from 'date-fns';
+import { addDays, addMonths, format } from 'date-fns';
+import { CharacterSetType, generateRandomString } from 'ts-randomstring/lib/index.js';
 
 const shardIndex = process.env.SHARD_INDEX ?? '0';
 const shardLetter = String.fromCharCode(65 + parseInt(shardIndex, 10));
@@ -45,6 +45,14 @@ export function generateSchulname(): string {
   return (
     `TAuto-PW-S${shardIndex}-S-` +
     faker.lorem.word({ length: { min: 8, max: 8 } }) +
+    generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic })
+  );
+}
+
+export function generateEmailAdress(): string {
+  return (
+    `TAuto-PW-S${shardIndex}-E-` +
+    faker.internet.email() +
     generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic })
   );
 }
