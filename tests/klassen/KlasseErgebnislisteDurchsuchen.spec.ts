@@ -121,11 +121,12 @@ import { HeaderPage } from '../../pages/components/Header.page';
           { tag: [DEV, STAGE] },
           async () => {
             await test.step(`Schule filtern oder validieren`, async () => {
-              await klasseManagementViewPage.setItemsPerPage(5);
-              await klasseManagementViewPage.checkRows(5);
-              if (!hasMultipleSchulen) {
+              if (hasMultipleSchulen) {
+                await klasseManagementViewPage.filterBySchule(schuleParams.name);
+              } else {
                 await klasseManagementViewPage.checkIfSchuleIsCorrect(schuleParams.name, schuleParams.dienststellenNr);
               }
+              await klasseManagementViewPage.setItemsPerPage(5);
             });
 
             await test.step(`Sortierverhalten prüfen`, async () => {

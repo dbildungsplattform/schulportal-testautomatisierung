@@ -3,17 +3,16 @@ import {
   CreateServiceProviderBodyParamsKategorieEnum,
   CreateServiceProviderBodyParamsMerkmaleEnum,
 } from '../../base/api/generated';
-import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
+import { createKlasse, createSchule } from '../../base/api/organisationApi';
 import {
   addOrganisationenToPerson,
   createPerson,
   createPersonWithPersonenkontext,
   UserInfo,
 } from '../../base/api/personApi';
-import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../base/api/rolleApi';
-import { constructProviderApi, createServiceProvider, deleteServiceProvider } from '../../base/api/serviceProviderApi';
+import { createRolle, RollenArt } from '../../base/api/rolleApi';
+import { createServiceProvider } from '../../base/api/serviceProviderApi';
 import { test } from '../../base/fixtures';
-import { testschuleName } from '../../base/organisation';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
@@ -101,7 +100,8 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     schuladminUser = null;
 
     await loginAndNavigateToAdministration(page);
-    testschuleId = await getOrganisationId(page, testschuleName);
+    const testschuleName = generateSchulname();
+    testschuleId = await createSchule(page, testschuleName);
 
     angebotName = generateAngebotname();
     angebotId = await createServiceProvider(page, {
@@ -137,42 +137,6 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     });
 
     usersForVisibilityCheck = [lehrUser, lernUser];
-  });
-
-  test.afterEach(async ({ page }) => {
-    try {
-      await logout(page);
-    } catch (_error) {
-      // no-op
-    }
-
-    await loginAndNavigateToAdministration(page);
-
-    if (angebotId && testschuleId) {
-      try {
-        const providerApi = constructProviderApi(page);
-        const rollenerweiterungen = await providerApi.providerControllerFindRollenerweiterungenByServiceProviderId({
-          angebotId,
-          organisationIds: [testschuleId],
-        });
-        const rolleIds: string[] = rollenerweiterungen.items.map((rollenerweiterung) => rollenerweiterung.rolleId);
-
-        if (rolleIds.length > 0) {
-          await applyRollenerweiterungChanges(page, angebotId, testschuleId, [], rolleIds);
-        }
-      } catch (error) {
-        console.warn('[WARN] Failed to detach rollenerweiterungen before Angebot deletion:', error);
-      }
-    }
-
-    // Exception to global teardown: this Angebot is tied to static testschuleName and must be deleted here.
-    if (angebotId) {
-      try {
-        await deleteServiceProvider(page, angebotId);
-      } catch (error) {
-        console.warn('[WARN] Failed to delete Angebot in afterEach:', error);
-      }
-    }
   });
 
   const schuladminScenarios: { hasMultipleSchulen: boolean; bezeichnung: string }[] = [
