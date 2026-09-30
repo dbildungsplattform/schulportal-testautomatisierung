@@ -114,8 +114,9 @@ export class ServiceProviderManagementBySchuleViewPage {
     await expect(this.resultTable).toContainText('Bitte wählen Sie zunächst im Filter eine Schule aus.');
   }
 
-  public async assertNoServiceProvidersFound(): Promise<void> {
-    await expect(this.resultTable).toContainText('Keine passenden Angebote gefunden.');
+  public async assertNoServiceProviderProvidedBySchule(schuleName: string): Promise<void> {
+    await this.waitForResultTableLoad();
+    await expect(this.dataTable.getRow(schuleName)).toHaveCount(0);
   }
 
   public async checkHeaders(expectedHeaders: string[]): Promise<void> {

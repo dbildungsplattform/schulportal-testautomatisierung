@@ -59,8 +59,12 @@ export async function createServiceProviderForTestschule(
     ? [
         CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
         CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
       ]
-    : [CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar];
+    : [
+        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      ];
 
   const id: string = await createServiceProvider(page, {
     organisationId,
