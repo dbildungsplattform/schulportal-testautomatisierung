@@ -99,35 +99,35 @@ export class ServiceProviderDetailsBySchuleViewPage {
     return this;
   }
 
-  public async getName(): Promise<string> {
+  public getName(): Promise<string> {
     return this.nameField.innerText();
   }
 
-  public async getAdministrationsebene(): Promise<string> {
+  public getAdministrationsebene(): Promise<string> {
     return this.administrationsebeneField.innerText();
   }
 
-  public async getRequires2fa(): Promise<string> {
+  public getRequires2fa(): Promise<string> {
     return this.requires2faField.innerText();
   }
 
-  public async getCanBeAssignedToRollen(): Promise<string> {
+  public getCanBeAssignedToRollen(): Promise<string> {
     return this.canBeAssignedToRollenField.innerText();
   }
 
-  public async getKategorie(): Promise<string> {
+  public getKategorie(): Promise<string> {
     return this.kategorieField.innerText();
   }
 
-  public async getLink(): Promise<string> {
+  public getLink(): Promise<string> {
     return this.linkField.innerText();
   }
 
-  public async getRollenerweiterung(): Promise<string> {
+  public getRollenerweiterung(): Promise<string> {
     return this.rollenerweiterungField.innerText();
   }
 
-  public async getRollenerweiterungen(): Promise<string> {
+  public getRollenerweiterungen(): Promise<string> {
     return this.rollenerweiterungenField.innerText();
   }
 
