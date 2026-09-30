@@ -61,6 +61,7 @@ export class ServiceProviderManagementBySchuleViewPage {
 
   public async filterBySchule(schuleName: string): Promise<void> {
     await this.schuleAutocomplete.searchByTitle(schuleName);
+    await this.schuleFilterInput.blur();
     await this.waitForResultTableLoad();
     await expect(this.page.getByTestId('layout-card-headline')).toContainText(schuleName);
   }
