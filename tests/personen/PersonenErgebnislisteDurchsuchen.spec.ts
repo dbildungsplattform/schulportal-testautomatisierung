@@ -10,6 +10,7 @@ import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateDienststellenNr,
+  generateEmailAdress,
   generateKopersNr,
   generateNachname,
   generateSchulname,
@@ -61,6 +62,7 @@ interface AdminFixture {
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
+        emailAdress: generateEmailAdress(),
       };
       await createSchule(page, schuleParams.name, schuleParams.dienststellenNr);
 
@@ -341,7 +343,12 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
           klassenCount: 2,
           schuelerCount: 2,
           schuleId: schulId,
-          params: { name: schulName, schulform: Schulform.Oeffentlich, dienststellenNr: schulNr },
+          params: {
+            name: schulName,
+            schulform: Schulform.Oeffentlich,
+            dienststellenNr: schulNr,
+            emailAdress: generateEmailAdress(),
+          },
         },
       ]);
     });

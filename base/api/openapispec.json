@@ -1937,6 +1937,7 @@
             "in": "path",
             "description": "The ID of the parent organisation to which another organisation will be added as a subordinate.",
             "schema": {
+              "nullable": false,
               "type": "string"
             }
           }
@@ -5640,9 +5641,9 @@
         "type": "oauth2",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "http://localhost:8080/realms/SPSH/protocol/openid-connect/auth",
-            "tokenUrl": "http://localhost:8080/realms/SPSH/protocol/openid-connect/token",
-            "refreshUrl": "http://localhost:8080/realms/SPSH/protocol/openid-connect/token",
+            "authorizationUrl": "https://main-keycloak.dev.spsh.dbildungsplattform.de/realms/SPSH/protocol/openid-connect/auth",
+            "tokenUrl": "https://main-keycloak.dev.spsh.dbildungsplattform.de/realms/SPSH/protocol/openid-connect/token",
+            "refreshUrl": "https://main-keycloak.dev.spsh.dbildungsplattform.de/realms/SPSH/protocol/openid-connect/token",
             "scopes": {}
           }
         }
