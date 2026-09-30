@@ -22,6 +22,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
   private readonly administrationsebeneField: Locator;
   private readonly requires2faField: Locator;
   private readonly canBeAssignedToRollenField: Locator;
+  private readonly vidisAngebotField: Locator;
   private readonly kategorieField: Locator;
   private readonly linkField: Locator;
   private readonly rollenerweiterungField: Locator;
@@ -52,6 +53,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     this.administrationsebeneField = this.page.getByTestId('service-provider-administrationsebene');
     this.requires2faField = this.page.getByTestId('service-provider-requires-2fa');
     this.canBeAssignedToRollenField = this.page.getByTestId('service-provider-can-be-assigned-to-rollen');
+    this.vidisAngebotField = this.page.getByTestId('service-provider-vidis-angebot');
     this.kategorieField = this.page.getByTestId('service-provider-kategorie');
     this.linkField = this.page.getByTestId('service-provider-link');
     this.rollenerweiterungField = this.page.getByTestId('service-provider-rollenerweiterung');
@@ -97,35 +99,35 @@ export class ServiceProviderDetailsBySchuleViewPage {
     return this;
   }
 
-  public async getName(): Promise<string> {
+  public getName(): Promise<string> {
     return this.nameField.innerText();
   }
 
-  public async getAdministrationsebene(): Promise<string> {
+  public getAdministrationsebene(): Promise<string> {
     return this.administrationsebeneField.innerText();
   }
 
-  public async getRequires2fa(): Promise<string> {
+  public getRequires2fa(): Promise<string> {
     return this.requires2faField.innerText();
   }
 
-  public async getCanBeAssignedToRollen(): Promise<string> {
+  public getCanBeAssignedToRollen(): Promise<string> {
     return this.canBeAssignedToRollenField.innerText();
   }
 
-  public async getKategorie(): Promise<string> {
+  public getKategorie(): Promise<string> {
     return this.kategorieField.innerText();
   }
 
-  public async getLink(): Promise<string> {
+  public getLink(): Promise<string> {
     return this.linkField.innerText();
   }
 
-  public async getRollenerweiterung(): Promise<string> {
+  public getRollenerweiterung(): Promise<string> {
     return this.rollenerweiterungField.innerText();
   }
 
-  public async getRollenerweiterungen(): Promise<string> {
+  public getRollenerweiterungen(): Promise<string> {
     return this.rollenerweiterungenField.innerText();
   }
 
@@ -250,6 +252,17 @@ export class ServiceProviderDetailsBySchuleViewPage {
     await expect(this.serviceProviderDetailsHeadline).toContainText('Angebot bearbeiten');
   }
 
+  public async assertCloseButtonVisible(): Promise<void> {
+    await expect(this.closeButton).toBeVisible();
+    await expect(this.closeButton).toHaveText('Schließen');
+  }
+
+  public async assertCloudLogoVisible(): Promise<void> {
+    const cloudLogo: Locator = this.page.getByTestId('service-provider-logo').getByAltText('provider-logo');
+    await expect(cloudLogo).toBeVisible();
+    await expect(cloudLogo).toHaveAttribute('src', /Cloud/);
+  }
+
   public async assertRollenerweiterungBearbeitenVisible(): Promise<void> {
     await expect(this.rollenerweiterungBearbeitenButton).toBeVisible();
   }
@@ -288,6 +301,10 @@ export class ServiceProviderDetailsBySchuleViewPage {
     await expect(this.serviceProviderDetailsHeadline).toHaveText(`Angebot bearbeiten ${schulname}`);
   }
 
+  public async assertUrlContainsOrganisationId(organisationId: string): Promise<void> {
+    await expect(this.page).toHaveURL((url: URL): boolean => url.searchParams.get('orga') === organisationId);
+  }
+
   public async assertCanEditRollenerweiterung(): Promise<void> {
     await expect(this.rollenerweiterungBearbeitenButton).toBeVisible();
     await expect(this.rollenerweiterungBearbeitenButton).toBeEnabled();
@@ -298,6 +315,8 @@ export class ServiceProviderDetailsBySchuleViewPage {
     name?: string;
     administrationsebene?: string;
     requires2fa?: string;
+    canBeAssignedToRollen?: string;
+    vidisAngebot?: string;
     kategorie?: ServiceProviderKategorie;
     link?: string;
     rollenerweiterung?: string;
@@ -307,6 +326,9 @@ export class ServiceProviderDetailsBySchuleViewPage {
     if (expected.administrationsebene)
       await expect(this.administrationsebeneField).toHaveText(expected.administrationsebene);
     if (expected.requires2fa) await expect(this.requires2faField).toHaveText(expected.requires2fa);
+    if (expected.canBeAssignedToRollen)
+      await expect(this.canBeAssignedToRollenField).toHaveText(expected.canBeAssignedToRollen);
+    if (expected.vidisAngebot) await expect(this.vidisAngebotField).toHaveText(expected.vidisAngebot);
     if (expected.kategorie) await expect(this.kategorieField).toHaveText(KATEGORIE_LABEL[expected.kategorie]);
     if (expected.link) await expect(this.linkField).toHaveText(expected.link);
     if (expected.rollenerweiterung) await expect(this.rollenerweiterungField).toHaveText(expected.rollenerweiterung);
@@ -333,6 +355,12 @@ export class ServiceProviderDetailsBySchuleViewPage {
   public async assertRollenerweiterungenContain(expectedRollen: string[]): Promise<void> {
     for (const rollenName of expectedRollen) {
       await expect(this.rollenerweiterungenField).toContainText(rollenName);
+    }
+  }
+
+  public async assertRollenerweiterungenNotContain(expectedRollen: string[]): Promise<void> {
+    for (const rollenName of expectedRollen) {
+      await expect(this.rollenerweiterungenField).not.toContainText(rollenName);
     }
   }
 
