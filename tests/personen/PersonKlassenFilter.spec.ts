@@ -11,7 +11,12 @@ import { landesadminRolle, schuelerRolle, schuladminOeffentlichRolle } from '../
 import { typeSchueler } from '../../base/rollentypen';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateDienststellenNr, generateKlassenname, generateSchulname } from '../../base/utils/generateTestdata';
+import {
+  generateDienststellenNr,
+  generateEmailAdress,
+  generateKlassenname,
+  generateSchulname,
+} from '../../base/utils/generateTestdata';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
 import { StartViewPage } from '../../pages/StartView.page';
@@ -39,6 +44,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
+        emailAdress: generateEmailAdress(),
       };
       schuleId = await createSchule(page, schuleParams.name, schuleParams.dienststellenNr);
 
