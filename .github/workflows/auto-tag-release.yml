@@ -16,7 +16,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
       
       - name: Update Semver
-        uses: rickstaa/action-update-semver@77e8cb0f3cd805b38ffe25c07236336e05dcb4da #v1.1.4
+        uses: dbildungsplattform/action-update-semver@a95e4e5fd00d6f0f5e011846285a0a7958010cdd # use lightweight git tag not to break direct nested workflow calls, see https://github.com/orgs/community/discussions/48693#discussioncomment-6132963
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           major_version_tag_only: false
