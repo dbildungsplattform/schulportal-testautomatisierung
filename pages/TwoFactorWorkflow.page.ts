@@ -51,10 +51,7 @@ export class TwoFactorWorkflowPage {
     const otp: string = await this.generateCurrentOtp(otpSecret);
 
     await profileViewPage.proceedToOtpEntry();
-    for (let index: number = 0; index < otp.length; index++) {
-      const digit: string = otp.at(index)!;
-      await this.page.getByTestId('self-service-otp-input').locator('input').nth(index).fill(digit);
-    }
+    await this.page.getByTestId('self-service-otp-input').locator('.v-otp-input__input').pressSequentially(otp);
     const setupButton: Locator = this.page.getByTestId('proceed-two-factor-authentication-dialog');
     await setupButton.click();
     await expect(setupButton).toBeHidden();

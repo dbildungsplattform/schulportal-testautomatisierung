@@ -1,4 +1,4 @@
-import { expect, type Locator, type Response, Page } from '@playwright/test';
+import { expect, Page, type Locator, type Response } from '@playwright/test';
 
 const noDataMessage: string = 'Keine Daten gefunden.';
 export class Autocomplete {
@@ -15,14 +15,23 @@ export class Autocomplete {
     this.overlayLocator = this.page.locator('div.v-overlay.v-menu');
     this.itemsLocator = this.page.locator('.v-overlay .v-list-item');
     this.modalToggle = this.locator.locator('.v-field__append-inner');
-    this.inputLocator = this.locator.locator('input');
+    this.inputLocator = this.locator.locator('.v-field__input input');
     this.loadingLocator = this.locator.locator('.v-field__loader');
   }
 
-  private async waitForData(): Promise<void> {
-    await expect(this.overlayLocator).not.toHaveText(noDataMessage);
+  private async getOverlayLocator(): Promise<Locator> {
+    const menuId: string | null = await this.inputLocator.getAttribute('aria-controls');
+    if (!menuId) {
+      // fallback to the previous behavior if aria-controls isn't set for some reason
+      return this.page.locator('div.v-overlay.v-menu.v-overlay--active');
+    }
+    return this.page.locator(`#${menuId}`);
   }
 
+  private async waitForData(): Promise<void> {
+    const overlay: Locator = await this.getOverlayLocator();
+    await expect(overlay).not.toHaveText(noDataMessage);
+  }
   public async selectByPosition(selection: number[]): Promise<string[]> {
     const selectedItems: string[] = [];
     await this.openModal();
@@ -37,6 +46,10 @@ export class Autocomplete {
     return selectedItems;
   }
 
+  /**
+   * Opens the modal, selects the title, closes the modal
+   * @param title
+   */
   public async selectByTitle(title: string): Promise<void> {
     await this.openModal();
     await this.waitForData();
@@ -60,8 +73,25 @@ export class Autocomplete {
   }
 
   public async closeModal(): Promise<void> {
-    await this.page.keyboard.press('Escape');
-    await this.page.getByTestId('admin-headline').click();
+    // Escape nur drücken, wenn das Menü-Overlay noch offen ist – sonst
+    // würde Escape den umschließenden Dialog (falls vorhanden) schließen.
+    const menuOpen: boolean = await this.overlayLocator
+      .first()
+      .isVisible()
+      .catch((): boolean => false);
+    if (menuOpen) {
+      await this.page.keyboard.press('Escape');
+    }
+    // Innerhalb eines Vuetify-Dialogs liegt admin-headline hinter dem Dialog-Scrim
+    // und ist nicht klickbar. Den Klick deshalb nur außerhalb von Dialogen ausführen.
+    const dialogOpen: boolean = await this.page
+      .locator('.v-dialog .v-overlay__content')
+      .first()
+      .isVisible()
+      .catch((): boolean => false);
+    if (!dialogOpen) {
+      await this.page.getByTestId('admin-headline').click();
+    }
   }
 
   public async toggleModal(): Promise<void> {
@@ -96,12 +126,22 @@ export class Autocomplete {
     await this.closeModal();
   }
 
-  public async searchByTitle(searchString: string, exactMatch: boolean = false, endpoint?: string): Promise<void> {
+  public async searchByTitle(
+    searchString: string,
+    exactMatch: boolean = false,
+    endpoint?: string,
+    expectedHeaderText?: string,
+  ): Promise<void> {
     const currentValue: string | null = await this.inputLocator.textContent();
     if (currentValue === searchString) {
       return;
     }
     await this.openModal();
+    // Wait until the dropdown data has finished updating before typing, e.g. the
+    // "X Klassen gefunden" header only shows the final count once loading is done.
+    if (expectedHeaderText) {
+      await expect(this.overlayLocator.locator('.filter-header')).toContainText(expectedHeaderText);
+    }
     await this.clear();
     // Start listening BEFORE typing so we don't miss the response
     const responsePromise: Promise<Response> | null = endpoint
@@ -132,6 +172,10 @@ export class Autocomplete {
     await this.closeModal();
   }
 
+  /**
+   * Expects the modal to be open
+   * @param title
+   */
   public async selectByName(name: string): Promise<void> {
     const option: Locator = this.itemsLocator.filter({
       hasText: name,
@@ -144,6 +188,10 @@ export class Autocomplete {
   }
 
   /* assertions */
+  public async assertThatNoDataWasFound(): Promise<void> {
+    await expect(this.overlayLocator).toHaveText(noDataMessage);
+  }
+
   public async validateItemNotExists(searchString: string, exactMatch: boolean = false): Promise<void> {
     await this.inputLocator.click();
     await this.inputLocator.fill(searchString);
@@ -184,8 +232,12 @@ export class Autocomplete {
     await expect(item).toBeVisible();
   }
 
-  public async checkText(text: string): Promise<void> {
+  public async assertTextHard(text: string): Promise<void> {
     await expect(this.locator).toHaveText(text);
+  }
+
+  public async assertTextSoft(text: string): Promise<void> {
+    await expect(this.locator).toContainText(text);
   }
 
   public async assertAllMenuItems(expectedTexts: string[]): Promise<void> {
@@ -205,40 +257,103 @@ export class Autocomplete {
     items: string[],
     exactCount: boolean = false,
     filterHeaderText?: string,
+    partialMatch: boolean = false,
   ): Promise<void> {
     await this.inputLocator.click();
-    // Sortiere Items alphanumerisch wie sie im Dropdown angeordnet sind (Zeitersparnis beim Testlauf)
     const sortedItems: string[] = [...items].sort((a: string, b: string) =>
       a.localeCompare(b, 'de', { numeric: true }),
     );
     if (filterHeaderText) {
-      await expect(this.page.locator('.filter-header')).toContainText(filterHeaderText);
+      await expect(this.overlayLocator.locator('.filter-header')).toContainText(filterHeaderText);
     }
+    const options: Locator = this.overlayLocator.getByRole('option');
     if (exactCount) {
-      const options: Locator = this.page.getByRole('option');
       const expectedCount: number = filterHeaderText ? sortedItems.length + 1 : sortedItems.length;
       await expect(options).toHaveCount(expectedCount, { timeout: 5000 });
+    } else if (sortedItems.length > 0) {
+      // Without an exact count to poll for, still give the async search time to populate the list.
+      await expect(options.first()).toBeVisible({ timeout: 5000 });
     }
-    for (const item of sortedItems) {
-      const option: Locator = this.page.getByRole('option', { name: item, exact: false });
-      await option.scrollIntoViewIfNeeded();
-      await expect(option).toBeVisible();
+
+    // Virtual scroll only renders a subset of items at a time, so scroll the
+    // list container incrementally and collect item text as it comes into view,
+    // rather than scrolling to a specific (possibly unrendered) option.
+    const listContainer: Locator = this.overlayLocator.locator('.v-list');
+    const seen = new Set<string>();
+    let previousScrollTop = -1;
+
+    // Some options render additional text around the expected value (e.g. a
+    // Dienststellennummer prefix), so allow substring matching when requested.
+    const isSeen = (item: string): boolean =>
+      partialMatch ? [...seen].some((text: string): boolean => text.includes(item)) : seen.has(item);
+
+    for (let i = 0; i < 100; i++) {
+      const texts: string[] = await options.allInnerTexts();
+      texts.forEach((text: string): void => void seen.add(text.trim()));
+
+      const missing: string[] = sortedItems.filter((item: string): boolean => !isSeen(item));
+      if (missing.length === 0) {
+        break;
+      }
+
+      const { scrollTop, scrollHeight, clientHeight } = await listContainer.evaluate(
+        (el: Element): { scrollTop: number; scrollHeight: number; clientHeight: number } => ({
+          scrollTop: el.scrollTop,
+          scrollHeight: el.scrollHeight,
+          clientHeight: el.clientHeight,
+        }),
+      );
+      if (scrollTop === previousScrollTop || scrollTop + clientHeight >= scrollHeight - 1) {
+        break; // reached bottom or stopped making progress
+      }
+      previousScrollTop = scrollTop;
+      await listContainer.evaluate((el: Element): void => {
+        el.scrollBy(0, el.clientHeight);
+      });
+      // Give the virtual scroller enough time to render the newly revealed items
+      // before the next read; too short a wait flakes on the last batch under load.
+      await this.page.waitForTimeout(150);
     }
+
+    const stillMissing: string[] = sortedItems.filter((item: string): boolean => !isSeen(item));
+    expect(
+      stillMissing,
+      `Expected these items in the dropdown but never rendered them: ${stillMissing.join(', ')}`,
+    ).toEqual([]);
   }
 
-  public async checkAllDropdownOptionsClickable(items: string[]): Promise<void> {
-    await this.inputLocator.click();
-    // Sortiere Items alphanumerisch wie sie im Dropdown angeordnet sind (Zeitersparnis beim Testlauf)
+  public async checkAllDropdownOptionsClickable(items: string[], filterHeaderText?: string): Promise<void> {
     const sortedItems: string[] = [...items].sort((a: string, b: string) =>
       a.localeCompare(b, 'de', { numeric: true }),
     );
-    for (const item of sortedItems) {
-      await this.clickDropdownOption(item);
+    await this.openModal();
+    // Wait until the dropdown data has finished updating (e.g. after changing the
+    // school filter) before typing – otherwise stale options remain and cause
+    // strict-mode violations when filtering by name.
+    if (filterHeaderText) {
+      await expect(this.overlayLocator.locator('.filter-header')).toContainText(filterHeaderText);
     }
+    await expect(this.itemsLocator.first()).toBeVisible();
+    for (const item of sortedItems) {
+      await this.inputLocator.pressSequentially(item);
+      await this.waitUntilLoadingIsDone();
+      const option: Locator = this.itemsLocator.filter({
+        hasText: new RegExp(`^${item}$`),
+      });
+      await expect(option).toBeVisible();
+      await option.click();
+      await expect(option).toHaveAttribute('aria-selected', 'true');
+      await this.inputLocator.clear();
+      await this.waitUntilLoadingIsDone();
+      await expect(this.itemsLocator.first()).toBeVisible();
+    }
+    await this.closeModal();
   }
 
   public async clickDropdownOption(item: string): Promise<void> {
     const option: Locator = this.page.getByRole('option', { name: item, exact: false });
-    await option.click();
+    await expect(option).toBeVisible();
+    await option.scrollIntoViewIfNeeded();
+    await option.click({ force: true });
   }
 }

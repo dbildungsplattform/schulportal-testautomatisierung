@@ -34,7 +34,6 @@ export class StartViewPage {
     await this.page.waitForResponse(
       (response: Response) => response.url().includes('/api/provider') && response.status() === 200,
     );
-    await this.page.waitForResponse('/api/provider/**/logo');
     await expect(this.page.getByTestId('all-service-provider-title')).toBeVisible();
   }
 
@@ -56,6 +55,14 @@ export class StartViewPage {
         this.page.locator('[data-testid^="service-provider-card"]', { hasText: serviceProviderName }),
       ).toBeHidden();
     }
+  }
+
+  public async assertServiceProviderOpensInNewTab(name: string): Promise<void> {
+    const [newPage] = await Promise.all([
+      this.page.context().waitForEvent('page'),
+      this.page.locator('[data-testid^="service-provider-card"]').filter({ hasText: name }).click(),
+    ]);
+    await newPage.waitForLoadState('domcontentloaded');
   }
 
   public async assertNewsbox(

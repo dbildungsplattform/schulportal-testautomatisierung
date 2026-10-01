@@ -2,6 +2,7 @@ import { expect, Page } from '@playwright/test';
 import { LandingViewPage } from '../LandingView.page';
 import { LoginViewPage } from '../LoginView.page';
 import { ProfileViewPage } from '../ProfileView.page';
+import { invalidateCsrf } from '../../base/api/playwrightFetchAdapter';
 
 export class HeaderPage {
   /* add global locators here */
@@ -32,6 +33,7 @@ export class HeaderPage {
 
     const landingPage: LandingViewPage = new LandingViewPage(this.page);
     await landingPage.waitForPageLoad();
+    invalidateCsrf(this.page);
     return landingPage;
   }
 

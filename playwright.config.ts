@@ -14,7 +14,7 @@ dotenv.config({
 
 dotenv.config({ path: path.resolve(dirname, '.env'), override: true });
 
-export const workers: number = 6;
+export const workers: number = 4;
 
 export default defineConfig({
   testDir: './tests',
@@ -31,7 +31,7 @@ export default defineConfig({
   globalTeardown: './tests/global-teardown.ts',
 
   use: {
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     locale: 'de-DE',
     timezoneId: 'Europe/Brussels',
     screenshot: 'only-on-failure',
@@ -58,10 +58,14 @@ export default defineConfig({
     },
     {
       name: 'webkit',
+      timeout: 150 * 1000,
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1920, height: 1080 },
         ignoreHTTPSErrors: true,
+        contextOptions: {
+          reducedMotion: 'reduce',
+        },
       },
     },
     /* Test against branded browsers. */

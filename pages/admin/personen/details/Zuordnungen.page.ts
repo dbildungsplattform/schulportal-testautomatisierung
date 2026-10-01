@@ -143,7 +143,7 @@ export class ZuordnungenPage {
   /* assertions */
   public async checkSelectedBefristungOption(option: 'unbefristet' | 'schuljahresende'): Promise<void> {
     const workflowPage: BefristungWorkflowPage = await this.startBefristungWorkflow();
-    await workflowPage.checkSelectedBefristungOption(option);
+    await workflowPage.assertSelectedBefristungOption(option);
   }
 
   public async checkZuordnungExists(params: ZuordnungValidationParams): Promise<void> {

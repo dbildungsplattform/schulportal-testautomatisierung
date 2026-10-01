@@ -85,7 +85,7 @@ export class LandesbedienstetenHinzufuegenPage {
   }
 
   public async organisationIsFilledAndDisabled(organisation: string): Promise<void> {
-    await this.organisationAutocomplete.checkText(organisation);
+    await this.organisationAutocomplete.assertTextHard(organisation);
     await this.organisationAutocomplete.isDisabled();
   }
 

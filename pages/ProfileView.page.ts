@@ -61,7 +61,7 @@ export class ProfileViewPage {
     return newPassword;
   }
 
-  public async resetDevicePassword(): Promise<void> {
+  public async resetInbetriebnahmePasswort(): Promise<string> {
     /* zuordnung card for password reset */
     await expect(this.page.getByTestId('reset-device-password-card-headline')).toBeVisible();
     await expect(this.page.getByTestId('device-password-info-text')).toBeVisible();
@@ -76,7 +76,15 @@ export class ProfileViewPage {
     await this.page.getByTestId('password-reset-button').click();
 
     await this.validatePasswordResetDialog();
+
+    const newPassword: string = await this.page
+      .getByTestId('password-output-field')
+      .locator('input[type="password"]')
+      .inputValue();
+
+    await this.page.getByTestId('close-password-reset-dialog-button').click();
     await expect(this.page.getByTestId('profile-headline')).toBeVisible();
+    return newPassword;
   }
 
   public async openChangePasswordDialog(): Promise<void> {
@@ -203,7 +211,6 @@ export class ProfileViewPage {
     await expect(this.page.getByTestId('password-output-field').locator('input')).toHaveAttribute('readonly');
     await expect(this.page.getByTestId('show-password-icon')).toBeVisible();
     await expect(this.page.getByTestId('copy-password-icon')).toBeVisible();
-    await this.page.getByTestId('close-password-reset-dialog-button').click();
   }
 
   public async assertPasswordDialogUsernamePrompt(username: string): Promise<void> {

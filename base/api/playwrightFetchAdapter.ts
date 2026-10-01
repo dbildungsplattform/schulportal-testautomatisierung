@@ -1,8 +1,34 @@
 import { APIRequestContext, APIResponse, Page } from '@playwright/test';
 import { FetchAPI } from './generated';
+import { constructAuthApi, getCsrfToken } from './authApi';
 
 type PlaywrightFetchInit = Parameters<APIRequestContext['fetch']>[1];
 
+// Per-page cache: WeakMap so pages can be GC'd freely
+const csrfCache = new WeakMap<object, Promise<string | undefined>>();
+
+function isTestEndedError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('Test ended');
+}
+
+async function resolveCsrf(page: Page): Promise<string | undefined> {
+  // Use page.request as the cache key — unique per browser context
+  const key = page.request;
+
+  if (!csrfCache.has(key)) {
+    const promise = (async (): Promise<string | undefined> => {
+      const authApi = constructAuthApi(page);
+      return getCsrfToken(authApi);
+    })();
+    csrfCache.set(key, promise);
+  }
+
+  return csrfCache.get(key)!;
+}
+
+export function invalidateCsrf(page: Page): void {
+  csrfCache.delete(page.request);
+}
 /**
  * makeFetchWithPlaywright
  * -----------------------
@@ -38,27 +64,35 @@ type PlaywrightFetchInit = Parameters<APIRequestContext['fetch']>[1];
  *    return new MyApi(config);
  *  }
  *  ```
-
- * @param page Playwright Page (provides `page.request.fetch`)
- * @returns A function compatible with the `fetchApi` option in OpenAPI Configuration
  */
-export function makeFetchWithPlaywright(page: Page): FetchAPI {
+export function makeFetchWithPlaywright(page: Page, options?: { withCsrf?: boolean }): FetchAPI {
+  const withCsrf = options?.withCsrf ?? true;
+
   return async (url: string, init?: RequestInit & PlaywrightFetchInit): Promise<Response> => {
-    const playwrightInit: PlaywrightFetchInit = {
-      ...init,
-      data: init?.body,
-      maxRetries: 3,
+    const headers: Record<string, string> = {
+      ...(init?.headers as Record<string, string>),
     };
 
-    const resp: APIResponse = await page.request.fetch(url, playwrightInit);
+    if (withCsrf) {
+      const token = await resolveCsrf(page);
+      if (token) {
+        headers['X-CSRF-Token'] = token;
+      }
+    }
 
-    const headers: Headers = new Headers(resp.headers());
-
-    if (!resp.ok()) {
-      console.log(
-        `Request to ${url} failed with status ${resp.status()} on worker ${process.env['TEST_PARALLEL_INDEX']}`,
-      );
-      console.log(await resp.json());
+    let resp: APIResponse;
+    try {
+      resp = await page.request.fetch(url, {
+        ...init,
+        data: init?.body,
+        headers,
+        maxRetries: 3,
+      });
+    } catch (error) {
+      if (isTestEndedError(error)) {
+        return new Response(null, { status: 0, statusText: 'Test ended' }) as unknown as Response;
+      }
+      throw error;
     }
 
     return {
@@ -66,19 +100,11 @@ export function makeFetchWithPlaywright(page: Page): FetchAPI {
       status: resp.status(),
       statusText: resp.statusText(),
       url: resp.url(),
-      headers,
-
+      headers: new Headers(resp.headers()),
       text: () => resp.text(),
       json: () => resp.json(),
-      arrayBuffer: async () => {
-        const buf: Buffer<ArrayBufferLike> = await resp.body();
-        return buf;
-      },
-      blob: async () => {
-        const buf: Buffer<ArrayBufferLike> = await resp.body();
-        return new Blob([new Uint8Array(buf)]);
-      },
-
+      arrayBuffer: async () => resp.body(),
+      blob: async () => new Blob([new Uint8Array(await resp.body())]),
       clone: () => {
         throw new Error('clone not implemented');
       },

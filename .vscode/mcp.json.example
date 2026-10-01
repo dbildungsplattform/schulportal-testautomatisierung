@@ -1,0 +1,21 @@
+{
+  "servers": {
+    "jira": {
+      "type": "stdio",
+      "command": "${env:HOME}/.local/bin/uvx",
+      "env": {
+        "TOOLSETS": "all"
+      },
+      "args": [
+        "mcp-atlassian",
+        "--env-file",
+        "${workspaceFolder}/.env.mcp",
+        "--read-only"
+      ]
+    },
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest", "--browser", "chromium"]
+    }
+  }
+}

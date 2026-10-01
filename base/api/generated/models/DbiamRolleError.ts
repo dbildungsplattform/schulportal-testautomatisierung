@@ -47,7 +47,8 @@ export const DbiamRolleErrorI18nKeyEnum = {
     RolleNameUniqueOnSsk: 'ROLLE_NAME_UNIQUE_ON_SSK',
     ServiceProviderNichtNachtraeglichZuweisbar: 'SERVICE_PROVIDER_NICHT_NACHTRAEGLICH_ZUWEISBAR',
     ServiceProviderNichtVerfuegbarFuerRollenerweiterung: 'SERVICE_PROVIDER_NICHT_VERFUEGBAR_FUER_ROLLENERWEITERUNG',
-    NoRedundantRollenerweiterung: 'NO_REDUNDANT_ROLLENERWEITERUNG'
+    NoRedundantRollenerweiterung: 'NO_REDUNDANT_ROLLENERWEITERUNG',
+    ServiceProviderProvidedOutOfTree: 'SERVICE_PROVIDER_PROVIDED_OUT_OF_TREE'
 } as const;
 export type DbiamRolleErrorI18nKeyEnum = typeof DbiamRolleErrorI18nKeyEnum[keyof typeof DbiamRolleErrorI18nKeyEnum];
 

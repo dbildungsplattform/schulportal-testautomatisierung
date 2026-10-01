@@ -1,19 +1,12 @@
 import { Page } from '@playwright/test';
-import {
-  addSecondOrganisationToPerson,
-  createRolleAndPersonWithPersonenkontext,
-  UserInfo,
-} from '../../base/api/personApi';
-import { addSystemrechtToRolle } from '../../base/api/rolleApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
-import { testschule665Name, testschuleName } from '../../base/organisation';
-import { generateNachname, generateVorname, generateRolleName } from '../../base/utils/generateTestdata';
-import { LoginViewPage } from '../../pages/LoginView.page';
-import { StartViewPage } from '../../pages/StartView.page';
-import { RollenSystemRechtEnum } from '../../base/api/generated/models/RollenSystemRechtEnum';
+import { getOrganisationId } from '../../base/api/organisationApi';
+import { addOrganisationenToPerson, createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { RolleCase } from '../../base/rollen';
+import { schulportaladmin } from '../../base/sp';
 import { HeaderPage } from '../../pages/components/Header.page';
 import { LandingViewPage } from '../../pages/LandingView.page';
-import { getOrganisationId } from '../../base/api/organisationApi';
+import { LoginViewPage } from '../../pages/LoginView.page';
+import { StartViewPage } from '../../pages/StartView.page';
 
 /**
  * Prepares a test user with the specified system rights and logs them into the application.
@@ -27,43 +20,33 @@ import { getOrganisationId } from '../../base/api/organisationApi';
  * 6. Navigates to the Administration view to ensure the user session is ready for tests.
  *
  * @param page - The Playwright `Page` object representing the browser page.
- * @param permissions - An array of `RollenSystemRechtEnum` system rights to assign to the user.
+ * @param rolle - The role case containing permissions and organisations to assign.
  *
  * @example
  * ```ts
- * await prepareAndLoginUserWithPermissions(page, [
- *   RollenSystemRechtEnum.PersonenVerwalten,
- *   RollenSystemRechtEnum.KlassenVerwalten,
- * ]);
+ * await prepareAndLoginUserWithPermissions(page, {
+ *   name: 'My role',
+ *   permissions: [RollenSystemRechtEnum.PersonenVerwalten],
+ *   organisations: [testschuleName, testschule665Name],
+ * });
  * ```
  */
-export async function prepareAndLoginUserWithPermissions(
-  page: Page,
-  permissions: RollenSystemRechtEnum[],
-): Promise<void> {
-  // Get the service provider ID for Schulportal Administration
-  const idSPs: string[] = [await getServiceProviderId(page, 'Schulportal-Administration')];
-
+export async function prepareAndLoginUserWithPermissions(page: Page, rolle: RolleCase): Promise<UserInfo> {
   // Create a new user with role and person context
-  const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(
-    page,
-    testschuleName,
-    'LEIT',
-    generateNachname(),
-    generateVorname(),
-    idSPs,
-    generateRolleName(),
-  );
+  const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
+    organisationName: rolle.organisations[0],
+    rollenArt: rolle.rollenArt,
+    serviceProviderNames: [schulportaladmin],
+    systemrechte: new Set(rolle.permissions),
+  });
 
-  // Assign each system right to the newly created role
-  for (const permission of permissions) {
-    await addSystemrechtToRolle(page, userInfo.rolleId, permission);
+  // Assign all organisations to the person
+  if (rolle.organisations.length > 1) {
+    const organisationIds: string[] = await Promise.all(
+      rolle.organisations.map((name) => getOrganisationId(page, name)),
+    );
+    await addOrganisationenToPerson(page, userInfo.personId, organisationIds, userInfo.rolleId);
   }
-
-  // Add a second school to the user's person context
-  const primarySchuleId: string = await getOrganisationId(page, testschuleName);
-  const secondSchuleId: string = await getOrganisationId(page, testschule665Name);
-  await addSecondOrganisationToPerson(page, userInfo.personId, primarySchuleId, secondSchuleId, userInfo.rolleId);
 
   // Logout any existing session
   const header: HeaderPage = new HeaderPage(page);
@@ -77,4 +60,5 @@ export async function prepareAndLoginUserWithPermissions(
   // Wait for the start page to load and go to administration
   await startPage.waitForPageLoad();
   await startPage.navigateToAdministration();
+  return userInfo;
 }

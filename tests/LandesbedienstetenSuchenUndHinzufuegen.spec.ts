@@ -2,14 +2,16 @@ import test, { Page, PlaywrightTestArgs } from '@playwright/test';
 
 import { getOrganisationId } from '../base/api/organisationApi';
 import {
-  addSecondOrganisationToPerson,
+  addOrganisationenToPerson,
   createPersonWithPersonenkontext,
+  createRolleAndPersonWithPersonenkontext,
   getEmailByPersonId,
   lockPerson,
   removeAllPersonenkontexte,
   UserInfo,
+  waitForEmailByPersonId,
 } from '../base/api/personApi';
-import { getRolleId } from '../base/api/rolleApi';
+import { getRolleId, RollenMerkmal } from '../base/api/rolleApi';
 import {
   ersatzTestschuleName,
   testschule665DstNrUndName,
@@ -25,6 +27,8 @@ import {
   schuladminOeffentlichRolle,
   vertretungslehrkraftRolle,
 } from '../base/rollen';
+import { typeLehrer } from '../base/rollentypen';
+import { email as emailServiceProvider } from '../base/sp';
 import { DEV, STAGE } from '../base/tags';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { generateKopersNr, generateNachname, generateVorname } from '../base/utils/generateTestdata';
@@ -68,7 +72,7 @@ async function setupSchuladminAndLoginAndNavigate(
     const primarySchuleId: string = await getOrganisationId(page, primarySchuleName);
     const secondSchuleId: string = await getOrganisationId(page, secondSchuleName);
     const rolleId: string = await getRolleId(page, rolle);
-    await addSecondOrganisationToPerson(page, schuladmin.personId, primarySchuleId, secondSchuleId, rolleId);
+    await addOrganisationenToPerson(page, schuladmin.personId, [primarySchuleId, secondSchuleId], rolleId);
   }
 
   const header: HeaderPage = new HeaderPage(page);
@@ -399,19 +403,6 @@ test.describe('Funktions- und UI Testfälle zu Landesbediensteten suchen und hin
         await variante.expectInputValue();
       }
     });
-    //SPSH-3475
-    test('Button Zurück zur Suche funktioniert (E-Mail)', { tag: [STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-      const email: string | undefined = await getEmailByPersonId(page, lehrkraft.personId);
-      if (!email) {
-        throw new Error('Lehrkraft hat keine E-Mail-Adresse');
-      }
-      const landesbedienstetenSearchResultPage: LandesbedienstetenSearchResultPage =
-        await landesbedienstetenSearchFormPage.searchLandesbedienstetenViaEmail(email);
-      await landesbedienstetenSearchResultPage.checkSearchResultCard();
-      await landesbedienstetenSearchResultPage.clickZurueckZurSuche();
-      await landesbedienstetenSearchFormPage.expectEmailRadioChecked();
-      await landesbedienstetenSearchFormPage.expectEmailInputValue(email);
-    });
 
     //SPSH-3476
     test(
@@ -466,6 +457,40 @@ test.describe('Funktions- und UI Testfälle zu Landesbediensteten suchen und hin
         await landesbedienstetenSuccessPage.waitForPageLoad();
       },
     );
+  });
+
+  test.describe('Mit Lehrkraft mit einer Schulzuordnung und E-Mail Service Provider', () => {
+    let lehrkraftMitEmail: UserInfo;
+
+    test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
+      landesbedienstetenSearchFormPage = new LandesbedienstetenSearchFormPage(page);
+      await loginAndNavigateToAdministration(page);
+
+      lehrkraftMitEmail = await createRolleAndPersonWithPersonenkontext(page, {
+        organisationName: testschuleName,
+        rollenArt: typeLehrer,
+        rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
+        serviceProviderNames: [emailServiceProvider],
+        koPersNr: generateKopersNr(),
+      });
+
+      landesbedienstetenSearchFormPage = await setupSchuladminAndLoginAndNavigate(
+        page,
+        testschuleName,
+        schuladminOeffentlichRolle,
+      );
+    });
+
+    //SPSH-3475
+    test('Button Zurück zur Suche funktioniert (E-Mail)', { tag: [STAGE] }, async ({ page }: PlaywrightTestArgs) => {
+      const lehrkraftEmail: string = await waitForEmailByPersonId(page, lehrkraftMitEmail.personId);
+      const landesbedienstetenSearchResultPage: LandesbedienstetenSearchResultPage =
+        await landesbedienstetenSearchFormPage.searchLandesbedienstetenViaEmail(lehrkraftEmail);
+      await landesbedienstetenSearchResultPage.checkSearchResultCard();
+      await landesbedienstetenSearchResultPage.clickZurueckZurSuche();
+      await landesbedienstetenSearchFormPage.expectEmailRadioChecked();
+      await landesbedienstetenSearchFormPage.expectEmailInputValue(lehrkraftEmail);
+    });
   });
 
   test.describe('Mit Lehrkraft ohne Schulzuordnung', () => {

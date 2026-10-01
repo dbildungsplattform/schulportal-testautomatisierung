@@ -1,13 +1,18 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 
 import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
-import { addSecondOrganisationToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
+import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { getRolleId } from '../../base/api/rolleApi';
 import { landSH } from '../../base/organisation';
 import { landesadminRolle, schuladminOeffentlichRolle } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateDienststellenNr, generateKlassenname, generateSchulname } from '../../base/utils/generateTestdata';
+import {
+  generateDienststellenNr,
+  generateEmailAdress,
+  generateKlassenname,
+  generateSchulname,
+} from '../../base/utils/generateTestdata';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
 import { StartViewPage } from '../../pages/StartView.page';
@@ -54,6 +59,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           name: generateSchulname(),
           dienststellenNr: generateDienststellenNr(),
           schulform: Schulform.Oeffentlich,
+          emailAdress: generateEmailAdress(),
         };
         let schuleSuccessPage: SchuleCreationSuccessPage = await schuleCreationViewPage.createSchule(schuleParams);
         await schuleSuccessPage.waitForPageLoad();
@@ -68,6 +74,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
             name: generateSchulname(),
             dienststellenNr: generateDienststellenNr(),
             schulform: Schulform.Oeffentlich,
+            emailAdress: generateEmailAdress(),
           };
           schuleCreationViewPage = await schuleSuccessPage.goBackToCreateAnotherSchule();
           schuleSuccessPage = await schuleCreationViewPage.createSchule(zweiteSchule);
@@ -75,7 +82,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           const zweiteSchuleId: string = await getOrganisationId(page, zweiteSchule.name);
 
           const rolleId: string = await getRolleId(page, rolleName);
-          await addSecondOrganisationToPerson(page, admin.personId, schuleId, zweiteSchuleId, rolleId);
+          await addOrganisationenToPerson(page, admin.personId, [schuleId, zweiteSchuleId], rolleId);
         }
 
         generierteKlassenNamen = await Promise.all(
@@ -121,14 +128,12 @@ import { HeaderPage } from '../../pages/components/Header.page';
           { tag: [DEV, STAGE] },
           async () => {
             await test.step(`Schule filtern oder validieren`, async () => {
-              await klasseManagementViewPage.setItemsPerPage(5);
-              await klasseManagementViewPage.checkRows(5);
               if (hasMultipleSchulen) {
                 await klasseManagementViewPage.filterBySchule(schuleParams.name);
-                await klasseManagementViewPage.waitForDataLoad();
               } else {
                 await klasseManagementViewPage.checkIfSchuleIsCorrect(schuleParams.name, schuleParams.dienststellenNr);
               }
+              await klasseManagementViewPage.setItemsPerPage(5);
             });
 
             await test.step(`Sortierverhalten prüfen`, async () => {

@@ -16,21 +16,39 @@
 import * as runtime from '../runtime';
 import type {
   CreateServiceProviderBodyParams,
+  CreateServiceProviderResponse,
   ManageableServiceProviderResponse,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
+  ProviderControllerGetAvailableServiceProviders200Response,
   ProviderControllerGetManageableServiceProviders200Response,
+  ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
+  RollenArt,
+  RollenSystemRechtEnum,
+  ServiceProviderKategorie,
   ServiceProviderResponse,
   UpdateServiceProviderBodyParams,
 } from '../models';
 import {
     CreateServiceProviderBodyParamsFromJSON,
     CreateServiceProviderBodyParamsToJSON,
+    CreateServiceProviderResponseFromJSON,
+    CreateServiceProviderResponseToJSON,
     ManageableServiceProviderResponseFromJSON,
     ManageableServiceProviderResponseToJSON,
     ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseFromJSON,
     ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseToJSON,
+    ProviderControllerGetAvailableServiceProviders200ResponseFromJSON,
+    ProviderControllerGetAvailableServiceProviders200ResponseToJSON,
     ProviderControllerGetManageableServiceProviders200ResponseFromJSON,
     ProviderControllerGetManageableServiceProviders200ResponseToJSON,
+    ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseFromJSON,
+    ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseToJSON,
+    RollenArtFromJSON,
+    RollenArtToJSON,
+    RollenSystemRechtEnumFromJSON,
+    RollenSystemRechtEnumToJSON,
+    ServiceProviderKategorieFromJSON,
+    ServiceProviderKategorieToJSON,
     ServiceProviderResponseFromJSON,
     ServiceProviderResponseToJSON,
     UpdateServiceProviderBodyParamsFromJSON,
@@ -41,11 +59,36 @@ export interface ProviderControllerCreateServiceProviderRequest {
     createServiceProviderBodyParams: CreateServiceProviderBodyParams;
 }
 
+export interface ProviderControllerDeleteServiceProviderRequest {
+    angebotId: string;
+}
+
 export interface ProviderControllerFindRollenerweiterungenByServiceProviderIdRequest {
     angebotId: string;
     offset?: number;
     limit?: number;
-    organisationId?: string | null;
+    organisationIds?: Array<string>;
+    rolleIds?: Array<string>;
+}
+
+export interface ProviderControllerGetAssignableServiceProvidersForRolleRequest {
+    schulstrukturknotenOfRolle: string;
+    rollenArt: RollenArt;
+}
+
+export interface ProviderControllerGetAvailableServiceProvidersRequest {
+    offset?: number;
+    limit?: number;
+    searchStr?: string;
+    organisationId?: string;
+    systemrechte?: Array<RollenSystemRechtEnum>;
+    rollenArten?: Array<RollenArt>;
+}
+
+export interface ProviderControllerGetManageableLandRootServiceProvidersRequest {
+    offset?: number;
+    limit?: number;
+    searchStr?: string;
 }
 
 export interface ProviderControllerGetManageableServiceProviderByIdRequest {
@@ -55,6 +98,8 @@ export interface ProviderControllerGetManageableServiceProviderByIdRequest {
 export interface ProviderControllerGetManageableServiceProvidersRequest {
     offset?: number;
     limit?: number;
+    kategorien?: Array<ServiceProviderKategorie>;
+    searchFilter?: string | null;
 }
 
 export interface ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest {
@@ -65,6 +110,10 @@ export interface ProviderControllerGetManageableServiceProvidersForOrganisationI
 
 export interface ProviderControllerGetServiceProviderLogoRequest {
     angebotId: string;
+}
+
+export interface ProviderControllerGetServiceProvidersByPersonIdRequest {
+    personId: string;
 }
 
 export interface ProviderControllerUpdateServiceProviderRequest {
@@ -87,13 +136,29 @@ export interface ProviderApiInterface {
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
      */
-    providerControllerCreateServiceProviderRaw(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ServiceProviderResponse>>;
+    providerControllerCreateServiceProviderRaw(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateServiceProviderResponse>>;
 
     /**
      * Create a new service-provider (Angebot).
      * 
      */
-    providerControllerCreateServiceProvider(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ServiceProviderResponse>;
+    providerControllerCreateServiceProvider(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateServiceProviderResponse>;
+
+    /**
+     * Delete a service-provider (Angebot) by id.
+     * @summary 
+     * @param {string} angebotId The id of the service provider
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProviderApiInterface
+     */
+    providerControllerDeleteServiceProviderRaw(requestParameters: ProviderControllerDeleteServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete a service-provider (Angebot) by id.
+     * 
+     */
+    providerControllerDeleteServiceProvider(requestParameters: ProviderControllerDeleteServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * Get rollenerweiterungen for service-provider with provided id. Total is the amount of organisations.
@@ -101,7 +166,8 @@ export interface ProviderApiInterface {
      * @param {string} angebotId The id of the service provider
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
-     * @param {string} [organisationId] The id of the organisation
+     * @param {Array<string>} [organisationIds] The ids of the organisations where the rollenerweiterung should be available.
+     * @param {Array<string>} [rolleIds] The ids of the rollen where the rollenerweiterung should be available.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
@@ -115,34 +181,60 @@ export interface ProviderApiInterface {
     providerControllerFindRollenerweiterungenByServiceProviderId(requestParameters: ProviderControllerFindRollenerweiterungenByServiceProviderIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerFindRollenerweiterungenByServiceProviderId200Response>;
 
     /**
-     * Get all service-providers.
+     * Get all service-providers assignable for a role.
      * @summary 
+     * @param {string} schulstrukturknotenOfRolle The id of the organisation where the service provider should be assignable on
+     * @param {RollenArt} rollenArt The rollenart of the rolle for which the service provider should be found
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
      */
-    providerControllerGetAllServiceProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
+    providerControllerGetAssignableServiceProvidersForRolleRaw(requestParameters: ProviderControllerGetAssignableServiceProvidersForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
 
     /**
-     * Get all service-providers.
+     * Get all service-providers assignable for a role.
      * 
      */
-    providerControllerGetAllServiceProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
+    providerControllerGetAssignableServiceProvidersForRolle(requestParameters: ProviderControllerGetAssignableServiceProvidersForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
 
     /**
-     * Get service-providers available for logged-in user.
+     * Get service-providers.
      * @summary 
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {string} [searchStr] The name for the angebot.
+     * @param {string} [organisationId] The id of the organisation where the angebot should be available.
+     * @param {Array<RollenSystemRechtEnum>} [systemrechte] The system right for which the roles should be available. Can only be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN or both or IMPORT_DURCHFUEHREN.
+     * @param {Array<RollenArt>} [rollenArten] The rollenart of the rolle for which the service provider should be found
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
      */
-    providerControllerGetAvailableServiceProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
+    providerControllerGetAvailableServiceProvidersRaw(requestParameters: ProviderControllerGetAvailableServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetAvailableServiceProviders200Response>>;
 
     /**
-     * Get service-providers available for logged-in user.
+     * Get service-providers.
      * 
      */
-    providerControllerGetAvailableServiceProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
+    providerControllerGetAvailableServiceProviders(requestParameters: ProviderControllerGetAvailableServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetAvailableServiceProviders200Response>;
+
+    /**
+     * Get service-providers provided at LAND or ROOT level. Requires root-level ANGEBOTE_VERWALTEN.
+     * @summary 
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {string} [searchStr] Filter service providers by name (case-insensitive substring match).
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProviderApiInterface
+     */
+    providerControllerGetManageableLandRootServiceProvidersRaw(requestParameters: ProviderControllerGetManageableLandRootServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetAvailableServiceProviders200Response>>;
+
+    /**
+     * Get service-providers provided at LAND or ROOT level. Requires root-level ANGEBOTE_VERWALTEN.
+     * 
+     */
+    providerControllerGetManageableLandRootServiceProviders(requestParameters: ProviderControllerGetManageableLandRootServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetAvailableServiceProviders200Response>;
 
     /**
      * Get service-provider the logged-in user is allowed to manage.
@@ -165,6 +257,8 @@ export interface ProviderApiInterface {
      * @summary 
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
+     * @param {Array<ServiceProviderKategorie>} [kategorien] 
+     * @param {string} [searchFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
@@ -187,13 +281,13 @@ export interface ProviderApiInterface {
      * @throws {RequiredError}
      * @memberof ProviderApiInterface
      */
-    providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProviders200Response>>;
+    providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>>;
 
     /**
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProviders200Response>;
+    providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>;
 
     /**
      * 
@@ -207,6 +301,22 @@ export interface ProviderApiInterface {
     /**
      */
     providerControllerGetServiceProviderLogo(requestParameters: ProviderControllerGetServiceProviderLogoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any>;
+
+    /**
+     * Get service-providers for a person. Returns the available service-providers when the logged-in user requests their own, otherwise the assigned service-providers of another person (admin).
+     * @summary 
+     * @param {string} personId The id of the person.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ProviderApiInterface
+     */
+    providerControllerGetServiceProvidersByPersonIdRaw(requestParameters: ProviderControllerGetServiceProvidersByPersonIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>>;
+
+    /**
+     * Get service-providers for a person. Returns the available service-providers when the logged-in user requests their own, otherwise the assigned service-providers of another person (admin).
+     * 
+     */
+    providerControllerGetServiceProvidersByPersonId(requestParameters: ProviderControllerGetServiceProvidersByPersonIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>>;
 
     /**
      * Update a service-provider (Angebot).
@@ -236,7 +346,7 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
      * Create a new service-provider (Angebot).
      * 
      */
-    async providerControllerCreateServiceProviderRaw(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ServiceProviderResponse>> {
+    async providerControllerCreateServiceProviderRaw(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CreateServiceProviderResponse>> {
         if (requestParameters.createServiceProviderBodyParams === null || requestParameters.createServiceProviderBodyParams === undefined) {
             throw new runtime.RequiredError('createServiceProviderBodyParams','Required parameter requestParameters.createServiceProviderBodyParams was null or undefined when calling providerControllerCreateServiceProvider.');
         }
@@ -268,16 +378,60 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             body: CreateServiceProviderBodyParamsToJSON(requestParameters.createServiceProviderBodyParams),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ServiceProviderResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CreateServiceProviderResponseFromJSON(jsonValue));
     }
 
     /**
      * Create a new service-provider (Angebot).
      * 
      */
-    async providerControllerCreateServiceProvider(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ServiceProviderResponse> {
+    async providerControllerCreateServiceProvider(requestParameters: ProviderControllerCreateServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CreateServiceProviderResponse> {
         const response = await this.providerControllerCreateServiceProviderRaw(requestParameters, initOverrides);
         return await response.value();
+    }
+
+    /**
+     * Delete a service-provider (Angebot) by id.
+     * 
+     */
+    async providerControllerDeleteServiceProviderRaw(requestParameters: ProviderControllerDeleteServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.angebotId === null || requestParameters.angebotId === undefined) {
+            throw new runtime.RequiredError('angebotId','Required parameter requestParameters.angebotId was null or undefined when calling providerControllerDeleteServiceProvider.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/provider/{angebotId}`.replace(`{${"angebotId"}}`, encodeURIComponent(String(requestParameters.angebotId))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete a service-provider (Angebot) by id.
+     * 
+     */
+    async providerControllerDeleteServiceProvider(requestParameters: ProviderControllerDeleteServiceProviderRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.providerControllerDeleteServiceProviderRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -299,8 +453,12 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             queryParameters['limit'] = requestParameters.limit;
         }
 
-        if (requestParameters.organisationId !== undefined) {
-            queryParameters['organisationId'] = requestParameters.organisationId;
+        if (requestParameters.organisationIds) {
+            queryParameters['organisationIds'] = requestParameters.organisationIds;
+        }
+
+        if (requestParameters.rolleIds) {
+            queryParameters['rolleIds'] = requestParameters.rolleIds;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -338,11 +496,27 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
     }
 
     /**
-     * Get all service-providers.
+     * Get all service-providers assignable for a role.
      * 
      */
-    async providerControllerGetAllServiceProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+    async providerControllerGetAssignableServiceProvidersForRolleRaw(requestParameters: ProviderControllerGetAssignableServiceProvidersForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+        if (requestParameters.schulstrukturknotenOfRolle === null || requestParameters.schulstrukturknotenOfRolle === undefined) {
+            throw new runtime.RequiredError('schulstrukturknotenOfRolle','Required parameter requestParameters.schulstrukturknotenOfRolle was null or undefined when calling providerControllerGetAssignableServiceProvidersForRolle.');
+        }
+
+        if (requestParameters.rollenArt === null || requestParameters.rollenArt === undefined) {
+            throw new runtime.RequiredError('rollenArt','Required parameter requestParameters.rollenArt was null or undefined when calling providerControllerGetAssignableServiceProvidersForRolle.');
+        }
+
         const queryParameters: any = {};
+
+        if (requestParameters.schulstrukturknotenOfRolle !== undefined) {
+            queryParameters['schulstrukturknotenOfRolle'] = requestParameters.schulstrukturknotenOfRolle;
+        }
+
+        if (requestParameters.rollenArt !== undefined) {
+            queryParameters['rollenArt'] = requestParameters.rollenArt;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -360,7 +534,7 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
         }
 
         const response = await this.request({
-            path: `/api/provider/all`,
+            path: `/api/provider/assignable-for-rolle`,
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -370,20 +544,44 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
     }
 
     /**
-     * Get all service-providers.
+     * Get all service-providers assignable for a role.
      * 
      */
-    async providerControllerGetAllServiceProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
-        const response = await this.providerControllerGetAllServiceProvidersRaw(initOverrides);
+    async providerControllerGetAssignableServiceProvidersForRolle(requestParameters: ProviderControllerGetAssignableServiceProvidersForRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
+        const response = await this.providerControllerGetAssignableServiceProvidersForRolleRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
     /**
-     * Get service-providers available for logged-in user.
+     * Get service-providers.
      * 
      */
-    async providerControllerGetAvailableServiceProvidersRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+    async providerControllerGetAvailableServiceProvidersRaw(requestParameters: ProviderControllerGetAvailableServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetAvailableServiceProviders200Response>> {
         const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.searchStr !== undefined) {
+            queryParameters['searchStr'] = requestParameters.searchStr;
+        }
+
+        if (requestParameters.organisationId !== undefined) {
+            queryParameters['organisationId'] = requestParameters.organisationId;
+        }
+
+        if (requestParameters.systemrechte) {
+            queryParameters['systemrechte'] = requestParameters.systemrechte;
+        }
+
+        if (requestParameters.rollenArten) {
+            queryParameters['rollenArten'] = requestParameters.rollenArten;
+        }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
@@ -407,15 +605,68 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ServiceProviderResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetAvailableServiceProviders200ResponseFromJSON(jsonValue));
     }
 
     /**
-     * Get service-providers available for logged-in user.
+     * Get service-providers.
      * 
      */
-    async providerControllerGetAvailableServiceProviders(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
-        const response = await this.providerControllerGetAvailableServiceProvidersRaw(initOverrides);
+    async providerControllerGetAvailableServiceProviders(requestParameters: ProviderControllerGetAvailableServiceProvidersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetAvailableServiceProviders200Response> {
+        const response = await this.providerControllerGetAvailableServiceProvidersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get service-providers provided at LAND or ROOT level. Requires root-level ANGEBOTE_VERWALTEN.
+     * 
+     */
+    async providerControllerGetManageableLandRootServiceProvidersRaw(requestParameters: ProviderControllerGetManageableLandRootServiceProvidersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetAvailableServiceProviders200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.searchStr !== undefined) {
+            queryParameters['searchStr'] = requestParameters.searchStr;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/provider/manageable-land-root`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetAvailableServiceProviders200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Get service-providers provided at LAND or ROOT level. Requires root-level ANGEBOTE_VERWALTEN.
+     * 
+     */
+    async providerControllerGetManageableLandRootServiceProviders(requestParameters: ProviderControllerGetManageableLandRootServiceProvidersRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetAvailableServiceProviders200Response> {
+        const response = await this.providerControllerGetManageableLandRootServiceProvidersRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -479,6 +730,14 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             queryParameters['limit'] = requestParameters.limit;
         }
 
+        if (requestParameters.kategorien) {
+            queryParameters['kategorien'] = requestParameters.kategorien;
+        }
+
+        if (requestParameters.searchFilter !== undefined) {
+            queryParameters['searchFilter'] = requestParameters.searchFilter;
+        }
+
         const headerParameters: runtime.HTTPHeaders = {};
 
         if (this.configuration && this.configuration.accessToken) {
@@ -517,7 +776,7 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    async providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProviders200Response>> {
+    async providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response>> {
         if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
             throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling providerControllerGetManageableServiceProvidersForOrganisationId.');
         }
@@ -558,14 +817,14 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetManageableServiceProviders200ResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseFromJSON(jsonValue));
     }
 
     /**
      * Get service-providers the logged-in user is allowed to manage for an Organisation.
      * 
      */
-    async providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProviders200Response> {
+    async providerControllerGetManageableServiceProvidersForOrganisationId(requestParameters: ProviderControllerGetManageableServiceProvidersForOrganisationIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> {
         const response = await this.providerControllerGetManageableServiceProvidersForOrganisationIdRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -612,6 +871,51 @@ export class ProviderApi extends runtime.BaseAPI implements ProviderApiInterface
      */
     async providerControllerGetServiceProviderLogo(requestParameters: ProviderControllerGetServiceProviderLogoRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<any> {
         const response = await this.providerControllerGetServiceProviderLogoRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Get service-providers for a person. Returns the available service-providers when the logged-in user requests their own, otherwise the assigned service-providers of another person (admin).
+     * 
+     */
+    async providerControllerGetServiceProvidersByPersonIdRaw(requestParameters: ProviderControllerGetServiceProvidersByPersonIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ServiceProviderResponse>>> {
+        if (requestParameters.personId === null || requestParameters.personId === undefined) {
+            throw new runtime.RequiredError('personId','Required parameter requestParameters.personId was null or undefined when calling providerControllerGetServiceProvidersByPersonId.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/provider/{personId}`.replace(`{${"personId"}}`, encodeURIComponent(String(requestParameters.personId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ServiceProviderResponseFromJSON));
+    }
+
+    /**
+     * Get service-providers for a person. Returns the available service-providers when the logged-in user requests their own, otherwise the assigned service-providers of another person (admin).
+     * 
+     */
+    async providerControllerGetServiceProvidersByPersonId(requestParameters: ProviderControllerGetServiceProvidersByPersonIdRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ServiceProviderResponse>> {
+        const response = await this.providerControllerGetServiceProvidersByPersonIdRaw(requestParameters, initOverrides);
         return await response.value();
     }
 

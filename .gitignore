@@ -1,5 +1,23 @@
+# Ignore node modules
 node_modules/
+
+# exclude Copilot directories to allow custom configuration
+.github/skills
+.github/prompts
+
+# Ignore environment variables
+/.env
+.env.mcp
+
+# Ignore temporary and debug files
 /test-results/
 /playwright-report/
 /playwright/.cache/
-/.env
+error-global-setup.png
+
+# Ignore editor files
+*.code-workspace
+
+# Ignore VS Code settings
+.vscode/settings.json
+.vscode/mcp.json

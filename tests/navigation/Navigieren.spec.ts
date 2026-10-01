@@ -1,20 +1,47 @@
 import test, { Page } from '@playwright/test';
-import { MenuBarPage } from '../../pages/components/MenuBar.page';
-import { MENU_TEST_CASES } from './menu.test-cases';
+import { UserInfo } from '../../base/api/personApi';
+import { deletePersonenBySearchStrings, deleteRolleById } from '../../base/testHelperDeleteTestdata';
+import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { RollenSystemRechtEnum } from '../../base/api/generated/models/RollenSystemRechtEnum';
-import { LoginViewPage } from '../../pages/LoginView.page';
-import { freshLoginPage } from '../../base/api/personApi';
-import { prepareAndLoginUserWithPermissions } from '../helpers/prepareAndLoginUserWithPermissions';
-import { ROLLEN_CASES } from '../../base/rollen';
+import { ROLLEN_CASES, RolleCase } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
+import { MenuBarPage } from '../../pages/components/MenuBar.page';
+import { HeaderPage } from '../../pages/components/Header.page';
+import { prepareAndLoginUserWithPermissions } from '../helpers/prepareAndLoginUserWithPermissions';
+import { MENU_TEST_CASES } from './menu.test-cases';
 
-ROLLEN_CASES.forEach((rolle: { name: string; permissions: RollenSystemRechtEnum[] }) => {
+ROLLEN_CASES.forEach((rolle: RolleCase) => {
   test.describe(`MenuBar – ${rolle.name}`, () => {
-    test.beforeEach(async ({ page }: { page: Page }) => {
-      const loginPage: LoginViewPage = await freshLoginPage(page);
-      await loginPage.login(process.env.USER!, process.env.PW!);
+    let userInfo: UserInfo | undefined;
 
-      await prepareAndLoginUserWithPermissions(page, rolle.permissions);
+    test.beforeEach(async ({ page }: { page: Page }) => {
+      await loginAndNavigateToAdministration(page);
+      userInfo = await prepareAndLoginUserWithPermissions(page, rolle);
+    });
+
+    test.afterEach(async ({ page }: { page: Page }) => {
+      const header: HeaderPage = new HeaderPage(page);
+
+      await test.step('Als Testnutzer abmelden', async () => {
+        try {
+          await header.logout();
+        } catch {
+          // ignore — beforeEach may have failed before login
+        }
+      });
+
+      await test.step('Als Admin anmelden und Testdaten löschen', async () => {
+        if (!userInfo) {
+          return;
+        }
+        await loginAndNavigateToAdministration(page);
+        await deletePersonenBySearchStrings(page, [userInfo.username]);
+        await deleteRolleById([userInfo.rolleId], page);
+      });
+
+      await test.step('Abmelden', async () => {
+        await header.logout();
+      });
     });
 
     test('Sichtbarkeit und Navigation der Menueeintraege', { tag: [DEV, STAGE] }, async ({ page }: { page: Page }) => {

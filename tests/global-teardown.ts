@@ -2,6 +2,7 @@ import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
 
 import {
   ApiResponse,
+  ManageableServiceProviderListEntryResponse,
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
@@ -9,16 +10,23 @@ import {
   PersonendatensatzResponse,
   PersonenFrontendApi,
   PersonFrontendControllerFindPersons200Response,
+  ProviderApi,
+  ProviderControllerGetManageableServiceProvidersForOrganisationId200Response,
   RolleApi,
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
-import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
+import { constructProviderApi } from '../base/api/serviceProviderApi';
+import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
-const testDataPrefix: string = 'TAuto';
+const shardIndex = process.env.SHARD_INDEX ?? '0';
+const shardLetter = String.fromCharCode(65 + parseInt(shardIndex, 10)); // 0→A, 1→B, 2→C
+
+const testDataPrefix: string = `TAuto-PW-S${shardIndex}`;
+const personDataPrefix = `TAuto-PW-S${shardLetter}`;
 const limit: number = 100;
 const batchSize: number = 20;
 
@@ -41,9 +49,6 @@ function* getBatchedDelPromise<T>(
   }
 }
 
-/**
- * Global teardown – runs ONCE per Playwright run
- */
 export default async function globalTeardown(): Promise<void> {
   console.log('Global teardown started');
 
@@ -60,10 +65,8 @@ export default async function globalTeardown(): Promise<void> {
     const personFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
+    const providerApi: ProviderApi = constructProviderApi(page);
 
-    // ---------------------------------------------------------------------
-    // LOGIN
-    // ---------------------------------------------------------------------
     console.log('Login');
     await loginAndNavigateToAdministration(page, process.env.USER!, process.env.PW!);
 
@@ -76,7 +79,7 @@ export default async function globalTeardown(): Promise<void> {
       async () => {
         const resp: PersonFrontendControllerFindPersons200Response =
           await personFrontendApi.personFrontendControllerFindPersons({
-            suchFilter: testDataPrefix,
+            suchFilter: personDataPrefix,
             limit,
           });
         console.log(`${resp.total} personen to delete`);
@@ -118,8 +121,13 @@ export default async function globalTeardown(): Promise<void> {
             typ: OrganisationsTyp.Klasse,
             limit,
           });
+        const items: OrganisationResponse[] = await wrappedResponse.value();
+        console.log(
+          'Sample klassen found:',
+          items.slice(0, 10).map((i: OrganisationResponse) => i.name),
+        );
         console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} klassen to delete`);
-        return wrappedResponse.value();
+        return items;
       },
       async (item: OrganisationResponse) =>
         organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),
@@ -141,8 +149,61 @@ export default async function globalTeardown(): Promise<void> {
         console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} schulen to delete`);
         return wrappedResponse.value();
       },
-      async (item: OrganisationResponse) =>
-        organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),
+      async (item: OrganisationResponse) => {
+        // Klassen der Schule löschen (auch solche mit numerischen Namen ohne Testdaten-Präfix)
+        await cleanup(
+          async () => {
+            const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+              await organisationApi.organisationControllerFindOrganizationsRaw({
+                administriertVon: [item.id],
+                typ: OrganisationsTyp.Klasse,
+                limit,
+              });
+            return wrappedResponse.value();
+          },
+          async (klasse: OrganisationResponse) =>
+            organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),
+        );
+        await cleanup(
+          async () => {
+            const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProvidersForOrganisationId200Response> =
+              await providerApi.providerControllerGetManageableServiceProvidersForOrganisationIdRaw({
+                organisationId: item.id,
+                limit,
+              });
+            const angebote: ProviderControllerGetManageableServiceProvidersForOrganisationId200Response =
+              await wrappedResponse.value();
+            if (angebote.total === 0) return [];
+
+            console.log(`${angebote.total} Angebote für ${item.id}:${item.name} löschen`);
+            return angebote.items.filter(
+              (angebot) => angebot.name.startsWith(testDataPrefix) || angebot.administrationsebene.id === item.id,
+            );
+          },
+          async (angebot: ManageableServiceProviderListEntryResponse) => {
+            const rollenIds: string[] = angebot.rollenerweiterungen.map((re) => re.rolle.id);
+            if (rollenIds.length > 0) {
+              console.log(
+                `${angebot.rollenerweiterungen.length} Rollenerweiterungen für ${angebot.id}:${angebot.name} an ${item.id}:${item.name} löschen`,
+              );
+              await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+                angebotId: angebot.id,
+                organisationId: item.id,
+                applyRollenerweiterungBodyParams: {
+                  addErweiterungenForRolleIds: [],
+                  removeErweiterungenForRolleIds: rollenIds,
+                },
+              });
+            }
+
+            if (angebot.administrationsebene.id === item.id) {
+              await providerApi.providerControllerDeleteServiceProvider({ angebotId: angebot.id });
+            }
+          },
+        );
+
+        return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
+      },
     );
 
     console.log('Global teardown finished successfully');

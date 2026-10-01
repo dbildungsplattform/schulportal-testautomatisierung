@@ -60,9 +60,8 @@ export class MenuBarPage {
   }
 
   public async navigateToPersonAdd(): Promise<PersonCreationViewPage> {
-    const { PersonCreationMode, PersonCreationViewPage } = await import(
-      '../admin/personen/creation/PersonCreationView.page'
-    );
+    const { PersonCreationMode, PersonCreationViewPage } =
+      await import('../admin/personen/creation/PersonCreationView.page');
     return this.navigateTo(
       'person-add-menu-item',
       new PersonCreationViewPage(this.page, PersonCreationMode.ADD_ANOTHER_STATE_EMPLOYEE).waitForPageLoad(),
@@ -127,7 +126,7 @@ export class MenuBarPage {
     );
   }
 
-  public async navigateToAngebotSchulspezifisch(): Promise<ServiceProviderManagementBySchuleViewPage> {
+  public async navigateToAngebotManagementSchulspezifisch(): Promise<ServiceProviderManagementBySchuleViewPage> {
     return this.navigateTo(
       'angebot-display-schulspezifisch-menu-item',
       new ServiceProviderManagementBySchuleViewPage(this.page).waitForPageLoad(),

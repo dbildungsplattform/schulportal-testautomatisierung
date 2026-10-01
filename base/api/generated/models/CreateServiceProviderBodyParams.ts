@@ -36,9 +36,15 @@ export interface CreateServiceProviderBodyParams {
      * @type {string}
      * @memberof CreateServiceProviderBodyParams
      */
-    url?: string;
+    url: string;
     /**
-     * Optional logo as base64-encoded string
+     * Optional logoId to use a standard logo. Has to be a positive integer. Only one of logoId or logoBase64 with logoMimeType can be provided, not both.
+     * @type {number}
+     * @memberof CreateServiceProviderBodyParams
+     */
+    logoId?: number;
+    /**
+     * Optional logo as base64-encoded string. Only one of logoId or logoBase64 with logoMimeType can be provided, not both.
      * @type {string}
      * @memberof CreateServiceProviderBodyParams
      */
@@ -67,6 +73,12 @@ export interface CreateServiceProviderBodyParams {
      * @memberof CreateServiceProviderBodyParams
      */
     merkmale: Array<CreateServiceProviderBodyParamsMerkmaleEnum>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof CreateServiceProviderBodyParams
+     */
+    rollenartenWhitelist?: Array<CreateServiceProviderBodyParamsRollenartenWhitelistEnum>;
 }
 
 
@@ -98,9 +110,27 @@ export type CreateServiceProviderBodyParamsKategorieEnum = typeof CreateServiceP
  */
 export const CreateServiceProviderBodyParamsMerkmaleEnum = {
     NachtraeglichZuweisbar: 'NACHTRAEGLICH_ZUWEISBAR',
-    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG'
+    VerfuegbarFuerRollenerweiterung: 'VERFUEGBAR_FUER_ROLLENERWEITERUNG',
+    AnbietenInSchulischerAngebotsverwaltung: 'ANBIETEN_IN_SCHULISCHER_ANGEBOTSVERWALTUNG',
+    AnbietenInSchulischerRollenverwaltung: 'ANBIETEN_IN_SCHULISCHER_ROLLENVERWALTUNG'
 } as const;
 export type CreateServiceProviderBodyParamsMerkmaleEnum = typeof CreateServiceProviderBodyParamsMerkmaleEnum[keyof typeof CreateServiceProviderBodyParamsMerkmaleEnum];
+
+/**
+ * @export
+ */
+export const CreateServiceProviderBodyParamsRollenartenWhitelistEnum = {
+    Lern: 'LERN',
+    Lehr: 'LEHR',
+    Extern: 'EXTERN',
+    Orgadmin: 'ORGADMIN',
+    Leit: 'LEIT',
+    Sysadmin: 'SYSADMIN',
+    Sorgber: 'SORGBER',
+    Schb: 'SCHB',
+    Nlehr: 'NLEHR'
+} as const;
+export type CreateServiceProviderBodyParamsRollenartenWhitelistEnum = typeof CreateServiceProviderBodyParamsRollenartenWhitelistEnum[keyof typeof CreateServiceProviderBodyParamsRollenartenWhitelistEnum];
 
 
 /**
@@ -110,6 +140,7 @@ export function instanceOfCreateServiceProviderBodyParams(value: object): boolea
     let isInstance = true;
     isInstance = isInstance && "organisationId" in value;
     isInstance = isInstance && "name" in value;
+    isInstance = isInstance && "url" in value;
     isInstance = isInstance && "kategorie" in value;
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
@@ -129,12 +160,14 @@ export function CreateServiceProviderBodyParamsFromJSONTyped(json: any, ignoreDi
         
         'organisationId': json['organisationId'],
         'name': json['name'],
-        'url': !exists(json, 'url') ? undefined : json['url'],
+        'url': json['url'],
+        'logoId': !exists(json, 'logoId') ? undefined : json['logoId'],
         'logoBase64': !exists(json, 'logoBase64') ? undefined : json['logoBase64'],
         'logoMimeType': !exists(json, 'logoMimeType') ? undefined : json['logoMimeType'],
         'kategorie': json['kategorie'],
         'requires2fa': json['requires2fa'],
         'merkmale': json['merkmale'],
+        'rollenartenWhitelist': !exists(json, 'rollenartenWhitelist') ? undefined : json['rollenartenWhitelist'],
     };
 }
 
@@ -150,11 +183,13 @@ export function CreateServiceProviderBodyParamsToJSON(value?: CreateServiceProvi
         'organisationId': value.organisationId,
         'name': value.name,
         'url': value.url,
+        'logoId': value.logoId,
         'logoBase64': value.logoBase64,
         'logoMimeType': value.logoMimeType,
         'kategorie': value.kategorie,
         'requires2fa': value.requires2fa,
         'merkmale': value.merkmale,
+        'rollenartenWhitelist': value.rollenartenWhitelist,
     };
 }
 

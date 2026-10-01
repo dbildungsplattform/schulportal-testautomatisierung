@@ -1,19 +1,14 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 
-import { getOrganisationId } from '../../base/api/organisationApi';
+import { createSchule } from '../../base/api/organisationApi';
 import { createRolle } from '../../base/api/rolleApi';
-import {
-  ersatzLandSH,
-  landSH,
-  oeffentlichLandSH,
-  testschuleName,
-} from '../../base/organisation';
+import { ersatzLandSH, landSH, oeffentlichLandSH } from '../../base/organisation';
 import { landesadminRolle, schuelerRolle, schuladminOeffentlichRolle } from '../../base/rollen';
 import { typeLehrer, typeSchueler } from '../../base/rollentypen';
 import { DEV, STAGE } from '../../base/tags';
 import { deletePersonenBySearchStrings, deleteRolleById, deleteRolleByName } from '../../base/testHelperDeleteTestdata';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateRolleName } from '../../base/utils/generateTestdata';
+import { generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonCreationViewPage } from '../../pages/admin/personen/creation/PersonCreationView.page';
 import { HeaderPage } from '../../pages/components/Header.page';
 import { MenuBarPage } from '../../pages/components/MenuBar.page';
@@ -26,9 +21,18 @@ let rolleNames: string[] = [];
 const currentUserIsLandesadministrator: boolean = true;
 
 test.describe(`Testfälle für die Administration von Personen": Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
+  let schule: {
+    id: string;
+    name: string;
+  };
   test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
     await test.step(`Login`, async () => {
       await loginAndNavigateToAdministration(page);
+    });
+    await test.step(`Schule anlegen`, async () => {
+      const name: string = generateSchulname();
+      const id: string = await createSchule(page, name);
+      schule = { id, name };
     });
   });
 
@@ -70,7 +74,7 @@ test.describe(`Testfälle für die Administration von Personen": Umgebung: ${pro
       const OrganisationLand: string = landSH;
       const OrganisationOeffentlicheSchule: string = oeffentlichLandSH;
       const OrganisationErsatzschule: string = ersatzLandSH;
-      const OrganisationSchule: string = testschuleName;
+      const OrganisationSchule: string = schule.name;
 
       const rolleLehr: string = 'Lehrkraft';
       const rolleLiV: string = 'LiV';
@@ -124,7 +128,7 @@ test.describe(`Testfälle für die Administration von Personen": Umgebung: ${pro
       const rolleNames: string[] = [];
 
       await test.step(`Testdaten: Je 2 Rollen mit Rollenarten LEHR und LERN über die api anlegen`, async () => {
-        const idSchule: string = await getOrganisationId(page, testschuleName);
+        const idSchule: string = schule.id;
 
         for (let i: number = 0; i <= 4; i++) {
           rolleNames.push(generateRolleName());
@@ -142,7 +146,7 @@ test.describe(`Testfälle für die Administration von Personen": Umgebung: ${pro
       });
 
       await test.step(`In der Combobox 'Organisation' eine Schule auswählen`, async () => {
-        await personCreationView.searchOrganisation(testschuleName, false);
+        await personCreationView.searchOrganisation(schule.name, false);
       });
 
       await test.step(`In der Combobox 'Rolle' 2 Rollen vom Typ LEHR selektieren und prüfen, dass danach keine Rollen mehr vom Type LERN angezeigt werden in der Combobox`, async () => {

@@ -33,11 +33,11 @@ export class VersetzenWorkflowPage extends BaseZuordnungWorkflowPage {
 
   /* assertions */
   public async checkSelectedSchule(schule: string): Promise<void> {
-    await this.schule.checkText(schule);
+    await this.schule.assertTextHard(schule);
   }
 
   public async checkSelectedKlasse(klasse: string): Promise<void> {
-    await this.klasse.checkText(klasse);
+    await this.klasse.assertTextHard(klasse);
   }
 
   public async checkConfirmation(from: string, to: string): Promise<void> {

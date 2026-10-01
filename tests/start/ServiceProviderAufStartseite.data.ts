@@ -1,6 +1,7 @@
 import { OrganisationsTyp, RollenArt } from '../../base/api/generated';
 import {
   email,
+  firmenfitness,
   itslearning,
   kalender,
   adressbuch,
@@ -26,6 +27,7 @@ export const testFixtures: TestFixture[] = [
     organisationsTyp: OrganisationsTyp.Schule,
     serviceProviderNames: [
       email,
+      firmenfitness,
       itslearning,
       kalender,
       adressbuch,

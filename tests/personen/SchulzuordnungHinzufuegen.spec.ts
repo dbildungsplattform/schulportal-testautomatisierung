@@ -1,8 +1,7 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { testschuleName, testschuleDstNr } from '../../base/organisation';
-import { generateNachname, generateVorname, generateRolleName } from '../../base/utils/generateTestdata';
+import { generateRolleName } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { RollenArt } from '../../base/api/generated';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
@@ -26,15 +25,11 @@ test.describe(`Testfälle für Schulzuordnung hinzufügen: ENV: ${process.env.EN
 
     // ---------- Testdaten ----------
     await test.step('Testdaten: Lehrer mit Rolle und bestehender Schulzuordnung anlegen und neue Rolle für die neue Schulzuordnung anlegen', async () => {
-      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(
-        page,
-        testschuleName,
-        RollenArt.Lehr,
-        generateNachname(),
-        generateVorname(),
-        [await getServiceProviderId(page, email)],
-        generateRolleName(),
-      );
+      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
+        organisationName: testschuleName,
+        rollenArt: RollenArt.Lehr,
+        serviceProviderNames: [email],
+      });
       const organisationId: string = await getOrganisationId(page, testschuleName);
       await createRolle(page, RollenArt.Lehr, organisationId, nameRolleNeu);
     });

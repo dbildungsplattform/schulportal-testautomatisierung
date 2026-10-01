@@ -37,12 +37,24 @@ import {
     UserExeternalDataResponseVidisFromJSONTyped,
     UserExeternalDataResponseVidisToJSON,
 } from './UserExeternalDataResponseVidis';
+import type { UserExternalDataResponseIqshHelpdesk } from './UserExternalDataResponseIqshHelpdesk';
+import {
+    UserExternalDataResponseIqshHelpdeskFromJSON,
+    UserExternalDataResponseIqshHelpdeskFromJSONTyped,
+    UserExternalDataResponseIqshHelpdeskToJSON,
+} from './UserExternalDataResponseIqshHelpdesk';
 import type { UserExternalDataResponseOx } from './UserExternalDataResponseOx';
 import {
     UserExternalDataResponseOxFromJSON,
     UserExternalDataResponseOxFromJSONTyped,
     UserExternalDataResponseOxToJSON,
 } from './UserExternalDataResponseOx';
+import type { UserExternalDataResponsePolyteia } from './UserExternalDataResponsePolyteia';
+import {
+    UserExternalDataResponsePolyteiaFromJSON,
+    UserExternalDataResponsePolyteiaFromJSONTyped,
+    UserExternalDataResponsePolyteiaToJSON,
+} from './UserExternalDataResponsePolyteia';
 
 /**
  * 
@@ -80,6 +92,18 @@ export interface UserExternalDataResponse {
      * @memberof UserExternalDataResponse
      */
     onlineDateiablage: UserExeternalDataResponseOnlineDateiablage;
+    /**
+     * 
+     * @type {UserExternalDataResponseIqshHelpdesk}
+     * @memberof UserExternalDataResponse
+     */
+    iqshHelpdesk: UserExternalDataResponseIqshHelpdesk;
+    /**
+     * 
+     * @type {UserExternalDataResponsePolyteia}
+     * @memberof UserExternalDataResponse
+     */
+    polyteia: UserExternalDataResponsePolyteia;
 }
 
 /**
@@ -91,6 +115,8 @@ export function instanceOfUserExternalDataResponse(value: object): boolean {
     isInstance = isInstance && "vidis" in value;
     isInstance = isInstance && "opsh" in value;
     isInstance = isInstance && "onlineDateiablage" in value;
+    isInstance = isInstance && "iqshHelpdesk" in value;
+    isInstance = isInstance && "polyteia" in value;
 
     return isInstance;
 }
@@ -110,6 +136,8 @@ export function UserExternalDataResponseFromJSONTyped(json: any, ignoreDiscrimin
         'vidis': UserExeternalDataResponseVidisFromJSON(json['vidis']),
         'opsh': UserExeternalDataResponseOpshFromJSON(json['opsh']),
         'onlineDateiablage': UserExeternalDataResponseOnlineDateiablageFromJSON(json['onlineDateiablage']),
+        'iqshHelpdesk': UserExternalDataResponseIqshHelpdeskFromJSON(json['iqshHelpdesk']),
+        'polyteia': UserExternalDataResponsePolyteiaFromJSON(json['polyteia']),
     };
 }
 
@@ -127,6 +155,8 @@ export function UserExternalDataResponseToJSON(value?: UserExternalDataResponse 
         'vidis': UserExeternalDataResponseVidisToJSON(value.vidis),
         'opsh': UserExeternalDataResponseOpshToJSON(value.opsh),
         'onlineDateiablage': UserExeternalDataResponseOnlineDateiablageToJSON(value.onlineDateiablage),
+        'iqshHelpdesk': UserExternalDataResponseIqshHelpdeskToJSON(value.iqshHelpdesk),
+        'polyteia': UserExternalDataResponsePolyteiaToJSON(value.polyteia),
     };
 }
 

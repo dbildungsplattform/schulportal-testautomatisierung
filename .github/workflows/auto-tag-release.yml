@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 #v4.1.1
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  #v6.0.3
       
       - name: Update Semver
         uses: dbildungsplattform/action-update-semver@a95e4e5fd00d6f0f5e011846285a0a7958010cdd # use lightweight git tag not to break direct nested workflow calls, see https://github.com/orgs/community/discussions/48693#discussioncomment-6132963

@@ -1,11 +1,11 @@
 import { expect, type Locator, Page } from '@playwright/test';
 import { BaseZuordnungWorkflowPage, TestIdsType } from './BaseWorkflow.page';
+import { BefristungsInput } from '../../../../components/BefristungsInput.page';
 
 export class BefristungWorkflowPage extends BaseZuordnungWorkflowPage {
   /* add global locators here */
-  private readonly unbefristetRadioButton: Locator;
-  private readonly schuljahresendeRadioButton: Locator;
   protected readonly ENDPOINT: string = 'befristung-change/**';
+  private readonly befristungsInput: BefristungsInput;
 
   protected readonly TEST_IDS: TestIdsType = {
     submitButton: 'change-befristung-submit-button',
@@ -17,8 +17,7 @@ export class BefristungWorkflowPage extends BaseZuordnungWorkflowPage {
 
   constructor(protected readonly page: Page) {
     super(page);
-    this.unbefristetRadioButton = this.page.getByTestId('unbefristet-radio-button');
-    this.schuljahresendeRadioButton = this.page.getByTestId('schuljahresende-radio-button');
+    this.befristungsInput = new BefristungsInput(page);
   }
 
   /* actions */
@@ -33,7 +32,7 @@ export class BefristungWorkflowPage extends BaseZuordnungWorkflowPage {
   }
 
   /* assertions */
-  public async checkError(shouldBeVisible: boolean): Promise<void> {
+  public async assertErrorMessageVisibility(shouldBeVisible: boolean): Promise<void> {
     const locator: Locator = this.page.getByText('Das eingegebene Datum darf nicht in der Vergangenheit liegen.');
     if (shouldBeVisible) {
       await expect(locator).toBeVisible();
@@ -42,18 +41,17 @@ export class BefristungWorkflowPage extends BaseZuordnungWorkflowPage {
     }
   }
 
-  public async checkConfirmation(oldValue: string, newValue: string): Promise<void> {
+  public async assertConfirmationIsVisible(oldValue: string, newValue: string): Promise<void> {
     await expect(
       this.page.getByText(`Möchten Sie die Befristung wirklich von ${oldValue} in ${newValue} ändern?`),
     ).toBeVisible();
   }
 
-  public async checkSelectedBefristungOption(option: 'unbefristet' | 'schuljahresende'): Promise<void> {
-    if (option === 'schuljahresende') await expect(this.schuljahresendeRadioButton).toBeChecked();
-    if (option === 'unbefristet') await expect(this.unbefristetRadioButton).toBeChecked();
+  public async assertSelectedBefristungOption(option: 'unbefristet' | 'schuljahresende'): Promise<void> {
+    await this.befristungsInput.assertSelectedBefristungOption(option);
   }
 
-  public async checkUnbefristetDisabled(): Promise<void> {
-    await expect(this.unbefristetRadioButton).toBeDisabled();
+  public async assertUnbefristetDisabled(): Promise<void> {
+    await this.befristungsInput.assertUnbefristetDisabled();
   }
 }

@@ -1,18 +1,12 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { testschuleDstNr, testschuleName } from '../../base/organisation';
 import { typeSchueler } from '../../base/rollentypen';
 import { itslearning } from '../../base/sp';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import {
-  generateKlassenname,
-  generateNachname,
-  generateRolleName,
-  generateVorname,
-} from '../../base/utils/generateTestdata';
+import { generateKlassenname, generateRolleName } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { ZuordnungenPage } from '../../pages/admin/personen/details/Zuordnungen.page';
@@ -39,17 +33,13 @@ test.describe(`Schüler versetzen, Umgebung ${process.env.ENV}, URL: ${process.e
       const idSchule: string = await getOrganisationId(page, testschuleName);
       const klasseIdCurrent: string = await createKlasse(page, idSchule, klasseNameCurrent);
 
-      userInfoSchueler = await createRolleAndPersonWithPersonenkontext(
-        page,
-        testschuleName,
-        typeSchueler,
-        generateNachname(),
-        generateVorname(),
-        [await getServiceProviderId(page, itslearning)],
-        rolleName,
-        undefined,
-        klasseIdCurrent,
-      );
+      userInfoSchueler = await createRolleAndPersonWithPersonenkontext(page, {
+        organisationName: testschuleName,
+        rollenArt: typeSchueler,
+        rollenName: rolleName,
+        serviceProviderNames: [itslearning],
+        klasseId: klasseIdCurrent,
+      });
       await createKlasse(page, idSchule, klasseNameNew);
     });
   });

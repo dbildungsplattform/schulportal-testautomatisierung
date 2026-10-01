@@ -1,34 +1,25 @@
-import { Page, expect } from '@playwright/test';
-import { FRONTEND_URL } from './baseApi';
+import { expect, Page } from '@playwright/test';
+import { constructApi } from './apiFactory';
+import {
+  RolleApi,
+  RolleControllerCreateRolleRequest,
+  RolleControllerDeleteRolleRequest,
+  RolleControllerFindRollenRequest,
+} from './generated/apis/RolleApi';
 import {
   CreateRolleBodyParams,
   RollenArt,
   RollenMerkmal,
   RolleResponse,
   RolleWithServiceProvidersResponse,
-  ServiceProviderResponse,
 } from './generated/models';
-import {
-  RolleApi,
-  RolleControllerAddSystemRechtRequest,
-  RolleControllerCreateRolleRequest,
-  RolleControllerDeleteRolleRequest,
-  RolleControllerFindRollenRequest,
-  RolleControllerUpdateServiceProvidersByIdRequest,
-} from './generated/apis/RolleApi';
-import { makeFetchWithPlaywright } from './playwrightFetchAdapter';
-import { ApiResponse, Configuration } from './generated/runtime';
 import { RollenSystemRechtEnum } from './generated/models/RollenSystemRechtEnum';
+import { ApiResponse } from './generated/runtime';
 
-export { RollenArt };
-export { RollenMerkmal };
+export { RollenArt, RollenMerkmal };
 
 export function constructRolleApi(page: Page): RolleApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new RolleApi(config);
+  return constructApi(page, RolleApi);
 }
 
 /**
@@ -46,19 +37,18 @@ export async function createRolle(
   organisationId: string,
   rolleName: string,
   merkmale?: Set<RollenMerkmal>,
+  systemrechte?: Set<RollenSystemRechtEnum>,
+  serviceProviderIds?: Set<string>,
 ): Promise<string> {
   try {
     const createRolleBodyParams: CreateRolleBodyParams = {
       name: rolleName,
       administeredBySchulstrukturknoten: organisationId,
       rollenart: rollenArt,
-      merkmale: new Set<RollenMerkmal>(),
-      systemrechte: new Set<RollenSystemRechtEnum>(),
+      merkmale: merkmale ?? new Set<RollenMerkmal>(),
+      systemrechte: systemrechte ?? new Set<RollenSystemRechtEnum>(),
+      serviceProviderIds: serviceProviderIds ?? new Set<string>(),
     };
-
-    if (merkmale) {
-      createRolleBodyParams.merkmale = new Set(merkmale);
-    }
 
     const requestParameters: RolleControllerCreateRolleRequest = {
       createRolleBodyParams,
@@ -72,55 +62,6 @@ export async function createRolle(
     return createdRolle.id;
   } catch (error) {
     console.error('[ERROR] createRolle failed:', error);
-    throw error;
-  }
-}
-
-export async function addServiceProvidersToRolle(
-  page: Page,
-  rolleId: string,
-  serviceProviderIds: string[],
-): Promise<void> {
-  try {
-    const requestParameters: RolleControllerUpdateServiceProvidersByIdRequest = {
-      rolleId,
-      rolleServiceProviderBodyParams: {
-        serviceProviderIds: serviceProviderIds,
-        version: 1,
-      },
-    };
-
-    const rolleApi: RolleApi = constructRolleApi(page);
-    const response: ApiResponse<ServiceProviderResponse[]> =
-      await rolleApi.rolleControllerUpdateServiceProvidersByIdRaw(requestParameters);
-    expect(response.raw.status).toBe(201);
-
-    const addedServiceProviders: ServiceProviderResponse[] = await response.value();
-    expect(addedServiceProviders.length).toBe(serviceProviderIds.length);
-  } catch (error) {
-    console.error('[ERROR] addServiceProvidersToRolle failed:', error);
-    throw error;
-  }
-}
-
-export async function addSystemrechtToRolle(
-  page: Page,
-  rolleId: string,
-  systemRecht: RollenSystemRechtEnum,
-): Promise<void> {
-  try {
-    const requestParameters: RolleControllerAddSystemRechtRequest = {
-      rolleId,
-      addSystemrechtBodyParams: {
-        systemRecht,
-      },
-    };
-
-    const rolleApi: RolleApi = constructRolleApi(page);
-    const response: ApiResponse<void> = await rolleApi.rolleControllerAddSystemRechtRaw(requestParameters);
-    expect(response.raw.status).toBe(200);
-  } catch (error) {
-    console.error('[ERROR] addSystemrechtToRolle failed:', error);
     throw error;
   }
 }
@@ -163,6 +104,29 @@ export async function getRolleId(page: Page, rollenname: string): Promise<string
     return fetchedRolleId;
   } catch (error) {
     console.error('[ERROR] getRolleId failed:', error);
+    throw error;
+  }
+}
+
+export async function applyRollenerweiterungChanges(
+  page: Page,
+  angebotId: string,
+  organisationId: string,
+  addErweiterungenForRolleIds: string[],
+  removeErweiterungenForRolleIds: string[] = [],
+): Promise<void> {
+  try {
+    const rolleApi: RolleApi = constructRolleApi(page);
+    await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+      angebotId,
+      organisationId,
+      applyRollenerweiterungBodyParams: {
+        addErweiterungenForRolleIds,
+        removeErweiterungenForRolleIds,
+      },
+    });
+  } catch (error) {
+    console.error('[ERROR] applyRollenerweiterungChanges failed:', error);
     throw error;
   }
 }

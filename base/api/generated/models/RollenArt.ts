@@ -23,7 +23,10 @@ export const RollenArt = {
     Extern: 'EXTERN',
     Orgadmin: 'ORGADMIN',
     Leit: 'LEIT',
-    Sysadmin: 'SYSADMIN'
+    Sysadmin: 'SYSADMIN',
+    Sorgber: 'SORGBER',
+    Schb: 'SCHB',
+    Nlehr: 'NLEHR'
 } as const;
 export type RollenArt = typeof RollenArt[keyof typeof RollenArt];
 

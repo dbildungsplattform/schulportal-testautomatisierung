@@ -111,7 +111,7 @@ export interface PersonenkontextApiInterface {
      * @param {string} [rolleName] Rolle name used to filter for rollen in personenkontext.
      * @param {string} [organisationName] Organisation/SSK name used to filter for schulstrukturknoten in personenkontext.
      * @param {number} [limit] The limit of items for the request.
-     * @param {RollenSystemRechtEnum} [requestedWithSystemrecht] The systemrecht used to filter for rollen in personenkontext.
+     * @param {RollenSystemRechtEnum} [requestedWithSystemrecht] The systemrecht used to filter for rollen in personenkontext. Must be one of PERSONEN_VERWALTEN, PERSONEN_ANLEGEN or EINGESCHRAENKT_NEUE_BENUTZER_ERSTELLEN. Defaults to PERSONEN_VERWALTEN
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PersonenkontextApiInterface

@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { RollenArt } from './RollenArt';
+import {
+    RollenArtFromJSON,
+    RollenArtFromJSONTyped,
+    RollenArtToJSON,
+} from './RollenArt';
 import type { ServiceProviderKategorie } from './ServiceProviderKategorie';
 import {
     ServiceProviderKategorieFromJSON,
@@ -25,6 +31,12 @@ import {
     ServiceProviderMerkmalFromJSONTyped,
     ServiceProviderMerkmalToJSON,
 } from './ServiceProviderMerkmal';
+import type { ServiceProviderSystem } from './ServiceProviderSystem';
+import {
+    ServiceProviderSystemFromJSON,
+    ServiceProviderSystemFromJSONTyped,
+    ServiceProviderSystemToJSON,
+} from './ServiceProviderSystem';
 import type { ServiceProviderTarget } from './ServiceProviderTarget';
 import {
     ServiceProviderTargetFromJSON,
@@ -61,7 +73,7 @@ export interface ServiceProviderResponse {
      * @type {string}
      * @memberof ServiceProviderResponse
      */
-    url: string;
+    url?: string;
     /**
      * 
      * @type {ServiceProviderKategorie}
@@ -69,13 +81,19 @@ export interface ServiceProviderResponse {
      */
     kategorie: ServiceProviderKategorie;
     /**
-     * 
+     * Optional logoId for use with standard logos
+     * @type {number}
+     * @memberof ServiceProviderResponse
+     */
+    logoId?: number;
+    /**
+     * Indicates if a custom logo is available for fetching
      * @type {boolean}
      * @memberof ServiceProviderResponse
      */
     hasLogo: boolean;
     /**
-     * 
+     * Indicates if 2FA is required
      * @type {boolean}
      * @memberof ServiceProviderResponse
      */
@@ -86,6 +104,18 @@ export interface ServiceProviderResponse {
      * @memberof ServiceProviderResponse
      */
     merkmale: Array<ServiceProviderMerkmal>;
+    /**
+     * 
+     * @type {Array<RollenArt>}
+     * @memberof ServiceProviderResponse
+     */
+    rollenartenWhitelist: Array<RollenArt>;
+    /**
+     * 
+     * @type {ServiceProviderSystem}
+     * @memberof ServiceProviderResponse
+     */
+    externalSystem: ServiceProviderSystem;
 }
 
 /**
@@ -96,11 +126,12 @@ export function instanceOfServiceProviderResponse(value: object): boolean {
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "target" in value;
-    isInstance = isInstance && "url" in value;
     isInstance = isInstance && "kategorie" in value;
     isInstance = isInstance && "hasLogo" in value;
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
+    isInstance = isInstance && "rollenartenWhitelist" in value;
+    isInstance = isInstance && "externalSystem" in value;
 
     return isInstance;
 }
@@ -118,11 +149,14 @@ export function ServiceProviderResponseFromJSONTyped(json: any, ignoreDiscrimina
         'id': json['id'],
         'name': json['name'],
         'target': ServiceProviderTargetFromJSON(json['target']),
-        'url': json['url'],
+        'url': !exists(json, 'url') ? undefined : json['url'],
         'kategorie': ServiceProviderKategorieFromJSON(json['kategorie']),
+        'logoId': !exists(json, 'logoId') ? undefined : json['logoId'],
         'hasLogo': json['hasLogo'],
         'requires2fa': json['requires2fa'],
         'merkmale': ((json['merkmale'] as Array<any>).map(ServiceProviderMerkmalFromJSON)),
+        'rollenartenWhitelist': ((json['rollenartenWhitelist'] as Array<any>).map(RollenArtFromJSON)),
+        'externalSystem': ServiceProviderSystemFromJSON(json['externalSystem']),
     };
 }
 
@@ -140,9 +174,12 @@ export function ServiceProviderResponseToJSON(value?: ServiceProviderResponse | 
         'target': ServiceProviderTargetToJSON(value.target),
         'url': value.url,
         'kategorie': ServiceProviderKategorieToJSON(value.kategorie),
+        'logoId': value.logoId,
         'hasLogo': value.hasLogo,
         'requires2fa': value.requires2fa,
         'merkmale': ((value.merkmale as Array<any>).map(ServiceProviderMerkmalToJSON)),
+        'rollenartenWhitelist': ((value.rollenartenWhitelist as Array<any>).map(RollenArtToJSON)),
+        'externalSystem': ServiceProviderSystemToJSON(value.externalSystem),
     };
 }
 

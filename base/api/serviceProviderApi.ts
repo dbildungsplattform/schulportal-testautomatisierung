@@ -1,10 +1,22 @@
 import { expect, Page } from '@playwright/test';
-import { ProviderApi } from './generated/apis/ProviderApi';
-import { ApiResponse, Configuration } from './generated/runtime';
-import { makeFetchWithPlaywright } from './playwrightFetchAdapter';
-import { ServiceProviderResponse } from './generated/models';
-
-const FRONTEND_URL: string | undefined = process.env.FRONTEND_URL || '';
+import { testschuleName } from '../organisation';
+import { generateAngebotname } from '../utils/generateTestdata';
+import { constructApi } from './apiFactory';
+import {
+  ProviderApi,
+  ProviderControllerCreateServiceProviderRequest,
+  ProviderControllerDeleteServiceProviderRequest,
+} from './generated/apis/ProviderApi';
+import {
+  CreateServiceProviderBodyParams,
+  CreateServiceProviderBodyParamsKategorieEnum,
+  CreateServiceProviderBodyParamsMerkmaleEnum,
+  CreateServiceProviderResponse,
+  RollenArt,
+  ServiceProviderResponse,
+} from './generated/models';
+import { ApiResponse } from './generated/runtime';
+import { getOrganisationId } from './organisationApi';
 
 export interface ServiceProviderFromRolleResponse {
   id: string;
@@ -12,18 +24,88 @@ export interface ServiceProviderFromRolleResponse {
 }
 
 export function constructProviderApi(page: Page): ProviderApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new ProviderApi(config);
+  return constructApi(page, ProviderApi);
 }
 
-export async function getServiceProviderId(page: Page, serviceProviderName: string): Promise<string> {
+export async function createServiceProvider(
+  page: Page,
+  createServiceProviderBodyParams: CreateServiceProviderBodyParams,
+): Promise<string> {
+  try {
+    const requestParameters: ProviderControllerCreateServiceProviderRequest = {
+      createServiceProviderBodyParams,
+    };
+
+    const providerApi: ProviderApi = constructProviderApi(page);
+    const response: ApiResponse<CreateServiceProviderResponse> =
+      await providerApi.providerControllerCreateServiceProviderRaw(requestParameters);
+    expect(response.raw.status).toBe(201);
+
+    const createdServiceProvider: CreateServiceProviderResponse = await response.value();
+    return createdServiceProvider.id;
+  } catch (error) {
+    console.error('[ERROR] createServiceProvider failed:', error);
+    throw error;
+  }
+}
+
+export async function createServiceProviderForTestschule(
+  page: Page,
+  verfuegbarFuerRollenerweiterung: boolean,
+): Promise<{ id: string; name: string }> {
+  const organisationId: string = await getOrganisationId(page, testschuleName);
+  const name: string = generateAngebotname();
+  const merkmale: CreateServiceProviderBodyParamsMerkmaleEnum[] = verfuegbarFuerRollenerweiterung
+    ? [
+        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+        CreateServiceProviderBodyParamsMerkmaleEnum.VerfuegbarFuerRollenerweiterung,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      ]
+    : [
+        CreateServiceProviderBodyParamsMerkmaleEnum.NachtraeglichZuweisbar,
+        CreateServiceProviderBodyParamsMerkmaleEnum.AnbietenInSchulischerAngebotsverwaltung,
+      ];
+
+  const id: string = await createServiceProvider(page, {
+    organisationId,
+    name,
+    url: page.url(),
+    kategorie: CreateServiceProviderBodyParamsKategorieEnum.Schulisch,
+    requires2fa: false,
+    merkmale,
+  });
+
+  return { id, name };
+}
+
+export async function deleteServiceProvider(page: Page, angebotId: string): Promise<void> {
+  try {
+    const requestParameters: ProviderControllerDeleteServiceProviderRequest = {
+      angebotId,
+    };
+
+    const providerApi: ProviderApi = constructProviderApi(page);
+    const response: ApiResponse<void> = await providerApi.providerControllerDeleteServiceProviderRaw(requestParameters);
+    expect(response.raw.status).toBe(204);
+  } catch (error) {
+    console.error('[ERROR] deleteServiceProvider failed:', error);
+    throw error;
+  }
+}
+
+export async function getServiceProviderId(
+  page: Page,
+  serviceProviderName: string,
+  schulstrukturknotenOfRolle: string,
+  rollenArt: RollenArt,
+): Promise<string> {
   try {
     const providerApi: ProviderApi = constructProviderApi(page);
     const response: ApiResponse<ServiceProviderResponse[]> =
-      await providerApi.providerControllerGetAllServiceProvidersRaw();
+      await providerApi.providerControllerGetAssignableServiceProvidersForRolleRaw({
+        schulstrukturknotenOfRolle,
+        rollenArt,
+      });
     expect(response.raw.status).toBe(200);
 
     const fetchedServiceProviders: ServiceProviderResponse[] = await response.value();
@@ -48,11 +130,19 @@ export async function getServiceProviderId(page: Page, serviceProviderName: stri
  * @param serviceProviderNames
  * @returns a map of names to ids for the given service provider names. If a name is not found, it will not be included in the map.
  */
-export async function getServiceProviderIds(page: Page, serviceProviderNames: string[]): Promise<Map<string, string>> {
+export async function getServiceProviderIdsMappedByName(
+  page: Page,
+  serviceProviderNames: string[],
+  schulstrukturknotenOfRolle: string,
+  rollenArt: RollenArt,
+): Promise<Map<string, string>> {
   try {
     const providerApi: ProviderApi = constructProviderApi(page);
     const response: ApiResponse<ServiceProviderResponse[]> =
-      await providerApi.providerControllerGetAllServiceProvidersRaw();
+      await providerApi.providerControllerGetAssignableServiceProvidersForRolleRaw({
+        schulstrukturknotenOfRolle,
+        rollenArt,
+      });
     expect(response.raw.status).toBe(200);
 
     const fetchedServiceProviders: ServiceProviderResponse[] = await response.value();
@@ -64,12 +154,14 @@ export async function getServiceProviderIds(page: Page, serviceProviderNames: st
       );
       if (serviceProvider) {
         mappedServiceProviderIds.set(name, serviceProvider.id);
+      } else {
+        console.warn(`[WARN] ServiceProvider with name "${name}" not found among fetched service providers.`);
       }
     }
 
     return mappedServiceProviderIds;
   } catch (error) {
-    console.error('[ERROR] getServiceProviderId failed:', error);
+    console.error('[ERROR] getServiceProviderIdsMappedByName failed:', error);
     throw error;
   }
 }

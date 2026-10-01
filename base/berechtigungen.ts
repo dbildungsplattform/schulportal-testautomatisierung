@@ -3,6 +3,7 @@ import { RollenSystemRechtEnum } from './api/generated';
 export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   IMPORT_DURCHFUEHREN: 'Darf Import durchführen',
   ROLLEN_VERWALTEN: 'Darf Rollen verwalten',
+  MPT_ROLLEN_ZUORDNEN: 'Darf Rollen für multiprofessionelle Teams zuordnen',
   PERSONEN_SOFORT_LOESCHEN: 'Darf Benutzer sofort löschen',
   PERSONEN_VERWALTEN: 'Darf Benutzer verwalten',
   SCHULEN_VERWALTEN: 'Darf Schulen verwalten',
@@ -18,6 +19,7 @@ export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   ROLLEN_ERWEITERN: 'Darf Rollen schulspezifisch erweitern',
   ANGEBOTE_VERWALTEN: 'Darf Angebote verwalten',
   ANGEBOTE_EINGESCHRAENKT_VERWALTEN: 'Darf Angebote eingeschränkt verwalten',
+  SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN: 'Darf schulische VIDIS-Angebote abrufen',
   CRON_DURCHFUEHREN: '', // no label in UI
-  PERSONEN_LESEN: '', // no label in UI
+  PERSONEN_LESEN: '', // no label in UI,
 };

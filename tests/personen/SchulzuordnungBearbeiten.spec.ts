@@ -1,24 +1,21 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
+import { RollenArt, RollenMerkmal } from '../../base/api/generated';
 import {
   createRolleAndPersonWithPersonenkontext,
   setTimeLimitPersonenkontext,
   UserInfo,
 } from '../../base/api/personApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
-import { testschuleName, testschuleDstNr } from '../../base/organisation';
-import {
-  generateNachname,
-  generateVorname,
-  generateRolleName,
-  generateCurrentDate,
-  formatDateDMY,
-  generateKopersNr,
-} from '../../base/utils/generateTestdata';
-import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
-import { RollenArt, RollenMerkmal } from '../../base/api/generated';
-import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
+import { testschuleDstNr, testschuleName } from '../../base/organisation';
 import { email } from '../../base/sp';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
+import {
+  formatDateDMY,
+  generateCurrentDate,
+  generateKopersNr,
+  generateRolleName,
+} from '../../base/utils/generateTestdata';
+import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
+import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 
 test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV} URL: ${process.env.FRONTEND_URL}`, () => {
   let personManagementView: PersonManagementViewPage;
@@ -37,15 +34,12 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
 
     // ---------- Testdaten ----------
     await test.step('Testdaten: Lehrer mit Rolle und Schulzuordnung anlegen', async () => {
-      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(
-        page,
-        testschuleName,
-        RollenArt.Lehr,
-        generateNachname(),
-        generateVorname(),
-        [await getServiceProviderId(page, email)],
-        nameRolle,
-      );
+      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
+        organisationName: testschuleName,
+        rollenArt: RollenArt.Lehr,
+        serviceProviderNames: [email],
+        rollenName: nameRolle,
+      });
 
       await setTimeLimitPersonenkontext(
         page,
@@ -119,18 +113,14 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
     const nameRolle: string = generateRolleName();
 
     await test.step('Testdaten: Lehrer mit einer Rolle (LiV) mit den Merkmalen "BefristungsPflicht" und "KopersPflicht" und einer Schulzuordnung anlegen', async () => {
-      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(
-        page,
-        testschuleName,
-        RollenArt.Lehr,
-        generateNachname(),
-        generateVorname(),
-        [await getServiceProviderId(page, email)],
-        nameRolle,
-        generateKopersNr(),
-        undefined,
-        new Set<RollenMerkmal>([RollenMerkmal.BefristungPflicht, RollenMerkmal.KopersPflicht]),
-      );
+      userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
+        organisationName: testschuleName,
+        rollenArt: RollenArt.Lehr,
+        serviceProviderNames: [email],
+        rollenName: nameRolle,
+        koPersNr: generateKopersNr(),
+        rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.BefristungPflicht, RollenMerkmal.KopersPflicht]),
+      });
     });
 
     const personDetailsView: PersonDetailsViewPage = await test.step('Gesamtübersicht öffnen', async () => {

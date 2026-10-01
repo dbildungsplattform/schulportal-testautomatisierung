@@ -1,17 +1,12 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { testschuleName } from '../../base/organisation';
 import { lehrerImVorbereitungsdienstRolle, lehrkraftOeffentlichRolle } from '../../base/rollen';
 import { typeLehrer } from '../../base/rollentypen';
 import { email } from '../../base/sp';
 import { DEV, STAGE } from '../../base/tags';
-import {
-  deletePersonenBySearchStrings,
-  deleteRolleById,
-} from '../../base/testHelperDeleteTestdata';
+import { deletePersonenBySearchStrings, deleteRolleById } from '../../base/testHelperDeleteTestdata';
 import { gotoTargetURL, loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateNachname, generateRolleName, generateVorname } from '../../base/utils/generateTestdata';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { HeaderPage } from '../../pages/components/Header.page';
@@ -57,15 +52,11 @@ test.describe(`Testfälle für die Administration von Personen": Umgebung: ${pro
       const befristeteRolle: string = lehrerImVorbereitungsdienstRolle;
 
       await test.step(`Testdaten: Lehrer mit einer Rolle(LEHR) und SP(email) über die api anlegen ${ADMIN}`, async () => {
-        userInfoLehrer = await createRolleAndPersonWithPersonenkontext(
-          page,
-          testschuleName,
-          typeLehrer,
-          generateNachname(),
-          generateVorname(),
-          [await getServiceProviderId(page, email)],
-          generateRolleName(),
-        );
+        userInfoLehrer = await createRolleAndPersonWithPersonenkontext(page, {
+          organisationName: testschuleName,
+          rollenArt: typeLehrer,
+          serviceProviderNames: [email],
+        });
         usernames.push(userInfoLehrer.username);
         rolleIds.push(userInfoLehrer.rolleId);
       });
@@ -92,40 +83,6 @@ test.describe(`Testfälle für die Administration von Personen": Umgebung: ${pro
         await personDetailsView.clearRolle();
         await personDetailsView.selectRolle(unbefristeteRolle);
         await personDetailsView.checkBefristungAutoSelection('unbefristet');
-      });
-    },
-  );
-
-  test(
-    'Inbetriebnahme-Passwort über die Gesamtübersicht erzeugen',
-    { tag: [STAGE, DEV] },
-    async ({ page }: PlaywrightTestArgs) => {
-      let userInfoLehrer: UserInfo;
-
-      await test.step(`Testdaten: Lehrer mit einer Rolle(LEHR) über die api anlegen`, async () => {
-        userInfoLehrer = await createRolleAndPersonWithPersonenkontext(
-          page,
-          testschuleName,
-          typeLehrer,
-          generateNachname(),
-          generateVorname(),
-          [await getServiceProviderId(page, email)],
-          generateRolleName(),
-        );
-        usernames.push(userInfoLehrer.username);
-        rolleIds.push(userInfoLehrer.rolleId);
-      });
-
-      const personManagementView: PersonManagementViewPage = new PersonManagementViewPage(page);
-
-      const personDetailsView: PersonDetailsViewPage = await test.step(`Gesamtübersicht öffnen`, async () => {
-        await gotoTargetURL(page, 'admin/personen');
-        await personManagementView.searchAndOpenGesamtuebersicht(userInfoLehrer.username);
-        return new PersonDetailsViewPage(page);
-      });
-
-      await test.step(`Inbetriebnahme-Passwort für LK-Endgerät setzen`, async () => {
-        await personDetailsView.createInbetriebnahmePasswort();
       });
     },
   );

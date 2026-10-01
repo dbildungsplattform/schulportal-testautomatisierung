@@ -60,6 +60,20 @@ export interface PersonInfoApiInterface {
      */
     personInfoControllerInfoV1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1>;
 
+    /**
+     * 
+     * @summary Info about logged in person with intern role types.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonInfoApiInterface
+     */
+    personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>>;
+
+    /**
+     * Info about logged in person with intern role types.
+     */
+    personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1>;
+
 }
 
 /**
@@ -142,6 +156,45 @@ export class PersonInfoApi extends runtime.BaseAPI implements PersonInfoApiInter
      */
     async personInfoControllerInfoV1(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1> {
         const response = await this.personInfoControllerInfoV1Raw(initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Info about logged in person with intern role types.
+     */
+    async personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/v2/person-info`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonInfoResponseV1FromJSON(jsonValue));
+    }
+
+    /**
+     * Info about logged in person with intern role types.
+     */
+    async personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1> {
+        const response = await this.personInfoControllerInfoV2Raw(initOverrides);
         return await response.value();
     }
 

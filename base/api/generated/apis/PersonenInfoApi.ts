@@ -27,6 +27,11 @@ export interface PersonenInfoControllerInfoV1Request {
     xLimit?: number;
 }
 
+export interface PersonenInfoControllerInfoV2Request {
+    xOffset?: number;
+    xLimit?: number;
+}
+
 /**
  * PersonenInfoApi - interface
  * 
@@ -50,6 +55,23 @@ export interface PersonenInfoApiInterface {
      * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers.
      */
     personenInfoControllerInfoV1(requestParameters: PersonenInfoControllerInfoV1Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1>;
+
+    /**
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     * @summary liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     * @param {number} [xOffset] Offset für die Ergebnisse
+     * @param {number} [xLimit] Maximale Anzahl der Ergebnisse
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonenInfoApiInterface
+     */
+    personenInfoControllerInfoV2Raw(requestParameters: PersonenInfoControllerInfoV2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>>;
+
+    /**
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     */
+    personenInfoControllerInfoV2(requestParameters: PersonenInfoControllerInfoV2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1>;
 
 }
 
@@ -104,6 +126,55 @@ export class PersonenInfoApi extends runtime.BaseAPI implements PersonenInfoApiI
      */
     async personenInfoControllerInfoV1(requestParameters: PersonenInfoControllerInfoV1Request = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1> {
         const response = await this.personenInfoControllerInfoV1Raw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     */
+    async personenInfoControllerInfoV2Raw(requestParameters: PersonenInfoControllerInfoV2Request, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.xOffset !== undefined) {
+            queryParameters['x-offset'] = requestParameters.xOffset;
+        }
+
+        if (requestParameters.xLimit !== undefined) {
+            queryParameters['x-limit'] = requestParameters.xLimit;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/v2/personen-info`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonInfoResponseV1FromJSON(jsonValue));
+    }
+
+    /**
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     * liefert Personeninformationen basierend auf den Berechtigungen auf Service Provider des aufrufenden Nutzers mit internen Rollentypen.
+     */
+    async personenInfoControllerInfoV2(requestParameters: PersonenInfoControllerInfoV2Request = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1> {
+        const response = await this.personenInfoControllerInfoV2Raw(requestParameters, initOverrides);
         return await response.value();
     }
 

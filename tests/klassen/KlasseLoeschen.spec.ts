@@ -1,24 +1,17 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 
-import { getKlasseId } from '../../base/api/organisationApi';
+import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
 import {
   createPersonWithPersonenkontext,
   createRolleAndPersonWithPersonenkontext,
   UserInfo,
 } from '../../base/api/personApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { landSH, testschuleDstNr, testschuleName } from '../../base/organisation';
 import { landesadminRolle, schuladminOeffentlichRolle } from '../../base/rollen';
 import { typeSchueler } from '../../base/rollentypen';
-import { itslearning } from '../../base/sp';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import {
-  generateKlassenname,
-  generateNachname,
-  generateRolleName,
-  generateVorname,
-} from '../../base/utils/generateTestdata';
+import { generateKlassenname } from '../../base/utils/generateTestdata';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
 import { StartViewPage } from '../../pages/StartView.page';
@@ -53,130 +46,134 @@ let admin: UserInfo;
     bezeichnung: string;
   }) => {
     test.describe(`Testfälle für das Löschen von Klassen als ${bezeichnung}: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
-      test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-        await loginAndNavigateToAdministration(page);
+      test.describe('Erfolgreiches Löschen einer Klasse', () => {
+        test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
+          await loginAndNavigateToAdministration(page);
 
-        admin = await createPersonWithPersonenkontext(page, organisationsName, rolleName);
+          admin = await createPersonWithPersonenkontext(page, organisationsName, rolleName);
 
-        const landingPage: LandingViewPage = await new HeaderPage(page).logout();
-        const loginPage: LoginViewPage = await landingPage.navigateToLogin();
+          const landingPage: LandingViewPage = await new HeaderPage(page).logout();
+          const loginPage: LoginViewPage = await landingPage.navigateToLogin();
 
-        // Erstmalige Anmeldung mit Passwortänderung
-        const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(admin.username, admin.password);
-        await startPage.waitForPageLoad();
-
-        // Klasse anlegen
-        const personManagementViewPage: PersonManagementViewPage = await startPage.navigateToAdministration();
-        klasseAnlegenPage = await personManagementViewPage.menu.navigateToKlasseCreation();
-        klasseParams = {
-          schulname: testschuleName,
-          klassenname: generateKlassenname(),
-          schulNr: testschuleDstNr,
-        };
-        klasseErfolgreichAngelegtPage = await klasseAnlegenPage.createKlasse(
-          rolleName == landesadminRolle,
-          klasseParams,
-        );
-        await klasseErfolgreichAngelegtPage.waitForPageLoad();
-        klasseErgebnislistePage = await klasseErfolgreichAngelegtPage.goBackToList();
-      });
-
-      // SPSH-2858 & SPSH-2859
-      test(
-        `Eine Klasse ohne zugeordnete Personen als ${bezeichnung} via Quickaction löschen`,
-        { tag: [STAGE, DEV] },
-        async () => {
-          await klasseErgebnislistePage.searchAndDeleteKlasse(rolleName == landesadminRolle, klasseParams);
-          await klasseErgebnislistePage.klasseSuccessfullyDeleted(
-            klasseParams.schulname,
-            klasseParams.klassenname,
-            klasseParams.schulNr!,
+          // Erstmalige Anmeldung mit Passwortänderung
+          const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(
+            admin.username,
+            admin.password,
           );
-        },
-      );
+          await startPage.waitForPageLoad();
 
-      // SPSH-2861 & SPSH-2862
-      test(
-        `Eine Klasse ohne zugeordnete Personen als ${bezeichnung} via Gesamtübersicht löschen`,
-        { tag: [STAGE, DEV] },
-        async () => {
-          klasseDetailsPage = await klasseErgebnislistePage.searchAndOpenGesamtuebersicht(
+          // Klasse anlegen
+          const personManagementViewPage: PersonManagementViewPage = await startPage.navigateToAdministration();
+          klasseAnlegenPage = await personManagementViewPage.menu.navigateToKlasseCreation();
+          klasseParams = {
+            schulname: testschuleName,
+            klassenname: generateKlassenname(),
+            schulNr: testschuleDstNr,
+          };
+          klasseErfolgreichAngelegtPage = await klasseAnlegenPage.createKlasse(
             rolleName == landesadminRolle,
             klasseParams,
           );
-          klasseErgebnislistePage = await klasseDetailsPage.successfullyDeleteKlasse(
-            klasseParams.schulname,
-            klasseParams.klassenname,
-          );
-        },
-      );
+          await klasseErfolgreichAngelegtPage.waitForPageLoad();
+          klasseErgebnislistePage = await klasseErfolgreichAngelegtPage.goBackToList();
+        });
 
-      // SPSH-2860
-      test(
-        `Eine Klasse mit einem zugeordneten Schüler als ${bezeichnung} via Quickaction löschen`,
-        { tag: [STAGE, DEV] },
-        async ({ page }: PlaywrightTestArgs) => {
-          await test.step(`Schüler anlegen`, async () => {
-            const schuelerVorname: string = generateVorname();
-            const schuelerNachname: string = generateNachname();
-            const schuelerIdSPs: string[] = [await getServiceProviderId(page, itslearning)];
-            const schuelerRolleName: string = generateRolleName();
-            const klasseId: string | undefined = await getKlasseId(page, klasseParams.klassenname);
-
-            await createRolleAndPersonWithPersonenkontext(
-              page,
-              klasseParams.schulname,
-              typeSchueler,
-              schuelerNachname,
-              schuelerVorname,
-              schuelerIdSPs,
-              schuelerRolleName,
-              undefined,
-              klasseId,
-            );
-          });
-
-          await test.step(`Prüfen, dass die Klasse nicht gelöscht werden kann`, async () => {
+        // SPSH-2858 & SPSH-2859
+        test(
+          `Eine Klasse ohne zugeordnete Personen als ${bezeichnung} via Quickaction löschen`,
+          { tag: [STAGE, DEV] },
+          async () => {
             await klasseErgebnislistePage.searchAndDeleteKlasse(rolleName == landesadminRolle, klasseParams);
-            await klasseErgebnislistePage.klasseDeletionFailed();
-          });
-        },
-      );
-
-      // SPSH-2863
-      test(
-        `Eine Klasse mit einem zugeordneten Schüler als ${bezeichnung} via Gesamtübersicht löschen `,
-        { tag: [STAGE, DEV] },
-        async ({ page }: PlaywrightTestArgs) => {
-          await test.step(`Schüler anlegen`, async () => {
-            const schuelerVorname: string = generateVorname();
-            const schuelerNachname: string = generateNachname();
-            const schuelerIdSPs: string[] = [await getServiceProviderId(page, itslearning)];
-            const schuelerRolleName: string = generateRolleName();
-            const klasseId: string | undefined = await getKlasseId(page, klasseParams.klassenname);
-
-            await createRolleAndPersonWithPersonenkontext(
-              page,
+            await klasseErgebnislistePage.klasseSuccessfullyDeleted(
               klasseParams.schulname,
-              typeSchueler,
-              schuelerNachname,
-              schuelerVorname,
-              schuelerIdSPs,
-              schuelerRolleName,
-              undefined,
-              klasseId,
+              klasseParams.klassenname,
+              klasseParams.schulNr!,
             );
-          });
+          },
+        );
 
-          await test.step(`Prüfen, dass die Klasse nicht gelöscht werden kann`, async () => {
+        // SPSH-2861 & SPSH-2862
+        test(
+          `Eine Klasse ohne zugeordnete Personen als ${bezeichnung} via Gesamtübersicht löschen`,
+          { tag: [STAGE, DEV] },
+          async () => {
             klasseDetailsPage = await klasseErgebnislistePage.searchAndOpenGesamtuebersicht(
               rolleName == landesadminRolle,
               klasseParams,
             );
-            await klasseDetailsPage.unsuccessfullyDeleteKlasse(klasseParams.schulname, klasseParams.klassenname);
+            klasseErgebnislistePage = await klasseDetailsPage.successfullyDeleteKlasse(
+              klasseParams.schulname,
+              klasseParams.klassenname,
+            );
+          },
+        );
+      });
+
+      test.describe('Fehlschlagendes Löschen einer Klasse', () => {
+        test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
+          await loginAndNavigateToAdministration(page);
+
+          admin = await createPersonWithPersonenkontext(page, organisationsName, rolleName);
+
+          const klasseId: string = await test.step(`Klasse anlegen`, async () => {
+            klasseParams = {
+              schulname: testschuleName,
+              klassenname: generateKlassenname(),
+              schulNr: testschuleDstNr,
+            };
+            const organisationId: string = await getOrganisationId(page, klasseParams.schulname);
+            const klasseId: string = await createKlasse(page, organisationId, klasseParams.klassenname);
+            return klasseId;
           });
-        },
-      );
+
+          await test.step(`Schüler anlegen`, async () => {
+            await createRolleAndPersonWithPersonenkontext(page, {
+              organisationName: klasseParams.schulname,
+              rollenArt: typeSchueler,
+              klasseId,
+            });
+          });
+
+          const landingPage: LandingViewPage = await new HeaderPage(page).logout();
+          const loginPage: LoginViewPage = await landingPage.navigateToLogin();
+
+          // Erstmalige Anmeldung mit Passwortänderung
+          const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(
+            admin.username,
+            admin.password,
+          );
+          await startPage.waitForPageLoad();
+          const personManagementView: PersonManagementViewPage = await startPage.navigateToAdministration();
+          klasseErgebnislistePage = await personManagementView.getMenu().navigateToKlasseManagement();
+        });
+
+        // SPSH-2860
+        test(
+          `Eine Klasse mit einem zugeordneten Schüler als ${bezeichnung} via Quickaction löschen`,
+          { tag: [STAGE, DEV] },
+          async () => {
+            await test.step(`Prüfen, dass die Klasse nicht gelöscht werden kann`, async () => {
+              await klasseErgebnislistePage.searchAndDeleteKlasse(rolleName == landesadminRolle, klasseParams);
+              await klasseErgebnislistePage.klasseDeletionFailed();
+            });
+          },
+        );
+
+        // SPSH-2863
+        test(
+          `Eine Klasse mit einem zugeordneten Schüler als ${bezeichnung} via Gesamtübersicht löschen `,
+          { tag: [STAGE, DEV] },
+          async () => {
+            await test.step(`Prüfen, dass die Klasse nicht gelöscht werden kann`, async () => {
+              klasseDetailsPage = await klasseErgebnislistePage.searchAndOpenGesamtuebersicht(
+                rolleName == landesadminRolle,
+                klasseParams,
+              );
+              await klasseDetailsPage.unsuccessfullyDeleteKlasse(klasseParams.schulname, klasseParams.klassenname);
+            });
+          },
+        );
+      });
     });
   },
 );

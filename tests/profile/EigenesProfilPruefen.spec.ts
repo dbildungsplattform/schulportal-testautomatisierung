@@ -1,9 +1,8 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 
-import { getOrganisationId } from '../../base/api/organisationApi';
+import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { RollenArt } from '../../base/api/rolleApi';
-import { getServiceProviderId } from '../../base/api/serviceProviderApi';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { HeaderPage } from '../../pages/components/Header.page';
@@ -61,29 +60,27 @@ test.describe(`Testfälle für das eigene Profil anzeigen: Umgebung: ${process.e
     });
   });
 
-  for (const { actor, personalData, zuordnungen, serviceProviders } of testData) {
+  for (const { actor, personalData, zuordnungen, serviceProviders, rollenMerkmalNamen } of testData) {
     test(
       `Als ${actor} das eigene Profil öffnen und auf Vollständigkeit prüfen`,
       { tag: [STAGE, DEV] },
       async ({ page }: PlaywrightTestArgs) => {
         await test.step('Rolle und Nutzer anlegen und anmelden', async () => {
-          const idSPs: string[] = await Promise.all(
-            serviceProviders.map(async (sp: string) => getServiceProviderId(page, sp)),
-          );
+          const schuleId: string = await getOrganisationId(page, zuordnungen[0].organisationsname);
           const klasseId: string | undefined = zuordnungen[0].klassenName
-            ? await getOrganisationId(page, zuordnungen[0].klassenName)
+            ? await createKlasse(page, schuleId, zuordnungen[0].klassenName)
             : undefined;
-          const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(
-            page,
-            zuordnungen[0].organisationsname,
-            zuordnungen[0].rollenart,
-            personalData.nachname,
-            personalData.vorname,
-            idSPs,
-            zuordnungen[0].rollenname,
-            personalData.kopersnummer,
+          const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
+            organisationName: zuordnungen[0].organisationsname,
+            rollenArt: zuordnungen[0].rollenart,
+            rollenMerkmalNamen,
+            familienname: personalData.nachname,
+            vorname: personalData.vorname,
+            serviceProviderNames: serviceProviders,
+            rollenName: zuordnungen[0].rollenname,
+            koPersNr: personalData.kopersnummer,
             klasseId,
-          );
+          });
           personalData.username = userInfo.username;
 
           const header: HeaderPage = new HeaderPage(page);

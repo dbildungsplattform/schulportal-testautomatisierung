@@ -68,6 +68,12 @@ export interface CreateRolleBodyParams {
      * @memberof CreateRolleBodyParams
      */
     systemrechte: Set<RollenSystemRechtEnum>;
+    /**
+     * 
+     * @type {Set<string>}
+     * @memberof CreateRolleBodyParams
+     */
+    serviceProviderIds: Set<string>;
 }
 
 /**
@@ -80,6 +86,7 @@ export function instanceOfCreateRolleBodyParams(value: object): boolean {
     isInstance = isInstance && "rollenart" in value;
     isInstance = isInstance && "merkmale" in value;
     isInstance = isInstance && "systemrechte" in value;
+    isInstance = isInstance && "serviceProviderIds" in value;
 
     return isInstance;
 }
@@ -99,6 +106,7 @@ export function CreateRolleBodyParamsFromJSONTyped(json: any, ignoreDiscriminato
         'rollenart': RollenArtFromJSON(json['rollenart']),
         'merkmale': (new Set((json['merkmale'] as Array<any>).map(RollenMerkmalFromJSON))),
         'systemrechte': (new Set((json['systemrechte'] as Array<any>).map(RollenSystemRechtEnumFromJSON))),
+        'serviceProviderIds': json['serviceProviderIds'],
     };
 }
 
@@ -116,6 +124,7 @@ export function CreateRolleBodyParamsToJSON(value?: CreateRolleBodyParams | null
         'rollenart': RollenArtToJSON(value.rollenart),
         'merkmale': (Array.from(value.merkmale as Set<any>).map(RollenMerkmalToJSON)),
         'systemrechte': (Array.from(value.systemrechte as Set<any>).map(RollenSystemRechtEnumToJSON)),
+        'serviceProviderIds': Array.from(value.serviceProviderIds as Set<any>),
     };
 }
 

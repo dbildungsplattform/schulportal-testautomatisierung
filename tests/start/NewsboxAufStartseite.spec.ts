@@ -40,7 +40,11 @@ test.describe('Newsbox auf Startseite', () => {
     const rollenMerkmale = new Set<RollenMerkmal>([RollenMerkmal.BefristungPflicht]);
     const schuleId: string = await createSchule(page, schulName);
     const rolleId: string = await createRolle(page, RollenArt.Lehr, schuleId, rollenName, rollenMerkmale);
-    userInfo = await createPerson(page, schuleId, rolleId, undefined, undefined, undefined, undefined, rollenMerkmale);
+    userInfo = await createPerson(page, {
+      organisationId: schuleId,
+      rolleId,
+      merkmalNames: rollenMerkmale,
+    });
   });
 
   for (const { timeLimit, expectedColor } of testFixtures) {

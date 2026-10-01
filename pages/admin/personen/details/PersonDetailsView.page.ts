@@ -305,15 +305,20 @@ export class PersonDetailsViewPage {
     await rolleAutocomplete.clear();
   }
 
-  public async createInbetriebnahmePasswort(): Promise<void> {
+  public async createInbetriebnahmePasswort(): Promise<string> {
     await this.page.getByTestId('open-device-password-dialog-button').click();
     await this.page.getByTestId('password-reset-button').click();
     await waitForAPIResponse(this.page, 'personen/**/uem-password');
     await expect(this.page.getByTestId('password-reset-info-text')).toContainText(
       'Das Passwort wurde erfolgreich erzeugt.',
     );
+    const newPassword: string = await this.page
+      .getByTestId('password-output-field')
+      .locator('input[type="password"]')
+      .inputValue();
     await this.page.getByTestId('close-password-reset-dialog-button').click();
     await this.waitForPageLoad();
+    return newPassword;
   }
 
   public async lockPerson(until?: string): Promise<void> {
@@ -396,9 +401,7 @@ export class PersonDetailsViewPage {
     }
   }
 
-  public async checkSectionsNotVisible(sections: {
-    twoFactor?: boolean;
-  }): Promise<void> {
+  public async checkSectionsNotVisible(sections: { twoFactor?: boolean }): Promise<void> {
     if (sections.twoFactor) {
       await expect(this.page.getByTestId('two-factor-section-headline')).toBeHidden();
       await expect(this.page.getByTestId('software-factor-setup-text')).toBeHidden();

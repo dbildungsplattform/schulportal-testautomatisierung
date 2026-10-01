@@ -1,26 +1,34 @@
-import { Page, expect } from '@playwright/test';
-import { FRONTEND_URL } from './baseApi';
-import { generateCurrentDate, generateKopersNr, generateNachname, generateRolleName } from '../utils/generateTestdata';
-import { generateVorname } from '../utils/generateTestdata';
-import { LoginViewPage } from '../../pages/LoginView.page';
-import FromAnywhere from '../../pages/FromAnywhere';
-import { befristungPflicht } from '../merkmale';
-import { getOrganisationId } from './organisationApi';
-import { addServiceProvidersToRolle, createRolle, getRolleId } from './rolleApi';
+import { expect, Page } from '@playwright/test';
 import { HeaderPage } from '../../pages/components/Header.page';
+import FromAnywhere from '../../pages/FromAnywhere';
+import { LoginViewPage } from '../../pages/LoginView.page';
+import { befristungPflicht } from '../merkmale';
 import { testschuleName } from '../organisation';
-import { typeLehrer } from '../rollentypen';
-import { getServiceProviderId } from './serviceProviderApi';
 import { adressbuch, email, kalender } from '../sp';
-import { makeFetchWithPlaywright } from './playwrightFetchAdapter';
 import {
-  DbiamPersonenkontextWorkflowControllerCommitRequest,
+  generateCurrentDate,
+  generateKopersNr,
+  generateNachname,
+  generateRolleName,
+  generateVorname,
+} from '../utils/generateTestdata';
+import { constructApi } from './apiFactory';
+import { Class2FAApi } from './generated';
+import { DbiamPersonenuebersichtApi } from './generated/apis/DbiamPersonenuebersichtApi';
+import {
+  PersonControllerDeletePersonByIdRequest,
+  PersonControllerLockPersonRequest,
+  PersonControllerResetUEMPasswordByPersonIdRequest,
+  PersonenApi,
+} from './generated/apis/PersonenApi';
+import { PersonenFrontendApi, PersonFrontendControllerFindPersonsRequest } from './generated/apis/PersonenFrontendApi';
+import {
   DbiamPersonenkontextWorkflowControllerCreatePersonWithPersonenkontexteRequest,
   PersonenkontextApi,
 } from './generated/apis/PersonenkontextApi';
-import { ApiResponse, Configuration } from './generated/runtime';
 import {
   DbiamCreatePersonWithPersonenkontexteBodyParams,
+  DBiamPersonenuebersichtResponse,
   DBiamPersonResponse,
   DbiamUpdatePersonenkontexteBodyParams,
   LockUserBodyParams,
@@ -30,15 +38,12 @@ import {
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
+  RollenSystemRechtEnum,
 } from './generated/models';
-import {
-  PersonControllerDeletePersonByIdRequest,
-  PersonControllerLockPersonRequest,
-  PersonControllerResetUEMPasswordByPersonIdRequest,
-  PersonenApi,
-} from './generated/apis/PersonenApi';
-import { PersonenFrontendApi, PersonFrontendControllerFindPersonsRequest } from './generated/apis/PersonenFrontendApi';
-import { Class2FAApi } from './generated';
+import { ApiResponse } from './generated/runtime';
+import { getOrganisationId } from './organisationApi';
+import { createRolle, getRolleId } from './rolleApi';
+import { getServiceProviderIdsMappedByName } from './serviceProviderApi';
 
 export interface UserInfo {
   username: string;
@@ -52,52 +57,114 @@ export interface UserInfo {
 }
 
 export function constructPersonenkontextApi(page: Page): PersonenkontextApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new PersonenkontextApi(config);
+  return constructApi(page, PersonenkontextApi);
 }
 
 export function constructPersonenApi(page: Page): PersonenApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new PersonenApi(config);
+  return constructApi(page, PersonenApi);
 }
 
 export function constructPersonenFrontendApi(page: Page): PersonenFrontendApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new PersonenFrontendApi(config);
+  return constructApi(page, PersonenFrontendApi);
 }
 
 export function construct2FAApi(page: Page): Class2FAApi {
-  const config: Configuration = new Configuration({
-    basePath: FRONTEND_URL?.replace(/\/$/, ''),
-    fetchApi: makeFetchWithPlaywright(page),
-  });
-  return new Class2FAApi(config);
+  return constructApi(page, Class2FAApi);
+}
+
+export function constructPersonenuebersichtApi(page: Page): DbiamPersonenuebersichtApi {
+  return constructApi(page, DbiamPersonenuebersichtApi);
+}
+
+function toUserInfo(createdPerson: DBiamPersonResponse): UserInfo {
+  const primaryPersonenkontext = createdPerson.dBiamPersonenkontextResponses[0];
+  if (!primaryPersonenkontext) {
+    throw new Error('Created person is missing personenkontext response.');
+  }
+
+  return {
+    username: createdPerson.person.username!,
+    password: createdPerson.person.startpasswort,
+    rolleId: primaryPersonenkontext.rolleId,
+    organisationId: primaryPersonenkontext.organisationId,
+    personId: createdPerson.person.id,
+    vorname: createdPerson.person.name.vorname,
+    nachname: createdPerson.person.name.familienname,
+    kopersnummer: createdPerson.person.personalnummer ?? '',
+  };
+}
+
+async function commitPersonenkontexteWithRetry(
+  page: Page,
+  personId: string,
+  buildPersonenkontexte: (
+    personenuebersicht: DBiamPersonenuebersichtResponse,
+  ) => DbiamUpdatePersonenkontexteBodyParams['personenkontexte'] | null,
+  validate?: (result: PersonenkontexteUpdateResponse) => void,
+): Promise<void> {
+  const personenuebersichtApi: DbiamPersonenuebersichtApi = constructPersonenuebersichtApi(page);
+  const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
+
+  for (let attempt: number = 0; attempt < 3; attempt++) {
+    const personenuebersicht: DBiamPersonenuebersichtResponse = await personenuebersichtApi
+      .dBiamPersonenuebersichtControllerFindPersonenuebersichtenByPersonRaw({ personId })
+      .then((response) => response.value());
+
+    const personenkontexte: DbiamUpdatePersonenkontexteBodyParams['personenkontexte'] | null =
+      buildPersonenkontexte(personenuebersicht);
+    if (personenkontexte === null) {
+      continue;
+    }
+
+    const dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams = {
+      lastModified: personenuebersicht.lastModifiedZuordnungen ?? undefined,
+      count: personenuebersicht.zuordnungen.length,
+      personenkontexte,
+    };
+
+    try {
+      const response: ApiResponse<PersonenkontexteUpdateResponse> =
+        await personenkontextApi.dbiamPersonenkontextWorkflowControllerCommitRaw({
+          personId,
+          dbiamUpdatePersonenkontexteBodyParams,
+        });
+      expect(response.raw.status).toBe(200);
+      validate?.(await response.value());
+      return;
+    } catch (error) {
+      const statusCode: number | undefined = (error as { response?: { status?: number } }).response?.status;
+      if (statusCode === 400 && attempt < 2) {
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  throw new Error(
+    `Unable to commit personenkontexte for person ${personId} after 3 attempts because required source data was not available.`,
+  );
 }
 
 export async function freshLoginPage(page: Page): Promise<LoginViewPage> {
   return (await FromAnywhere(page).start()).navigateToLogin();
 }
 
-export async function createPerson(
-  page: Page,
-  organisationId: string,
-  rolleId: string,
-  familienname?: string,
-  vorname?: string,
-  koPersNr?: string,
-  klasseId?: string,
-  merkmalNames?: Set<RollenMerkmal>,
-): Promise<UserInfo> {
+interface CreatePersonParams {
+  organisationId: string;
+  rolleId: string;
+  familienname?: string;
+  vorname?: string;
+  koPersNr?: string;
+  klasseId?: string;
+  merkmalNames?: Set<RollenMerkmal>;
+  secondaryRolleId?: string;
+}
+
+export async function createPerson(page: Page, params: CreatePersonParams): Promise<UserInfo> {
   try {
+    const { organisationId, rolleId, familienname, vorname, koPersNr, klasseId, merkmalNames, secondaryRolleId } =
+      params;
+
     const createPersonBodyParams: DbiamCreatePersonWithPersonenkontexteBodyParams = {
       familienname: familienname || generateNachname(),
       vorname: vorname || generateVorname(),
@@ -114,6 +181,19 @@ export async function createPerson(
         organisationId: klasseId,
         rolleId: rolleId,
       });
+    }
+
+    if (secondaryRolleId) {
+      createPersonBodyParams.createPersonenkontexte.push({
+        organisationId: organisationId,
+        rolleId: secondaryRolleId,
+      });
+      if (klasseId) {
+        createPersonBodyParams.createPersonenkontexte.push({
+          organisationId: klasseId,
+          rolleId: secondaryRolleId,
+        });
+      }
     }
 
     if (koPersNr) {
@@ -140,18 +220,42 @@ export async function createPerson(
     expect(response.raw.status).toBe(201);
     const createdPerson: DBiamPersonResponse = await response.value();
 
-    return {
-      username: createdPerson.person.username!,
-      password: createdPerson.person.startpasswort,
-      rolleId: rolleId,
-      organisationId: organisationId,
-      personId: createdPerson.person.id,
-      vorname: createdPerson.person.name.vorname,
-      nachname: createdPerson.person.name.familienname,
-      kopersnummer: koPersNr ?? '',
-    };
+    return toUserInfo(createdPerson);
   } catch (error) {
     console.error('[ERROR] createPerson failed:', error);
+    throw error;
+  }
+}
+
+export async function createUserWithLernRollenInDifferentKlassen(
+  page: Page,
+  schuleId: string,
+  primaryRolleId: string,
+  secondaryRolleId: string,
+  primaryKlasseId: string,
+  secondaryKlasseId: string,
+): Promise<UserInfo> {
+  try {
+    const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
+    const response: ApiResponse<DBiamPersonResponse> =
+      await personenkontextApi.dbiamPersonenkontextWorkflowControllerCreatePersonWithPersonenkontexteRaw({
+        dbiamCreatePersonWithPersonenkontexteBodyParams: {
+          familienname: generateNachname(),
+          vorname: generateVorname(),
+          createPersonenkontexte: [
+            { organisationId: schuleId, rolleId: primaryRolleId },
+            { organisationId: primaryKlasseId, rolleId: primaryRolleId },
+            { organisationId: schuleId, rolleId: secondaryRolleId },
+            { organisationId: secondaryKlasseId, rolleId: secondaryRolleId },
+          ],
+        },
+      });
+    expect(response.raw.status).toBe(201);
+    const createdPerson: DBiamPersonResponse = await response.value();
+
+    return toUserInfo(createdPerson);
+  } catch (error) {
+    console.error('[ERROR] createUserWithLernRollenInDifferentKlassen failed:', error);
     throw error;
   }
 }
@@ -167,58 +271,84 @@ export async function createPersonWithPersonenkontext(
   // Organisation wird nicht angelegt, da diese zur Zeit nicht gelöscht werden kann
   const organisationId: string = await getOrganisationId(page, organisationName);
   const rolleId: string = await getRolleId(page, rolleName);
-  const userInfo: UserInfo = await createPerson(page, organisationId, rolleId, familienname, vorname, koPersNr);
-  return userInfo;
-}
-
-export async function createRolleAndPersonWithPersonenkontext(
-  page: Page,
-  organisationName: string,
-  rollenArt: RollenArt,
-  familienname: string,
-  vorname: string,
-  idSPs: string[],
-  rolleName: string,
-  koPersNr?: string,
-  klasseId?: string,
-  merkmaleName?: Set<RollenMerkmal>,
-): Promise<UserInfo> {
-  // Organisation wird nicht angelegt, da diese zur Zeit nicht gelöscht werden kann
-  const organisationId: string = await getOrganisationId(page, organisationName);
-  const rolleId: string = await createRolle(page, rollenArt, organisationId, rolleName, merkmaleName);
-
-  await addServiceProvidersToRolle(page, rolleId, idSPs);
-  const userInfo: UserInfo = await createPerson(
-    page,
+  const userInfo: UserInfo = await createPerson(page, {
     organisationId,
     rolleId,
     familienname,
     vorname,
     koPersNr,
-    klasseId,
-    merkmaleName,
+  });
+  return userInfo;
+}
+
+interface CreateRolleAndPersonWithPersonenkontextParams {
+  organisationName: string;
+  rollenArt: RollenArt;
+  serviceProviderNames?: string[];
+  rollenName?: string;
+  familienname?: string;
+  vorname?: string;
+  klasseId?: string;
+  koPersNr?: string;
+  rollenMerkmalNamen?: Set<RollenMerkmal>;
+  systemrechte?: Set<RollenSystemRechtEnum>;
+}
+
+export async function createRolleAndPersonWithPersonenkontext(
+  page: Page,
+  params: CreateRolleAndPersonWithPersonenkontextParams,
+): Promise<UserInfo> {
+  // Organisation wird nicht angelegt, da diese zur Zeit nicht gelöscht werden kann
+  const organisationId: string = await getOrganisationId(page, params.organisationName);
+
+  let serviceProviderIds = new Set<string>();
+  if (params.serviceProviderNames && params.serviceProviderNames.length > 0) {
+    const serviceProviderByNameMap: Map<string, string> = await getServiceProviderIdsMappedByName(
+      page,
+      params.serviceProviderNames,
+      organisationId,
+      params.rollenArt,
+    );
+
+    const missingServiceProviderNames: string[] = params.serviceProviderNames.filter(
+      (name: string) => !serviceProviderByNameMap.has(name),
+    );
+    if (missingServiceProviderNames.length > 0) {
+      throw new Error(
+        `The following service providers were not found in the organization ${params.organisationName}: ${missingServiceProviderNames.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    serviceProviderIds = new Set(serviceProviderByNameMap.values());
+  }
+
+  const rolleId: string = await createRolle(
+    page,
+    params.rollenArt,
+    organisationId,
+    params.rollenName ?? generateRolleName(),
+    params.rollenMerkmalNamen,
+    params.systemrechte,
+    serviceProviderIds,
   );
+
+  const userInfo: UserInfo = await createPerson(page, {
+    organisationId,
+    rolleId,
+    familienname: params.familienname,
+    vorname: params.vorname,
+    koPersNr: params.koPersNr,
+    klasseId: params.klasseId,
+    merkmalNames: params.rollenMerkmalNamen,
+  });
   return userInfo;
 }
 
 export async function removeAllPersonenkontexte(page: Page, personId: string): Promise<void> {
   try {
-    const dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams = {
-      lastModified: new Date(),
-      count: 1,
-      /* an empty array clears all personenkontexte */
-      personenkontexte: [],
-    };
-
-    const requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest = {
-      personId,
-      dbiamUpdatePersonenkontexteBodyParams,
-    };
-
-    const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
-    const response: ApiResponse<PersonenkontexteUpdateResponse> =
-      await personenkontextApi.dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters);
-    expect(response.raw.status).toBe(200);
+    await commitPersonenkontexteWithRetry(page, personId, () => []);
   } catch (error) {
     console.error('[ERROR] removeAllPersonenkontexte failed:', error);
     throw error;
@@ -251,45 +381,32 @@ export async function lockPerson(page: Page, personId: string, organisationId: s
   }
 }
 
-export async function addSecondOrganisationToPerson(
+export async function addOrganisationenToPerson(
   page: Page,
   personId: string,
-  organisationId1: string,
-  organisationId2: string,
+  organisationIds: string[],
   rolleId: string,
 ): Promise<void> {
   try {
-    const dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams = {
-      lastModified: generateCurrentDate({ days: 0, months: 0 }),
-      count: 1,
-      personenkontexte: [
-        {
+    await commitPersonenkontexteWithRetry(
+      page,
+      personId,
+      (personenuebersicht) => {
+        if (personenuebersicht.zuordnungen.length === 0) {
+          return null;
+        }
+        return organisationIds.map((organisationId) => ({
           personId,
-          organisationId: organisationId1,
+          organisationId,
           rolleId,
-        },
-        {
-          personId,
-          organisationId: organisationId2,
-          rolleId,
-        },
-      ],
-    };
-
-    const requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest = {
-      personId: personId,
-      dbiamUpdatePersonenkontexteBodyParams,
-    };
-
-    const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
-    const response: ApiResponse<PersonenkontexteUpdateResponse> =
-      await personenkontextApi.dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters);
-    expect(response.raw.status).toBe(200);
-
-    const updatedPersonenkontexte: PersonenkontexteUpdateResponse = await response.value();
-    expect(updatedPersonenkontexte.dBiamPersonenkontextResponses.length).toBe(2);
+        }));
+      },
+      (result) => {
+        expect(result.dBiamPersonenkontextResponses.length).toBe(organisationIds.length);
+      },
+    );
   } catch (error) {
-    console.error('[ERROR] addSecondOrganisationToPerson failed:', error);
+    console.error('[ERROR] addOrganisationenToPerson failed:', error);
     throw error;
   }
 }
@@ -331,20 +448,12 @@ export async function getPersonId(page: Page, searchString: string): Promise<str
 
 export async function createTeacherAndLogin(page: Page): Promise<UserInfo> {
   const header: HeaderPage = new HeaderPage(page);
-  const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(
-    page,
-    testschuleName,
-    typeLehrer,
-    generateNachname(),
-    generateVorname(),
-    [
-      await getServiceProviderId(page, email),
-      await getServiceProviderId(page, kalender),
-      await getServiceProviderId(page, adressbuch),
-    ],
-    generateRolleName(),
-    generateKopersNr(),
-  );
+  const userInfo: UserInfo = await createRolleAndPersonWithPersonenkontext(page, {
+    organisationName: testschuleName,
+    rollenArt: RollenArt.Lehr,
+    serviceProviderNames: [email, kalender, adressbuch],
+    koPersNr: generateKopersNr(),
+  });
 
   await header.logout();
   const loginPage = await header.navigateToLogin();
@@ -355,11 +464,11 @@ export async function createTeacherAndLogin(page: Page): Promise<UserInfo> {
 }
 
 /**
- * Sets the UEM-Password for a person in LDAP.
+ * Sets the Inbetriebnahme-Passwort (device password) for a person in LDAP.
  * @param page
  * @param personId
  */
-export async function setUEMPassword(page: Page, personId: string): Promise<string> {
+export async function setInbetriebnahmePasswort(page: Page, personId: string): Promise<string> {
   try {
     const requestParameters: PersonControllerResetUEMPasswordByPersonIdRequest = {
       personId,
@@ -373,7 +482,7 @@ export async function setUEMPassword(page: Page, personId: string): Promise<stri
     const newPassword: string = await response.value();
     return newPassword;
   } catch (error) {
-    console.error('[ERROR] setUEMPassword failed:', error);
+    console.error('[ERROR] setInbetriebnahmePasswort failed:', error);
     throw error;
   }
 }
@@ -386,31 +495,17 @@ export async function setTimeLimitPersonenkontext(
   timeLimit: Date,
 ): Promise<void> {
   try {
-    const dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams = {
-      lastModified: generateCurrentDate({ days: 0, months: 0 }),
-      count: 1,
-      personenkontexte: [
-        {
-          befristung: timeLimit,
-          personId: personId,
-          organisationId: organisationId,
-          rolleId: rolleId,
-        },
-      ],
-    };
-
-    const requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest = {
-      personId,
-      dbiamUpdatePersonenkontexteBodyParams,
-    };
-
-    const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
-    const response: ApiResponse<PersonenkontexteUpdateResponse> =
-      await personenkontextApi.dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters);
-    expect(response.raw.status).toBe(200);
-
-    const updatedPersonenkontexte: PersonenkontexteUpdateResponse = await response.value();
-    expect(updatedPersonenkontexte.dBiamPersonenkontextResponses.length).toBe(1);
+    await commitPersonenkontexteWithRetry(page, personId, (personenuebersicht) =>
+      personenuebersicht.zuordnungen.map((zuordnung) => ({
+        personId,
+        organisationId: zuordnung.sskId,
+        rolleId: zuordnung.rolleId,
+        befristung:
+          zuordnung.sskId === organisationId && zuordnung.rolleId === rolleId
+            ? timeLimit
+            : (zuordnung.befristung ?? undefined),
+      })),
+    );
   } catch (error) {
     console.error('[ERROR] setTimeLimitPersonenkontext failed:', error);
     throw error;
@@ -424,4 +519,26 @@ export async function getEmailByPersonId(page: Page, id: string): Promise<string
   expect(personendatensatzResponse.raw.status).toBe(200);
   const personendatensatz: PersonendatensatzResponse = await personendatensatzResponse.value();
   return personendatensatz.person.email?.address;
+}
+
+export async function waitForEmailByPersonId(
+  page: Page,
+  id: string,
+  maxAttempts: number = 10,
+  delayMs: number = 2000,
+): Promise<string> {
+  for (let attempt: number = 1; attempt <= maxAttempts; attempt++) {
+    const email: string | undefined = await getEmailByPersonId(page, id);
+    if (email && email.trim() !== '') {
+      return email;
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise((resolve: (value: unknown) => void) => setTimeout(resolve, delayMs));
+    }
+  }
+
+  throw new Error(
+    `No email address available for personId ${id} after ${maxAttempts} attempts (${delayMs}ms interval).`,
+  );
 }

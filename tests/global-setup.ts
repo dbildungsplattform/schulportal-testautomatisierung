@@ -61,17 +61,16 @@ export default async function globalSetup(): Promise<void> {
     const organisationId: string = await getOrganisationId(page, landSH);
     const rolleId: string = await getRolleId(page, landesadminRolle);
 
-    const userInfos: UserInfo[] = await Promise.all(
-      Array.from({ length: workers }).map((_: unknown, index: number) =>
-        createPerson(
-          page,
-          organisationId,
-          rolleId,
-          generateNachname() + encodeNumberAsLetters(index + 1),
-          generateVorname(),
-        ),
-      ),
-    );
+    const userInfos: UserInfo[] = [];
+    for (let index = 0; index < workers; index++) {
+      const userInfo = await createPerson(page, {
+        organisationId,
+        rolleId,
+        familienname: generateNachname() + encodeNumberAsLetters(index + 1),
+        vorname: generateVorname(),
+      });
+      userInfos.push(userInfo);
+    }
 
     const header: HeaderPage = new HeaderPage(page);
     await header.logout();

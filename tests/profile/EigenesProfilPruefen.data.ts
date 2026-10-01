@@ -1,9 +1,9 @@
-import { RollenArt } from '../../base/api/generated';
-import { klasse1Testschule } from '../../base/klassen';
+import { RollenArt, RollenMerkmal } from '../../base/api/generated';
 import { landSH, testschuleName, testschuleDstNr } from '../../base/organisation';
 import { typeLandesadmin, typeLehrer, typeSchuladmin } from '../../base/rollentypen';
 import { schulportaladmin, email, itslearning } from '../../base/sp';
 import {
+  generateKlassenname,
   generateVorname,
   generateNachname,
   generateRolleName,
@@ -16,6 +16,7 @@ interface TestData {
   personalData: PersoenlicheDaten;
   zuordnungen: Zuordnung[];
   serviceProviders: string[];
+  rollenMerkmalNamen?: Set<RollenMerkmal>;
 }
 
 export const testData: TestData[] = [
@@ -54,6 +55,7 @@ export const testData: TestData[] = [
       },
     ],
     serviceProviders: [email],
+    rollenMerkmalNamen: new Set<RollenMerkmal>([RollenMerkmal.KopersPflicht]),
   },
   {
     actor: 'Schuladmin mit einer Schulzuordnung',
@@ -87,7 +89,7 @@ export const testData: TestData[] = [
         {
           organisationsname: testschuleName,
           dienststellennummer: testschuleDstNr,
-          klassenName: klasse1Testschule,
+          klassenName: generateKlassenname(),
           rollenname,
           rollenart: RollenArt.Lern,
         },

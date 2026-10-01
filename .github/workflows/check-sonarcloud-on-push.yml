@@ -2,6 +2,11 @@ name: "Check with Sonarcloud"
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
 concurrency:
   group: schulportal-testautomatisierung-${{ github.ref_name }}
@@ -9,10 +14,11 @@ concurrency:
 
 jobs:
   sonarcloud:
-    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-nest-test-sonarcloud.yaml@7
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-nest-test-sonarcloud.yaml@8
     with:
       node_version: '18'
       skip_tests: true
     permissions:
       contents: read
-    secrets: inherit
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

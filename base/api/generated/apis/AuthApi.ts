@@ -15,9 +15,12 @@
 
 import * as runtime from '../runtime';
 import type {
+  CsrfTokenResponse,
   UserinfoResponse,
 } from '../models';
 import {
+    CsrfTokenResponseFromJSON,
+    CsrfTokenResponseToJSON,
     UserinfoResponseFromJSON,
     UserinfoResponseToJSON,
 } from '../models';
@@ -38,6 +41,21 @@ export interface AuthenticationControllerResetPasswordRequest {
  * @interface AuthApiInterface
  */
 export interface AuthApiInterface {
+    /**
+     * Returns a CSRF token that must be included in X-CSRF-Token header for state-changing requests (POST, PUT, DELETE). Call this endpoint after successful login. The token is stored in the session.
+     * @summary Get CSRF token for session-based requests
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof AuthApiInterface
+     */
+    authenticationControllerGetCsrfTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CsrfTokenResponse>>;
+
+    /**
+     * Returns a CSRF token that must be included in X-CSRF-Token header for state-changing requests (POST, PUT, DELETE). Call this endpoint after successful login. The token is stored in the session.
+     * Get CSRF token for session-based requests
+     */
+    authenticationControllerGetCsrfToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CsrfTokenResponse>;
+
     /**
      * 
      * @summary Info about logged in user.
@@ -103,6 +121,34 @@ export interface AuthApiInterface {
  * 
  */
 export class AuthApi extends runtime.BaseAPI implements AuthApiInterface {
+
+    /**
+     * Returns a CSRF token that must be included in X-CSRF-Token header for state-changing requests (POST, PUT, DELETE). Call this endpoint after successful login. The token is stored in the session.
+     * Get CSRF token for session-based requests
+     */
+    async authenticationControllerGetCsrfTokenRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CsrfTokenResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/api/auth/csrf-token`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => CsrfTokenResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns a CSRF token that must be included in X-CSRF-Token header for state-changing requests (POST, PUT, DELETE). Call this endpoint after successful login. The token is stored in the session.
+     * Get CSRF token for session-based requests
+     */
+    async authenticationControllerGetCsrfToken(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CsrfTokenResponse> {
+        const response = await this.authenticationControllerGetCsrfTokenRaw(initOverrides);
+        return await response.value();
+    }
 
     /**
      * Info about logged in user.

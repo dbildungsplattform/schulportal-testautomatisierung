@@ -25,6 +25,12 @@ import {
     RolleRefResponseFromJSONTyped,
     RolleRefResponseToJSON,
 } from './RolleRefResponse';
+import type { RollenArt } from './RollenArt';
+import {
+    RollenArtFromJSON,
+    RollenArtFromJSONTyped,
+    RollenArtToJSON,
+} from './RollenArt';
 import type { ServiceProviderKategorie } from './ServiceProviderKategorie';
 import {
     ServiceProviderKategorieFromJSON,
@@ -69,6 +75,12 @@ export interface ManageableServiceProviderResponse {
      */
     kategorie: ServiceProviderKategorie;
     /**
+     * Optional logoId for use with standard logos
+     * @type {number}
+     * @memberof ManageableServiceProviderResponse
+     */
+    logoId: number;
+    /**
      * 
      * @type {boolean}
      * @memberof ManageableServiceProviderResponse
@@ -76,10 +88,22 @@ export interface ManageableServiceProviderResponse {
     requires2fa: boolean;
     /**
      * 
+     * @type {string}
+     * @memberof ManageableServiceProviderResponse
+     */
+    vidisAngebotId?: string;
+    /**
+     * 
      * @type {Array<ServiceProviderMerkmal>}
      * @memberof ManageableServiceProviderResponse
      */
     merkmale: Array<ServiceProviderMerkmal>;
+    /**
+     * 
+     * @type {Array<RollenArt>}
+     * @memberof ManageableServiceProviderResponse
+     */
+    rollenartenWhitelist: Array<RollenArt>;
     /**
      * Can be undefined, if `target` is not equal to `URL`
      * @type {string}
@@ -104,7 +128,43 @@ export interface ManageableServiceProviderResponse {
      * @memberof ManageableServiceProviderResponse
      */
     rollen: Array<RolleRefResponse>;
+    /**
+     * 
+     * @type {Array<string>}
+     * @memberof ManageableServiceProviderResponse
+     */
+    relevantSystemrechte: Array<ManageableServiceProviderResponseRelevantSystemrechteEnum>;
 }
+
+
+/**
+ * @export
+ */
+export const ManageableServiceProviderResponseRelevantSystemrechteEnum = {
+    RollenVerwalten: 'ROLLEN_VERWALTEN',
+    MptRollenZuordnen: 'MPT_ROLLEN_ZUORDNEN',
+    PersonenSofortLoeschen: 'PERSONEN_SOFORT_LOESCHEN',
+    PersonenVerwalten: 'PERSONEN_VERWALTEN',
+    LandesbediensteteSuchenUndHinzufuegen: 'LANDESBEDIENSTETE_SUCHEN_UND_HINZUFUEGEN',
+    EingeschraenktNeueBenutzerErstellen: 'EINGESCHRAENKT_NEUE_BENUTZER_ERSTELLEN',
+    SchulenVerwalten: 'SCHULEN_VERWALTEN',
+    KlassenVerwalten: 'KLASSEN_VERWALTEN',
+    SchultraegerVerwalten: 'SCHULTRAEGER_VERWALTEN',
+    PersonSynchronisieren: 'PERSON_SYNCHRONISIEREN',
+    CronDurchfuehren: 'CRON_DURCHFUEHREN',
+    PersonenAnlegen: 'PERSONEN_ANLEGEN',
+    ImportDurchfuehren: 'IMPORT_DURCHFUEHREN',
+    PersonenLesen: 'PERSONEN_LESEN',
+    BulkVerwalten: 'BULK_VERWALTEN',
+    SchulportalVerwalten: 'SCHULPORTAL_VERWALTEN',
+    HinweiseBearbeiten: 'HINWEISE_BEARBEITEN',
+    RollenErweitern: 'ROLLEN_ERWEITERN',
+    AngeboteVerwalten: 'ANGEBOTE_VERWALTEN',
+    AngeboteEingeschraenktVerwalten: 'ANGEBOTE_EINGESCHRAENKT_VERWALTEN',
+    SchulischeVidisAngeboteAbrufen: 'SCHULISCHE_VIDIS_ANGEBOTE_ABRUFEN'
+} as const;
+export type ManageableServiceProviderResponseRelevantSystemrechteEnum = typeof ManageableServiceProviderResponseRelevantSystemrechteEnum[keyof typeof ManageableServiceProviderResponseRelevantSystemrechteEnum];
+
 
 /**
  * Check if a given object implements the ManageableServiceProviderResponse interface.
@@ -115,12 +175,15 @@ export function instanceOfManageableServiceProviderResponse(value: object): bool
     isInstance = isInstance && "name" in value;
     isInstance = isInstance && "administrationsebene" in value;
     isInstance = isInstance && "kategorie" in value;
+    isInstance = isInstance && "logoId" in value;
     isInstance = isInstance && "requires2fa" in value;
     isInstance = isInstance && "merkmale" in value;
+    isInstance = isInstance && "rollenartenWhitelist" in value;
     isInstance = isInstance && "url" in value;
     isInstance = isInstance && "hasRollenerweiterung" in value;
     isInstance = isInstance && "availableForRollenerweiterung" in value;
     isInstance = isInstance && "rollen" in value;
+    isInstance = isInstance && "relevantSystemrechte" in value;
 
     return isInstance;
 }
@@ -139,12 +202,16 @@ export function ManageableServiceProviderResponseFromJSONTyped(json: any, ignore
         'name': json['name'],
         'administrationsebene': OrganisationRefResponseFromJSON(json['administrationsebene']),
         'kategorie': ServiceProviderKategorieFromJSON(json['kategorie']),
+        'logoId': json['logoId'],
         'requires2fa': json['requires2fa'],
+        'vidisAngebotId': !exists(json, 'vidisAngebotId') ? undefined : json['vidisAngebotId'],
         'merkmale': ((json['merkmale'] as Array<any>).map(ServiceProviderMerkmalFromJSON)),
+        'rollenartenWhitelist': ((json['rollenartenWhitelist'] as Array<any>).map(RollenArtFromJSON)),
         'url': json['url'],
         'hasRollenerweiterung': json['hasRollenerweiterung'],
         'availableForRollenerweiterung': json['availableForRollenerweiterung'],
         'rollen': ((json['rollen'] as Array<any>).map(RolleRefResponseFromJSON)),
+        'relevantSystemrechte': json['relevantSystemrechte'],
     };
 }
 
@@ -161,12 +228,16 @@ export function ManageableServiceProviderResponseToJSON(value?: ManageableServic
         'name': value.name,
         'administrationsebene': OrganisationRefResponseToJSON(value.administrationsebene),
         'kategorie': ServiceProviderKategorieToJSON(value.kategorie),
+        'logoId': value.logoId,
         'requires2fa': value.requires2fa,
+        'vidisAngebotId': value.vidisAngebotId,
         'merkmale': ((value.merkmale as Array<any>).map(ServiceProviderMerkmalToJSON)),
+        'rollenartenWhitelist': ((value.rollenartenWhitelist as Array<any>).map(RollenArtToJSON)),
         'url': value.url,
         'hasRollenerweiterung': value.hasRollenerweiterung,
         'availableForRollenerweiterung': value.availableForRollenerweiterung,
         'rollen': ((value.rollen as Array<any>).map(RolleRefResponseToJSON)),
+        'relevantSystemrechte': value.relevantSystemrechte,
     };
 }
 
