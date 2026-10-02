@@ -106,11 +106,11 @@ npm run coverage
 
 Mit Tags können wir die Ausführung der Tests gezielt steuern. So können beispielsweise Tests nur auf Stage oder nur auf Dev ausgeführt, je nachdem welche Drittsysteme oder andere Gegebenheiten berücksichtigt werden müssen. Die folgende Matrix zeigt, welche Tags vorhanden sind und welche Besonderheiten sie abdecken.
 
-| Tag         | Grundfunktionen | LDAP | Drittsysteme | Login |
-| ----------- | --------------- | ---- | ------------ | ----- |
-| dev         | x               | x    |              |       |
-| stage       | x               |      | x            |       |
-| stage-smoke |                 |      |              | x     |
+| Tag         | Grundfunktionen | Drittsysteme | Login |
+| ----------- | --------------- | ------------ | ----- |
+| dev         | x               |              |       |
+| stage       | x               | x            |       |
+| stage-smoke |                 |              | x     |
 
 Tags werden immer alphabetisch sortiert angegeben: `{ tag: [DEV, STAGE] }`, nicht `{ tag: [STAGE, DEV] }`. Konsistente Reihenfolge erleichtert Suche und Review.
 
