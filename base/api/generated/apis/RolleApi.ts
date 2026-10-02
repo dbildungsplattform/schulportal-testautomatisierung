@@ -85,6 +85,16 @@ export interface RolleControllerDeleteRolleRequest {
     rolleId: string;
 }
 
+export interface RolleControllerFindAvailableRollenForPersonenkontextCreationRequest {
+    organisationId: string;
+    offset?: number;
+    limit?: number;
+    rollenartOfUser?: RollenArt;
+    rolleName?: string | null;
+    rollenIds?: Array<string> | null;
+    systemrecht?: RollenSystemRechtEnum;
+}
+
 export interface RolleControllerFindRolleByIdWithServiceProvidersRequest {
     rolleId: string;
 }
@@ -202,6 +212,28 @@ export interface RolleApiInterface {
      * 
      */
     rolleControllerDeleteRolle(requestParameters: RolleControllerDeleteRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Find available rollen for personenkontext creation.
+     * @summary 
+     * @param {string} organisationId The organisationId for which the available rollen should be found
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {RollenArt} [rollenartOfUser] The rollenart of the user for which the available rollen should be found
+     * @param {string} [rolleName] The rolleName for which the available rollen should be found
+     * @param {Array<string>} [rollenIds] The rollenIds that are currently selected and should always be returned.
+     * @param {RollenSystemRechtEnum} [systemrecht] The systemrecht for which the available rollen should be found
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof RolleApiInterface
+     */
+    rolleControllerFindAvailableRollenForPersonenkontextCreationRaw(requestParameters: RolleControllerFindAvailableRollenForPersonenkontextCreationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollenAvailableForPersonAdministration200Response>>;
+
+    /**
+     * Find available rollen for personenkontext creation.
+     * 
+     */
+    rolleControllerFindAvailableRollenForPersonenkontextCreation(requestParameters: RolleControllerFindAvailableRollenForPersonenkontextCreationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollenAvailableForPersonAdministration200Response>;
 
     /**
      * Get rolle by id.
@@ -548,6 +580,79 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      */
     async rolleControllerDeleteRolle(requestParameters: RolleControllerDeleteRolleRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.rolleControllerDeleteRolleRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Find available rollen for personenkontext creation.
+     * 
+     */
+    async rolleControllerFindAvailableRollenForPersonenkontextCreationRaw(requestParameters: RolleControllerFindAvailableRollenForPersonenkontextCreationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollenAvailableForPersonAdministration200Response>> {
+        if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
+            throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling rolleControllerFindAvailableRollenForPersonenkontextCreation.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.organisationId !== undefined) {
+            queryParameters['organisationId'] = requestParameters.organisationId;
+        }
+
+        if (requestParameters.rollenartOfUser !== undefined) {
+            queryParameters['rollenartOfUser'] = requestParameters.rollenartOfUser;
+        }
+
+        if (requestParameters.rolleName !== undefined) {
+            queryParameters['rolleName'] = requestParameters.rolleName;
+        }
+
+        if (requestParameters.rollenIds) {
+            queryParameters['rollenIds'] = requestParameters.rollenIds;
+        }
+
+        if (requestParameters.systemrecht !== undefined) {
+            queryParameters['systemrecht'] = requestParameters.systemrecht;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/rolle/for-personenkontext-creation`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollenAvailableForPersonAdministration200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Find available rollen for personenkontext creation.
+     * 
+     */
+    async rolleControllerFindAvailableRollenForPersonenkontextCreation(requestParameters: RolleControllerFindAvailableRollenForPersonenkontextCreationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollenAvailableForPersonAdministration200Response> {
+        const response = await this.rolleControllerFindAvailableRollenForPersonenkontextCreationRaw(requestParameters, initOverrides);
+        return await response.value();
     }
 
     /**
