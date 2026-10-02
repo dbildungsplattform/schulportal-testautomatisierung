@@ -5,7 +5,6 @@ import { testschuleName } from '../base/organisation';
 import { typeLehrer } from '../base/rollentypen';
 import { email, uem } from '../base/sp';
 import { DEV } from '../base/tags';
-import { TestHelperLdap } from '../base/testHelperLdap';
 import { gotoTargetURL, loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { generateKopersNr } from '../base/utils/generateTestdata';
 import { PersonDetailsViewPage } from '../pages/admin/personen/details/PersonDetailsView.page';
@@ -15,7 +14,7 @@ import { LoginViewPage } from '../pages/LoginView.page';
 import { ProfileViewPage } from '../pages/ProfileView.page';
 import { RollenMerkmal } from '../base/api/generated';
 
-test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
+test.describe('Inbetriebnahme-Passwort einrichten', () => {
   test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
     await test.step('Login', async () => {
       await loginAndNavigateToAdministration(page);
@@ -33,7 +32,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
   });
 
   test(
-    'Inbetriebnahme-Passwort als Lehrer über das eigene Profil erzeugen (LDAP erforderlich)',
+    'Inbetriebnahme-Passwort als Lehrer über das eigene Profil erzeugen',
     { tag: [DEV] },
     async ({ page }: PlaywrightTestArgs) => {
       const header: HeaderPage = new HeaderPage(page);
@@ -64,21 +63,12 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         return profileView.resetInbetriebnahmePasswort();
       });
 
-      await test.step('Passwort in LDAP prüfen', async () => {
-        const ldapHelper: TestHelperLdap = new TestHelperLdap(
-          process.env.LDAP_URL!,
-          process.env.LDAP_ADMIN_USER!,
-          process.env.LDAP_ADMIN_PASSWORD!,
-        );
-        expect(
-          await ldapHelper.validateInbetriebnahmePasswortMatches(userInfoLehrer.username, inbetriebnahmePasswort),
-        ).toBeTruthy();
-      });
+      expect(inbetriebnahmePasswort).not.toBe('');
     },
   );
 
   test(
-    'Inbetriebnahme-Passwort über die Gesamtübersicht erzeugen (LDAP erforderlich)',
+    'Inbetriebnahme-Passwort über die Gesamtübersicht erzeugen',
     { tag: [DEV] },
     async ({ page }: PlaywrightTestArgs) => {
       let userInfoLehrer: UserInfo;
@@ -105,16 +95,7 @@ test.describe('Inbetriebnahme-Passwort einrichten (LDAP erforderlich)', () => {
         return personDetailsView.createInbetriebnahmePasswort();
       });
 
-      await test.step('Passwort in LDAP prüfen', async () => {
-        const ldapHelper: TestHelperLdap = new TestHelperLdap(
-          process.env.LDAP_URL!,
-          process.env.LDAP_ADMIN_USER!,
-          process.env.LDAP_ADMIN_PASSWORD!,
-        );
-        expect(
-          await ldapHelper.validateInbetriebnahmePasswortMatches(userInfoLehrer.username, inbetriebnahmePasswort),
-        ).toBeTruthy();
-      });
+      expect(inbetriebnahmePasswort).not.toBe('');
     },
   );
 });

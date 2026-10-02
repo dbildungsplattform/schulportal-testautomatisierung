@@ -61,7 +61,6 @@
 | Test data | `@faker-js/faker` |
 | 2FA | `totp-generator` + `jsqr` + `pngjs` for QR-based TOTP setup |
 | CSV | `@fast-csv/format` + `@fast-csv/parse` |
-| LDAP | `ldapts ^7` (direct LDAP checks in assertions) |
 | Date utilities | `date-fns ^4`, `moment ^2` |
 | Password generation | `generate-password-ts` |
 | Random strings | `ts-randomstring` |

@@ -105,7 +105,6 @@ Required runtime env for normal execution:
 
 Conditional env:
 - `OTP_SEED_B32` (2FA)
-- `LDAP_URL`, `LDAP_ADMIN_USER`, `LDAP_ADMIN_PASSWORD` (LDAP scenarios)
 
 ---
 
@@ -225,8 +224,8 @@ Rules:
 
 ## 11. Security & Reliability Guardrails
 
-- Never hardcode credentials, OTP seeds, LDAP secrets, or environment URLs in test code.
-- Never log sensitive values (`USER`, `PW`, `OTP_SEED_B32`, LDAP passwords).
+- Never hardcode credentials, OTP seeds or environment URLs in test code.
+- Never log sensitive values (`USER`, `PW`, `OTP_SEED_B32`).
 - Keep selectors and assertions deterministic to reduce flakiness.
 - Use page-object boundaries consistently to minimize UI-change blast radius.
 

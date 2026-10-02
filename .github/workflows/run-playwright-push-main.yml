@@ -14,11 +14,6 @@ jobs:
         browser: chromium
         playwright_branch: main
       secrets:
-        SPSH_DEV_USER_SSHKEY: ${{ secrets.SPSH_DEV_USER_SSHKEY }}
-        SPSH_DEV_KUBECONFIG: ${{ secrets.SPSH_DEV_KUBECONFIG }}
-        SPSH_DEV_TUNNEL_USERNAME: ${{ secrets.SPSH_DEV_TUNNEL_USERNAME }}
-        SPSH_DEV_TUNNEL_HOST: ${{ secrets.SPSH_DEV_TUNNEL_HOST }}
-        SPSH_DEV_TUNNEL_PORT: ${{ secrets.SPSH_DEV_TUNNEL_PORT }}
         USER: ${{ secrets.USER }}
         PW: ${{ secrets.PW }}
         OTP_SEED_B32: ${{ secrets.OTP_SEED_B32 }}
