@@ -68,20 +68,6 @@ USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' 
 USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' npx playwright test --grep-invert "Stichwort"
 ```
 
-### Tests ausführen mit LDAP-Operationen:
-- Zusätzlich die Variablen LDAP_URL und LDAP_ADMIN_PASSWORD definieren
-- Bsp.:
-
-```properties
-USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' LDAP_URL='ldap://localhost' LDAP_ADMIN_PASSWORD='xxx' npx playwright test
-
-USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' LDAP_URL='ldap://localhost' LDAP_ADMIN_PASSWORD='xxx' npx playwright test -g "Einen Benutzer mit der Rolle Lehrkraft anlegen" --headed
-
-USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' LDAP_URL='ldap://localhost' LDAP_ADMIN_PASSWORD='xxx' npx playwright test Schule.spec.ts
-
-...
-```
-
 ### Lokale Ausfuehrung gegen Stage (mit 2FA)
 
 Um Tests lokal gegen Stage auszuführen, muss der initiale Login-User bereits ein konfiguriertes 2FA-Token haben, und der passende Seed muss lokal gesetzt sein.
