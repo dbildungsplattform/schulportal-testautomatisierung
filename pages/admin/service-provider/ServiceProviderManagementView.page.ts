@@ -24,17 +24,17 @@ export class ServiceProviderManagementViewPage {
     return this;
   }
 
-  private getRow(angebotName: string): Locator {
+  private getServiceProviderRow(angebotName: string): Locator {
     return this.page.locator('tr').filter({ hasText: angebotName });
   }
 
   public async searchByName(angebotName: string): Promise<void> {
     await this.searchFilter.searchByText(angebotName);
-    await expect(this.getRow(angebotName)).toBeVisible();
+    await expect(this.getServiceProviderRow(angebotName)).toBeVisible();
   }
 
   public async openDeleteDialog(angebotName: string): Promise<ServiceProviderDeleteDialogPage> {
-    await this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon').click();
+    await this.getServiceProviderRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon').click();
     await this.deleteDialog.assertConfirmationVisible(angebotName);
     return this.deleteDialog;
   }
@@ -55,11 +55,11 @@ export class ServiceProviderManagementViewPage {
 
   /* assertions */
   public async assertServiceProviderPresent(angebotName: string): Promise<void> {
-    await expect(this.getRow(angebotName)).toBeVisible();
+    await expect(this.getServiceProviderRow(angebotName)).toBeVisible();
   }
 
   public async assertServiceProviderAbsent(angebotName: string): Promise<void> {
-    await expect(this.getRow(angebotName)).toHaveCount(0);
+    await expect(this.getServiceProviderRow(angebotName)).toHaveCount(0);
   }
 
   public async assertDeleteErrorAlert(expectedTitle: string, expectedText: string): Promise<void> {
