@@ -106,11 +106,11 @@ npx playwright test
 # Tags
 Tags allow targeted control over test execution. For example, tests can be run only on stage or only on dev, depending on which third-party systems or other circumstances must be considered. The following matrix shows the available tags and what they cover.
 
-| Tag         | Basic Functions | LDAP | Third-Party Systems | Login |
-| ----------- | --------------- | ---- | ------------------- | ----- |
-| dev         | x               | x    |                     |       |
-| stage       | x               |      | x                   |       |
-| stage-smoke |                 |      |                     | x     |
+| Tag         | Basic Functions | Third-Party Systems | Login |
+| ----------- | --------------- | ------------------- | ----- |
+| dev         | x               |                     |       |
+| stage       | x               | x                   |       |
+| stage-smoke |                 |                     | x     |
 
 Tags are always given in alphabetical order: `{ tag: [DEV, STAGE] }`, not `{ tag: [STAGE, DEV] }`. Consistent order makes searching and review easier.
 

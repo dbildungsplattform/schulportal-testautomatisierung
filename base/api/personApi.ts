@@ -464,7 +464,7 @@ export async function createTeacherAndLogin(page: Page): Promise<UserInfo> {
 }
 
 /**
- * Sets the Inbetriebnahme-Passwort (device password) for a person in LDAP.
+ * Sets the Inbetriebnahme-Passwort (device password) for a person.
  * @param page
  * @param personId
  */

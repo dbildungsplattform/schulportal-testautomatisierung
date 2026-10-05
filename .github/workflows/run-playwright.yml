@@ -7,21 +7,6 @@ on:
   # --------------------------
   workflow_call:
     secrets:
-      SPSH_DEV_USER_SSHKEY:
-        description: 'SSH Key for Tunnel User to access LDAP tunnel (required for dev tests)'
-        required: false
-      SPSH_DEV_KUBECONFIG:
-        description: 'Kubeconfig for SPSH development environment (required for dev tests)'
-        required: false
-      SPSH_DEV_TUNNEL_USERNAME:
-        description: 'Username for SSH tunnel (required for dev tests)'
-        required: false
-      SPSH_DEV_TUNNEL_HOST:
-        description: 'Hostname of the SSH tunnel (required for dev tests)'
-        required: false
-      SPSH_DEV_TUNNEL_PORT:
-        description: 'Port of the SSH tunnel (required for dev tests)'
-        required: false
       USER:
         description: 'Username for the application'
         required: true
@@ -41,11 +26,6 @@ on:
         description: 'Hostname of the frontend server'
         required: true
         default: 'main.dev.spsh.dbildungsplattform.de'
-      namespace_to_use:
-        type: string
-        description: 'Namespace to use for LDAP testing (should match hostname)'
-        required: false
-        default: 'main'
       tag:
         type: string
         description: 'Select which tests are run'
@@ -76,11 +56,6 @@ on:
         description: 'Hostname of the frontend server'
         required: true
         default: 'main.dev.spsh.dbildungsplattform.de'
-      namespace_to_use:
-        type: string
-        description: 'Namespace to use for LDAP testing (should match hostname)'
-        required: false
-        default: 'main'
       tag:
         description: 'Select which tests are run'
         required: true
@@ -162,72 +137,6 @@ jobs:
         run: npx playwright install --with-deps
 
       # --------------------------
-      # SSH agent (dev only)
-      # --------------------------
-      - name: Setup SSH agent
-        if: ${{ inputs.tag == 'dev' }}
-        uses: webfactory/ssh-agent@dc588b651fe13675774614f8e6a936a468676387
-        with:
-          ssh-private-key: ${{ secrets.SPSH_DEV_USER_SSHKEY }}
-
-      # --------------------------
-      # Kubeconfig (dev only)
-      # --------------------------
-      - name: Add kubeconfig
-        if: ${{ inputs.tag == 'dev' }}
-        env:
-          KUBECONFIG_CONTENT: ${{ secrets.SPSH_DEV_KUBECONFIG }}
-        run: |
-          mkdir -p ~/.kube
-          echo "$KUBECONFIG_CONTENT" > ~/.kube/config
-          chmod 600 ~/.kube/config
-
-      # --------------------------
-      # LDAP setup (dev only)
-      # --------------------------
-      - name: Get LDAP Pod IP
-        if: ${{ inputs.tag == 'dev' }}
-        env:
-          NS: ${{ inputs.namespace_to_use }}
-        run: |
-          POD_IP=$(kubectl get pod dbildungs-iam-ldap-0 -n "$NS" -o=jsonpath='{.status.podIP}')
-          echo "LDAP_POD_IP=$POD_IP" >> $GITHUB_ENV
-
-      - name: Get LDAP admin credentials from Kubernetes
-        if: ${{ inputs.tag == 'dev' }}
-        env:
-          NS: ${{ inputs.namespace_to_use }}
-        run: |
-          LDAP_ADMIN_USER=$(kubectl -n "$NS" get secret dbildungs-iam-server -o jsonpath='{.data.ldap-bind-dn}' | base64 -d)
-          echo "::add-mask::$LDAP_ADMIN_USER"
-          echo "LDAP_ADMIN_USER=$LDAP_ADMIN_USER" >> $GITHUB_ENV
-
-          LDAP_ADMIN_PASSWORD=$(kubectl -n "$NS" get secret dbildungs-iam-server -o jsonpath='{.data.ldap-admin-password}' | base64 -d)
-          echo "::add-mask::$LDAP_ADMIN_PASSWORD"
-          echo "LDAP_ADMIN_PASSWORD=$LDAP_ADMIN_PASSWORD" >> $GITHUB_ENV
-
-      - name: Create SSH tunnel to LDAP
-        if: ${{ inputs.tag == 'dev' }}
-        env:
-          SPSH_DEV_TUNNEL_USERNAME: ${{ secrets.SPSH_DEV_TUNNEL_USERNAME }}
-          SPSH_DEV_TUNNEL_HOST: ${{ secrets.SPSH_DEV_TUNNEL_HOST }}
-          SPSH_DEV_TUNNEL_PORT: ${{ secrets.SPSH_DEV_TUNNEL_PORT }}
-        run: |
-          ssh -o StrictHostKeyChecking=no \
-              -L 1389:$LDAP_POD_IP:3389 $SPSH_DEV_TUNNEL_USERNAME@$SPSH_DEV_TUNNEL_HOST \
-              -p $SPSH_DEV_TUNNEL_PORT \
-              -N -o ServerAliveInterval=15 -o ExitOnForwardFailure=yes &
-          disown
-
-      - name: Install ldap-utils
-        if: ${{ inputs.tag == 'dev' }}
-        run: sudo apt-get install -y ldap-utils
-
-      - name: Test LDAP Connectivity
-        if: ${{ inputs.tag == 'dev' }}
-        run: ldapwhoami -x -H ldap://localhost:1389 -D "$LDAP_ADMIN_USER" -w "$LDAP_ADMIN_PASSWORD"
-
-      # --------------------------
       # Resolve bootstrap user per shard
       # --------------------------
       - name: Resolve bootstrap user for shard
@@ -249,9 +158,6 @@ jobs:
           USER: '${{ env.USER }}'
           PW: '${{ secrets.PW }}'
           OTP_SEED_B32: '${{ secrets.OTP_SEED_B32 }}'
-          LDAP_URL: ldap://localhost:1389
-          LDAP_ADMIN_USER: ${{ env.LDAP_ADMIN_USER }}
-          LDAP_ADMIN_PASSWORD: ${{ env.LDAP_ADMIN_PASSWORD }}
           NODE_OPTIONS: --no-experimental-strip-types
           SHARD_INDEX: ${{ matrix.shard }}
         run: |
