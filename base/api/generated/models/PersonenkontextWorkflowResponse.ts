@@ -19,12 +19,6 @@ import {
     OrganisationResponseLegacyFromJSONTyped,
     OrganisationResponseLegacyToJSON,
 } from './OrganisationResponseLegacy';
-import type { RolleResponse } from './RolleResponse';
-import {
-    RolleResponseFromJSON,
-    RolleResponseFromJSONTyped,
-    RolleResponseToJSON,
-} from './RolleResponse';
 
 /**
  * 
@@ -38,12 +32,6 @@ export interface PersonenkontextWorkflowResponse {
      * @memberof PersonenkontextWorkflowResponse
      */
     organisations: Array<OrganisationResponseLegacy>;
-    /**
-     * List of available roles.
-     * @type {Array<RolleResponse>}
-     * @memberof PersonenkontextWorkflowResponse
-     */
-    rollen: Array<RolleResponse>;
     /**
      * Selected organisation.
      * @type {string}
@@ -70,7 +58,6 @@ export interface PersonenkontextWorkflowResponse {
 export function instanceOfPersonenkontextWorkflowResponse(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "organisations" in value;
-    isInstance = isInstance && "rollen" in value;
     isInstance = isInstance && "selectedOrganisation" in value;
     isInstance = isInstance && "selectedRollen" in value;
     isInstance = isInstance && "canCommit" in value;
@@ -89,7 +76,6 @@ export function PersonenkontextWorkflowResponseFromJSONTyped(json: any, ignoreDi
     return {
         
         'organisations': ((json['organisations'] as Array<any>).map(OrganisationResponseLegacyFromJSON)),
-        'rollen': ((json['rollen'] as Array<any>).map(RolleResponseFromJSON)),
         'selectedOrganisation': json['selectedOrganisation'],
         'selectedRollen': json['selectedRollen'],
         'canCommit': json['canCommit'],
@@ -106,7 +92,6 @@ export function PersonenkontextWorkflowResponseToJSON(value?: PersonenkontextWor
     return {
         
         'organisations': ((value.organisations as Array<any>).map(OrganisationResponseLegacyToJSON)),
-        'rollen': ((value.rollen as Array<any>).map(RolleResponseToJSON)),
         'selectedOrganisation': value.selectedOrganisation,
         'selectedRollen': value.selectedRollen,
         'canCommit': value.canCommit,

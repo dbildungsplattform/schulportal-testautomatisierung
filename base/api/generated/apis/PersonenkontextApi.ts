@@ -23,7 +23,6 @@ import type {
   OperationContext,
   PersonenkontextWorkflowResponse,
   PersonenkontexteUpdateResponse,
-  RollenSystemRechtEnum,
 } from '../models';
 import {
     DBiamPersonResponseFromJSON,
@@ -42,8 +41,6 @@ import {
     PersonenkontextWorkflowResponseToJSON,
     PersonenkontexteUpdateResponseFromJSON,
     PersonenkontexteUpdateResponseToJSON,
-    RollenSystemRechtEnumFromJSON,
-    RollenSystemRechtEnumToJSON,
 } from '../models';
 
 export interface DbiamPersonenkontextWorkflowControllerCommitRequest {
@@ -61,10 +58,8 @@ export interface DbiamPersonenkontextWorkflowControllerProcessStepRequest {
     personId?: string | null;
     organisationId?: string | null;
     rollenIds?: Array<string>;
-    rolleName?: string | null;
     organisationName?: string | null;
     limit?: number;
-    requestedWithSystemrecht?: RollenSystemRechtEnum;
 }
 
 /**
@@ -105,13 +100,11 @@ export interface PersonenkontextApiInterface {
     /**
      * 
      * @param {OperationContext} operationContext The context in which this request happens. Affects permission checks.
-     * @param {string} [personId] ID of the person to be modified, will restrict the returned roles
-     * @param {string} [organisationId] ID of the organisation to filter the rollen later
-     * @param {Array<string>} [rollenIds] IDs of the rollen.
-     * @param {string} [rolleName] Rolle name used to filter for rollen in personenkontext.
+     * @param {string} [personId] ID of the person to be modified
+     * @param {string} [organisationId] ID of the organisation where the Personenkontexte should be created
+     * @param {Array<string>} [rollenIds] IDs of the selected rollen.
      * @param {string} [organisationName] Organisation/SSK name used to filter for schulstrukturknoten in personenkontext.
-     * @param {number} [limit] The limit of items for the request.
-     * @param {RollenSystemRechtEnum} [requestedWithSystemrecht] The systemrecht used to filter for rollen in personenkontext. Must be one of PERSONEN_VERWALTEN, PERSONEN_ANLEGEN or EINGESCHRAENKT_NEUE_BENUTZER_ERSTELLEN. Defaults to PERSONEN_VERWALTEN
+     * @param {number} [limit] The limit for the returned organisations.
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PersonenkontextApiInterface
@@ -250,20 +243,12 @@ export class PersonenkontextApi extends runtime.BaseAPI implements Personenkonte
             queryParameters['rollenIds'] = requestParameters.rollenIds;
         }
 
-        if (requestParameters.rolleName !== undefined) {
-            queryParameters['rolleName'] = requestParameters.rolleName;
-        }
-
         if (requestParameters.organisationName !== undefined) {
             queryParameters['organisationName'] = requestParameters.organisationName;
         }
 
         if (requestParameters.limit !== undefined) {
             queryParameters['limit'] = requestParameters.limit;
-        }
-
-        if (requestParameters.requestedWithSystemrecht !== undefined) {
-            queryParameters['requestedWithSystemrecht'] = requestParameters.requestedWithSystemrecht;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

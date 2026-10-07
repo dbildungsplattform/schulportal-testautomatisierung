@@ -92,6 +92,8 @@ export class Autocomplete {
     if (!dialogOpen) {
       await this.page.getByTestId('admin-headline').click();
     }
+    // Sicherstellen, dass Autocomplete geschlossen ist
+    await this.overlayLocator.first().isHidden();
   }
 
   public async toggleModal(): Promise<void> {

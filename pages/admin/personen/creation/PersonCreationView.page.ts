@@ -20,7 +20,7 @@ export enum PersonCreationMode {
 }
 
 export class PersonCreationViewPage {
-  private static readonly ENDPOINT: string = 'personenkontext-workflow/**';
+  private static readonly WORKFLOW_ENDPOINT: string = 'personenkontext-workflow/**';
 
   private readonly organisationAutocomplete: Autocomplete = new Autocomplete(
     this.page,
@@ -54,9 +54,17 @@ export class PersonCreationViewPage {
 
     if (params.organisation) {
       if (params.dstNr) {
-        await this.organisationAutocomplete.searchByTitle(params.organisation, false, PersonCreationViewPage.ENDPOINT);
+        await this.organisationAutocomplete.searchByTitle(
+          params.organisation,
+          false,
+          PersonCreationViewPage.WORKFLOW_ENDPOINT,
+        );
       } else {
-        await this.organisationAutocomplete.searchByTitle(params.organisation, true, PersonCreationViewPage.ENDPOINT);
+        await this.organisationAutocomplete.searchByTitle(
+          params.organisation,
+          true,
+          PersonCreationViewPage.WORKFLOW_ENDPOINT,
+        );
       }
     }
 
@@ -86,16 +94,16 @@ export class PersonCreationViewPage {
   }
 
   public async searchOrganisation(org: string, exact: boolean): Promise<void> {
-    await this.organisationAutocomplete.searchByTitle(org, exact, PersonCreationViewPage.ENDPOINT);
+    await this.organisationAutocomplete.searchByTitle(org, exact, PersonCreationViewPage.WORKFLOW_ENDPOINT);
   }
 
   public async addRolle(rolle: string): Promise<void> {
-    await this.rolleAutocomplete.searchByTitle(rolle, true, PersonCreationViewPage.ENDPOINT);
+    await this.rolleAutocomplete.searchByTitle(rolle, true, 'rolle/for-personenkontext-creation');
   }
 
   public async clearOrganisation(): Promise<void> {
     await this.organisationAutocomplete.clear();
-    await waitForAPIResponse(this.page, PersonCreationViewPage.ENDPOINT);
+    await waitForAPIResponse(this.page, PersonCreationViewPage.WORKFLOW_ENDPOINT);
   }
 
   public async submit(): Promise<PersonCreationSuccessPage> {
