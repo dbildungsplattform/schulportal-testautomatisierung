@@ -87,9 +87,6 @@ OTP_SEED_B32="<base32-seed>"
 | `PW` | Yes | Always |
 | `FRONTEND_URL` | Yes | Always |
 | `OTP_SEED_B32` | Conditional | Required when initial login user requires 2FA (commonly stage) |
-| `LDAP_URL` | Conditional | Required for scenarios with LDAP operations |
-| `LDAP_ADMIN_USER` | Conditional | Required for LDAP operations in environments that need bind DN |
-| `LDAP_ADMIN_PASSWORD` | Conditional | Required for LDAP operations |
 
 ---
 
@@ -183,8 +180,6 @@ Current reusable workflow behavior:
 - Executes tests in shards (`--shard=1/3`, `2/3`, `3/3`)
 - Uploads Playwright reports as artifacts
 
-Dev-tag workflows additionally perform LDAP tunnel preparation before tests.
-
 ---
 
 ## Troubleshooting
@@ -197,7 +192,6 @@ Dev-tag workflows additionally perform LDAP tunnel preparation before tests.
 | `FRONTEND_URL` not reachable | Open URL in browser / verify target environment availability | Correct URL or wait for target environment |
 | Login fails immediately | Verify `USER`/`PW` values and target environment | Correct credentials or environment |
 | 2FA login fails | Check whether `OTP_SEED_B32` is set and valid | Set/update correct seed for initial user |
-| LDAP-related test failures | Verify `LDAP_URL` and LDAP admin credentials are present | Provide LDAP vars and ensure tunnel/connectivity |
 | Type or lint checks fail | Run `npm run type-check` and `npm run lint:ci` | Fix reported issues before rerunning full suite |
 
 ---

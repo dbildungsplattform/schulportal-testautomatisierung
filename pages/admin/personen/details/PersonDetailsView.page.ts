@@ -420,7 +420,7 @@ export class PersonDetailsViewPage {
   }
 
   public async checkZuordnungExists(params: ZuordnungValidationParams): Promise<void> {
-    await this.zuordnungSection.checkZuordnungExists(params);
+    await this.zuordnungSection.assertZuordnungExists(params);
   }
 
   public async checkPendingText(): Promise<void> {
