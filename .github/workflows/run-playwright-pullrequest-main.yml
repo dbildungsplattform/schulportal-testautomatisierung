@@ -35,7 +35,6 @@ jobs:
       - create_branch_identifier
     outputs:
       fe_host: ${{ steps.determine-fe-host.outputs.fe_host }}
-      namespace_to_use: ${{ steps.determine-fe-host.outputs.namespace_to_use }}
       pr_branch: ${{ steps.get-pr-branch.outputs.pr_branch }}
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  #v6.0.3
@@ -97,13 +96,11 @@ jobs:
             FRONTEND_HOST="${FRONTEND_HOST_PREFIX}.dev.spsh.dbildungsplattform.de"
             echo "FRONTEND_HOST=$FRONTEND_HOST"
             echo "fe_host=${FRONTEND_HOST}" >> "$GITHUB_OUTPUT"
-            echo "namespace_to_use=${TAG}" >> "$GITHUB_OUTPUT"
           else
             echo "No branch to ticket found, using main FE and BE infrastructure"
             FRONTEND_HOST="main.dev.spsh.dbildungsplattform.de"
             echo "FRONTEND_HOST=$FRONTEND_HOST"
             echo "fe_host=${FRONTEND_HOST}" >> "$GITHUB_OUTPUT"
-            echo "namespace_to_use=main" >> "$GITHUB_OUTPUT"
           fi
 
   # ------------------------
@@ -115,16 +112,10 @@ jobs:
     needs: determine_frontend_hostname
     with:
       frontendHostname: ${{ needs.determine_frontend_hostname.outputs.fe_host }}
-      namespace_to_use: ${{ needs.determine_frontend_hostname.outputs.namespace_to_use }}
       tag: dev
       browser: chromium
       playwright_branch: ${{ needs.determine_frontend_hostname.outputs.pr_branch }}
     secrets:
-      SPSH_DEV_USER_SSHKEY: ${{ secrets.SPSH_DEV_USER_SSHKEY }}
-      SPSH_DEV_KUBECONFIG: ${{ secrets.SPSH_DEV_KUBECONFIG }}
-      SPSH_DEV_TUNNEL_USERNAME: ${{ secrets.SPSH_DEV_TUNNEL_USERNAME }}
-      SPSH_DEV_TUNNEL_HOST: ${{ secrets.SPSH_DEV_TUNNEL_HOST }}
-      SPSH_DEV_TUNNEL_PORT: ${{ secrets.SPSH_DEV_TUNNEL_PORT }}
       USER: ${{ secrets.USER }}
       PW: ${{ secrets.PW }}
       OTP_SEED_B32: ${{ secrets.OTP_SEED_B32 }}

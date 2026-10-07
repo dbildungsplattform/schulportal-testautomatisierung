@@ -29,10 +29,9 @@ Evaluate in this order. Report the highest-priority finding first.
 
 | Check | What to look for |
 |---|---|
-| Sensitive data exposure | No credentials, seeds, tokens, or PII in source, logs, traces, screenshots, or report artifacts (`USER`, `PW`, `OTP_SEED_B32`, `LDAP_ADMIN_PASSWORD`). |
+| Sensitive data exposure | No credentials, seeds, tokens, or PII in source, logs, traces, screenshots, or report artifacts (`USER`, `PW`, `OTP_SEED_B32`). |
 | Hardcoded environment targets | No hardcoded environment URLs, users, or secrets in tests/pages/helpers. Target configuration MUST come from environment variables. |
 | Unsafe logging | No `console.*` output that can expose user data, credentials, or internal identifiers in committed test code. |
-| LDAP safety (conditional) | If a change touches LDAP-related flows/files, ensure untrusted input is not interpolated unsafely into LDAP query/filter strings. |
 | Generated API client integrity | Any direct edit under `base/api/generated/` is forbidden. Instruct to regenerate via `npm run generate-api`. |
 
 ### 2. Correctness
@@ -70,7 +69,7 @@ Only flag deviations that will cause bugs, flaky tests, or maintainability break
 | Flakiness risk | Flag non-deterministic patterns (implicit timing assumptions, random data without sufficient uniqueness guarantees, cross-test coupling). |
 | Fixture correctness | Custom fixture setup/teardown must be complete and scoped to avoid cross-worker leakage. |
 | Tag usage consistency | Tags used in specs should match project conventions and intended environment execution model. |
-| External dependency assumptions | If tests depend on external systems (for example LDAP), assertions and setup must make that dependency explicit and robust. |
+| External dependency assumptions | If tests depend on external systems, assertions and setup must make that dependency explicit and robust. |
 
 ### 5. Docs & Workflow Changes
 
@@ -103,7 +102,7 @@ Every comment **MUST** use this structure:
 
 Before approving, verify:
 
-- [ ] No hardcoded credentials, OTP seeds, or LDAP secrets in changed files
+- [ ] No hardcoded credentials or OTP seeds in changed files
 - [ ] No unsafe `console.*` usage exposing sensitive data
 - [ ] No direct edits under `base/api/generated/`
 - [ ] Changed Playwright interactions use proper async/await and stable waits
@@ -111,4 +110,4 @@ Before approving, verify:
 - [ ] Changed logic has spec coverage, including relevant error paths
 - [ ] Fixture/setup/teardown behavior prevents cross-test data leakage
 - [ ] Docs/workflow updates reference only valid repository commands and realistic runtime assumptions
-- [ ] LDAP/2FA review checks were applied when those areas were part of the change
+- [ ] 2FA review checks were applied when those areas were part of the change
