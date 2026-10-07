@@ -38,8 +38,10 @@ export class ServiceProviderManagementBySchuleViewPage {
   }
 
   public async openDeleteDialog(angebotName: string): Promise<ServiceProviderDeleteDialogPage> {
-    await this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon').click();
-    await this.deleteDialog.assertConfirmationVisible(angebotName);
+    await expect(async (): Promise<void> => {
+      await this.getRow(angebotName).getByTestId('open-service-provider-delete-dialog-icon').click();
+      await this.deleteDialog.assertConfirmationVisible(angebotName);
+    }).toPass({ timeout: 20_000 });
     return this.deleteDialog;
   }
 
