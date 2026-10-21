@@ -113,11 +113,18 @@ export async function createOrganisation(
   params: OrganisationControllerCreateOrganisationRequest['createOrganisationBodyParams'],
 ): Promise<OrganisationResponse> {
   try {
+    const typ: OrganisationsTyp = params.typ;
+    let kennung: string | undefined = params.kennung;
+
+    if (kennung === undefined && typ === OrganisationsTyp.Schule) {
+      kennung = generateDienststellenNr();
+    }
+
     const createOrganisationBodyParams: CreateOrganisationBodyParams = {
       ...params,
       name: params.name ?? generateSchulname(),
-      kennung: params.kennung ?? generateDienststellenNr(),
-      typ: params.typ ?? OrganisationsTyp.Schule,
+      kennung,
+      typ,
     };
 
     const requestParameters: OrganisationControllerCreateOrganisationRequest = {
