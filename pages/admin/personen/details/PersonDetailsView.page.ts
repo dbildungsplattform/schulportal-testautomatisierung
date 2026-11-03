@@ -343,6 +343,15 @@ export class PersonDetailsViewPage {
     await this.page.getByTestId('lock-user-button').click();
   }
 
+  public async unlockPerson(): Promise<void> {
+    await this.page.getByTestId('open-lock-dialog-button').click();
+    await expect(this.page.getByTestId('lock-user-info-text')).toHaveText(
+      'Ich bestätige, dass ich mit der sperrenden Stelle geklärt habe, dass die Sperre bearbeitet oder aufgehoben werden darf.',
+    );
+    await this.page.getByTestId('lock-user-button').click();
+    await this.checkPersonLock({ locked: false });
+  }
+
   public async deletePerson(options?: { clearFilter?: boolean }): Promise<PersonManagementViewPage> {
     await this.page.getByTestId('open-person-delete-dialog-button').click();
     await this.page.getByTestId('person-delete-button').click();
