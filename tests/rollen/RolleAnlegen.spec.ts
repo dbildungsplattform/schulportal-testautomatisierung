@@ -8,6 +8,7 @@ import { testschuleName } from '../../base/organisation';
 import { createKlasse } from '../../base/api/organisationApi';
 import { generateKlassenname } from '../../base/utils/generateTestdata';
 import { rollenArtLabel } from '../../base/rollentypen';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateRolleName } from '../../base/utils/generateTestdata';
 import { Alert } from '../../pages/components/Alert';
@@ -46,7 +47,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
       });
 
       // SPSH-2947
-      test('Rolle anlegen und Zusammenfassung prüfen', async () => {
+      test('Rolle anlegen und Zusammenfassung prüfen', { tag: [DEV, STAGE] }, async () => {
         const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
         const rolleCreationSuccessPage: RolleCreationSuccessPage = await createRolleStep(rolleCreationPage, params);
         await test.step('Erfolgsseite prüfen', async () => {
@@ -54,7 +55,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
         });
       });
 
-      test('Rolle anlegen und Gesamtübersicht prüfen', async () => {
+      test('Rolle anlegen und Gesamtübersicht prüfen', { tag: [DEV, STAGE] }, async () => {
         const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
         const rolleCreationSuccessPage: RolleCreationSuccessPage = await createRolleStep(rolleCreationPage, params);
         const rolleDetailsView: RolleDetailsViewPage = await test.step('Zur Gesamtübersicht navigieren', async () => {
@@ -70,7 +71,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
       });
 
       // SPSH-2950
-      test('Rolle anlegen und Ergebnisliste prüfen', async () => {
+      test('Rolle anlegen und Ergebnisliste prüfen', { tag: [DEV, STAGE] }, async () => {
         const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
         const rolleCreationSuccessPage: RolleCreationSuccessPage = await createRolleStep(rolleCreationPage, params);
         await rolleCreationSuccessPage.waitForPageLoad();
@@ -81,7 +82,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
         await rolleManagementViewPage.checkIfRolleHasServiceProviders(params.name, params.serviceProviders);
       });
 
-      test(`Als Nutzer mit neu angelegter ${baseRolleParams.rollenart}-Rolle anmelden`, async ({
+      test(`Als Nutzer mit neu angelegter ${baseRolleParams.rollenart}-Rolle anmelden`, { tag: [DEV, STAGE] }, async ({
         page,
       }: PlaywrightTestArgs) => {
         const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
@@ -115,7 +116,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
   }
 
   // SPSH-2946
-  test('Mehrere Rollen nacheinander anlegen', async ({ page }: PlaywrightTestArgs) => {
+  test('Mehrere Rollen nacheinander anlegen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     let rolleCreationPage: RolleCreationViewPage = await setupAndGoToRolleCreationPage(page);
     const [rolle1, rolle2]: RolleCreationParams[] = rolleCreationParams
       .slice(0, 2)
@@ -155,7 +156,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
       rolleCreationPage = await setupAndGoToRolleCreationPage(page);
     });
 
-    test('Rolle doppelt anlegen', async () => {
+    test('Rolle doppelt anlegen', { tag: [DEV, STAGE] }, async () => {
       const rolleCreationSuccessPage: RolleCreationSuccessPage = await test.step('Rolle anlegen', async () => {
         const rolleCreationSuccessPage: RolleCreationSuccessPage = await rolleCreationPage.createRolle(
           rolleCreationParams[0],
@@ -177,7 +178,7 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
     });
 
     // SPSH-2951
-    test('Ungültige Eingaben', async () => {
+    test('Ungültige Eingaben', { tag: [DEV, STAGE] }, async () => {
       const rolleCreationWorkflow: RolleCreationWorkflow = rolleCreationPage.startRolleCreationWorkflow();
 
       await rolleCreationWorkflow.selectAdministrationsebene(testschuleName);

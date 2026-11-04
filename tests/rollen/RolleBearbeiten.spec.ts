@@ -2,6 +2,7 @@ import { PlaywrightTestArgs, test } from '@playwright/test';
 import { getOrganisationId } from '../../base/api/organisationApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
 import { testschuleName } from '../../base/organisation';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateRolleName } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
@@ -25,7 +26,7 @@ test.describe(`Testfälle für die Rollenbearbeitung: Umgebung: ${process.env.EN
   });
 
   // SPSH-2948
-  test('Rollennamen ändern', async () => {
+  test('Rollennamen ändern', { tag: [DEV, STAGE] }, async () => {
     const newRolleName: string = generateRolleName();
     await rolleDetailsView.editRolle(newRolleName);
     await rolleDetailsView.rolleSuccessfullyEdited(newRolleName);

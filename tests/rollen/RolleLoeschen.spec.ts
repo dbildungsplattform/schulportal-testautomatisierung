@@ -4,6 +4,7 @@ import { getOrganisationId } from '../../base/api/organisationApi';
 import { createPersonWithPersonenkontext } from '../../base/api/personApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
 import { testschuleName } from '../../base/organisation';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateRolleName } from '../../base/utils/generateTestdata';
 import { Alert } from '../../pages/components/Alert';
@@ -34,14 +35,14 @@ test.describe(`Testfälle für die Rollenlöschung: Umgebung: ${process.env.ENV}
     await header.logout();
   });
 
-  test('Erfolgreich löschen', async () => {
+  test('Erfolgreich löschen', { tag: [DEV, STAGE] }, async () => {
     rolleManagementViewPage = await rolleDetailsView.deleteRolle();
     await rolleManagementViewPage.setPageSize(300);
     await rolleManagementViewPage.checkIfRolleDoesNotExist(rolleName);
   });
 
   // SPSH-2949
-  test('Vergebene Rolle löschen und Fehlermeldung prüfen', async ({ page }: PlaywrightTestArgs) => {
+  test('Vergebene Rolle löschen und Fehlermeldung prüfen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     await test.step('Rolle einer Person zuordnen', async () => {
       await createPersonWithPersonenkontext(page, testschuleName, rolleName);
     });

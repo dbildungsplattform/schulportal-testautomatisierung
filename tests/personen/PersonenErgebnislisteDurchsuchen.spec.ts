@@ -289,7 +289,7 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     schulId = await createSchule(page, schulName, schulNr);
   });
 
-  test('Schulfilter löst Selektion auf', async ({ page }: PlaywrightTestArgs) => {
+  test('Schulfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
@@ -312,7 +312,7 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Rollenfilter löst Selektion auf', async ({ page }: PlaywrightTestArgs) => {
+  test('Rollenfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
@@ -336,7 +336,7 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Klassenfilter löst Selektion auf', async ({ page }: PlaywrightTestArgs) => {
+  test('Klassenfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     const klassenUndSchueler: KlassenAndSchuelerData[] = await test.step(`Klassen und SuS anlegen`, async () => {
       return await createKlassenAndSchuelerForSchulen(page, [
         {
@@ -371,7 +371,7 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Textsuche löst Selektion auf', async ({ page }: PlaywrightTestArgs) => {
+  test('Textsuche löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     const nachname: string = generateNachname();
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle, generateVorname(), nachname);

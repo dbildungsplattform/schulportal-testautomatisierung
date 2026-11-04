@@ -3,6 +3,7 @@ import { PlaywrightTestArgs, test } from '@playwright/test';
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { testschuleName } from '../../base/organisation';
 import { lehrkraftOeffentlichRolle } from '../../base/rollen';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
@@ -26,7 +27,7 @@ test.describe(`Testfälle für das Personen löschen: Umgebung: ${process.env.EN
     await header.logout();
   });
 
-  test('Person via Gesamtübersicht löschen', async ({ page }: PlaywrightTestArgs) => {
+  test('Person via Gesamtübersicht löschen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
     const personDetailsViewPage: PersonDetailsViewPage = await test.step(`Zur Gesamtübersicht navigieren`, async () => {
       const personenManagementViewPage: PersonManagementViewPage = new PersonManagementViewPage(page);
       await personenManagementViewPage.waitForPageLoad();

@@ -3,6 +3,7 @@ import { ServiceProviderKategorie } from '../../base/api/generated';
 import { createSchule } from '../../base/api/organisationApi';
 import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { schuladminOeffentlichRolle } from '../../base/rollen';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { generateAngebotname, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
@@ -114,7 +115,7 @@ const test = base.extend<{
 });
 
 test.describe('Schulisches Angebot erstellen', () => {
-  test('Als Landesadmin ein schulisches Angebot erstellen', async ({ asLandesadmin }) => {
+  test('Als Landesadmin ein schulisches Angebot erstellen', { tag: [DEV, STAGE] }, async ({ asLandesadmin }) => {
     const { serviceProviderCreationPage, schulen, angebot } = asLandesadmin;
 
     await test.step('Schule auswählen', async () => {
@@ -162,7 +163,7 @@ test.describe('Schulisches Angebot erstellen', () => {
     });
   });
 
-  test('Als Schuladmin ein schulisches Angebot erstellen', async ({ asSchuladmin }) => {
+  test('Als Schuladmin ein schulisches Angebot erstellen', { tag: [DEV, STAGE] }, async ({ asSchuladmin }) => {
     const { serviceProviderCreationPage, schulen, angebot } = asSchuladmin;
 
     await test.step('Schule ist ausgewählt', async () => {
@@ -209,7 +210,7 @@ test.describe('Schulisches Angebot erstellen', () => {
     });
   });
 
-  test('Als Schuladmin mit 2 Schulen Organisationsfilter prüfen', async ({ asSchuladminWith2Schulen }) => {
+  test('Als Schuladmin mit 2 Schulen Organisationsfilter prüfen', { tag: [DEV, STAGE] }, async ({ asSchuladminWith2Schulen }) => {
     const { serviceProviderCreationPage, schulen } = asSchuladminWith2Schulen;
 
     await test.step('Schulen sind auswählbar', async () => {

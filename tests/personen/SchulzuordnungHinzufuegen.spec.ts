@@ -6,6 +6,7 @@ import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManag
 import { RollenArt } from '../../base/api/generated';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { email } from '../../base/sp';
+import { DEV, STAGE } from '../../base/tags';
 import { createRolle } from '../../base/api/rolleApi';
 import { getOrganisationId } from '../../base/api/organisationApi';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
@@ -17,7 +18,7 @@ test.describe(`Testfälle für Schulzuordnung hinzufügen: ENV: ${process.env.EN
     personManagementView = await loginAndNavigateToAdministration(page);
   });
 
-  test('Unbefristete Schulzuordnung einem Lehrer durch einen Landesadmin hinzufügen', async ({
+  test('Unbefristete Schulzuordnung einem Lehrer durch einen Landesadmin hinzufügen', { tag: [DEV, STAGE] }, async ({
     page,
   }: PlaywrightTestArgs) => {
     let userInfoLehrer: UserInfo;

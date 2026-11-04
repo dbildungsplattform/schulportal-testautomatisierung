@@ -7,6 +7,7 @@ import {
 } from '../../base/api/personApi';
 import { testschuleDstNr, testschuleName } from '../../base/organisation';
 import { email } from '../../base/sp';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   formatDateDMY,
@@ -24,7 +25,7 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
     personManagementView = await loginAndNavigateToAdministration(page);
   });
 
-  test('Befristung einer Schulzuordnung von einem Lehrer durch einen Landesadmin bearbeiten', async ({
+  test('Befristung einer Schulzuordnung von einem Lehrer durch einen Landesadmin bearbeiten', { tag: [DEV, STAGE] }, async ({
     page,
   }: PlaywrightTestArgs) => {
     let userInfoLehrer: UserInfo;
@@ -106,7 +107,7 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
     });
   });
 
-  test('Prüfen, dass eine Person mit einer befristeten Rolle wie z.B. LiV, nicht die Option "Unbefristet" bekommen kann wenn man eine Befristung bearbeitet', async ({
+  test('Prüfen, dass eine Person mit einer befristeten Rolle wie z.B. LiV, nicht die Option "Unbefristet" bekommen kann wenn man eine Befristung bearbeitet', { tag: [DEV, STAGE] }, async ({
     page,
   }: PlaywrightTestArgs) => {
     let userInfoLehrer: UserInfo;

@@ -56,7 +56,7 @@ export class RolleZuordnenPage {
     await this.rolleSelect.validateItemNotExists(name, true);
     await this.page.waitForResponse((response: Response): boolean => {
       const url: string = response.url();
-      return url.includes('personenkontext-workflow/step') && url.includes('rolleName=');
+      return url.includes('rolle/for-personenkontext-creation');
     });
     await this.rolleSelect.assertThatNoDataWasFound();
   }

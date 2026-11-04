@@ -20,7 +20,7 @@ import {
 } from '../../base/rollen';
 import { typeSchueler } from '../../base/rollentypen';
 import { itslearning } from '../../base/sp';
-import { DEV } from '../../base/tags';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { createMany } from '../../base/utils/concurrency';
 import {
@@ -459,7 +459,7 @@ for (const { adminType, rollenAssertions } of LEHR_ROLLEN_TEST_SCENARIOS) {
       await startPage.navigateToAdministration();
     });
 
-    test(`Rolle ${rolleToAssign} per Mehrfachbearbeitung zuweisen`, async ({ page }: PlaywrightTestArgs) => {
+    test(`Rolle ${rolleToAssign} per Mehrfachbearbeitung zuweisen`, { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
       if (!rolleToAssign) {
         throw new Error('Rolle zum Zuweisen ist nicht definiert');
       }
