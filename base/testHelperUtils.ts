@@ -39,7 +39,7 @@ export async function logout(page: Page): Promise<LandingViewPage> {
   return header.logout();
 }
 
-export async function loginNewUserAndNavigateToAdministration(
+export async function switchToNewUserAndNavigateToAdministration(
   page: Page,
   userinfo: UserInfo,
 ): Promise<PersonManagementViewPage> {

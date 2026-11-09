@@ -1,10 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { ServiceProviderKategorie } from '../../base/api/generated';
-import { createSchule } from '../../base/api/organisationApi';
-import { addOrganisationenToPerson, UserInfo } from '../../base/api/personApi';
-import { test as base } from '../../base/fixtures';
-import { loginNewUserAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateAngebotname, generateSchulname } from '../../base/utils/generateTestdata';
+import { test as base, TestSchule } from '../../base/fixtures';
+import { generateAngebotname } from '../../base/utils/generateTestdata';
 import { ServiceProviderCreationSuccessPage } from '../../pages/admin/service-provider/ServiceProviderCreationSuccessPage.page';
 import {
   ServiceProviderCreateParams,
@@ -21,10 +18,9 @@ const test = base.extend<{
     serviceProviderCreationPage: ServiceProviderCreationViewPage;
     angebot: ServiceProviderCreateParams;
   };
-  asSchuladminWith2Schulen: {
-    userinfo: UserInfo;
-    schulen: { id: string; name: string }[];
+  angebotCreationSchuladminWith2Schulen: {
     serviceProviderCreationPage: ServiceProviderCreationViewPage;
+    schulen: TestSchule[];
   };
 }>({
   angebotCreation: async ({ page, asLandesadmin, testSchule }, use) => {
@@ -63,24 +59,10 @@ const test = base.extend<{
       },
     });
   },
-  asSchuladminWith2Schulen: async ({ page, schuladminAccount }, use) => {
-    const zweiteSchuleName: string = generateSchulname();
-    const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName);
-    await addOrganisationenToPerson(
-      page,
-      schuladminAccount.userinfo.personId,
-      [schuladminAccount.schule.id, zweiteSchuleId],
-      schuladminAccount.userinfo.rolleId,
-    );
-    const personManagementPage = await loginNewUserAndNavigateToAdministration(page, schuladminAccount.userinfo);
-    const serviceProviderCreationPage: ServiceProviderCreationViewPage = await personManagementPage
-      .getMenu()
-      .navigateToAngebotCreation();
-    await use({
-      userinfo: schuladminAccount.userinfo,
-      schulen: [schuladminAccount.schule, { id: zweiteSchuleId, name: zweiteSchuleName }],
-      serviceProviderCreationPage,
-    });
+  angebotCreationSchuladminWith2Schulen: async ({ asSchuladminWith2Schulen }, use) => {
+    const serviceProviderCreationPage: ServiceProviderCreationViewPage =
+      await asSchuladminWith2Schulen.personManagementViewPage.getMenu().navigateToAngebotCreation();
+    await use({ serviceProviderCreationPage, schulen: asSchuladminWith2Schulen.schulen });
   },
 });
 
@@ -178,8 +160,8 @@ test.describe('Schulisches Angebot erstellen', () => {
     });
   });
 
-  test('Als Schuladmin mit 2 Schulen Organisationsfilter prüfen', async ({ asSchuladminWith2Schulen }) => {
-    const { serviceProviderCreationPage, schulen } = asSchuladminWith2Schulen;
+  test('Als Schuladmin mit 2 Schulen Organisationsfilter prüfen', async ({ angebotCreationSchuladminWith2Schulen }) => {
+    const { serviceProviderCreationPage, schulen } = angebotCreationSchuladminWith2Schulen;
 
     await test.step('Schulen sind auswählbar', async () => {
       await serviceProviderCreationPage.assertSelectableSchulen(schulen.map((schule) => schule.name));

@@ -2,7 +2,7 @@ import { PlaywrightTestArgs } from '@playwright/test';
 import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
-import { test } from '../../base/fixtures';
+import { test as baseTest } from '../../base/fixtures';
 import { landSH } from '../../base/organisation';
 import {
   landesadminRolle,
@@ -37,6 +37,15 @@ import {
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { ZuordnungenPage } from '../../pages/admin/personen/details/Zuordnungen.page';
 
+const test = baseTest.extend<{ personCreationPageAsLandesadmin: PersonCreationViewPage }>({
+  personCreationPageAsLandesadmin: async ({ asLandesadmin }, use) => {
+    const personCreationViewPage: PersonCreationViewPage = await asLandesadmin.personManagementViewPage
+      .getMenu()
+      .navigateToPersonCreation();
+    await use(personCreationViewPage);
+  },
+});
+
 function calculateBefristung(): string {
   const currentYear: number = new Date().getFullYear();
   let yearForBefristung: number = currentYear;
@@ -57,7 +66,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
           test(
             `${userRolle} anlegen`,
             { tag: [DEV, STAGE] },
-            async ({ page, testSchuleMitDstNr, personCreationPage }) => {
+            async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
               const isSchueler: boolean = userRolle === schuelerRolle;
               const isLehrer: boolean =
                 userRolle === lehrerImVorbereitungsdienstRolle || userRolle === lehrkraftOeffentlichRolle;
@@ -89,11 +98,11 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
               const creationParameters: PersonCreationParams = { ...validationParameters };
 
               await test.step('Formular ausfüllen', async () => {
-                await personCreationPage.fillForm(creationParameters);
+                await personCreationPageAsLandesadmin.fillForm(creationParameters);
               });
 
               const successPage: PersonCreationSuccessPage = await test.step('Abschicken', async () =>
-                personCreationPage.submit());
+                personCreationPageAsLandesadmin.submit());
 
               const { benutzername, startpasswort }: { benutzername: string; startpasswort: string } =
                 await test.step('Erfolgsmeldung prüfen', async () => {
@@ -133,7 +142,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
       test(
         'Mehrere Benutzer hintereinander anlegen',
         { tag: [DEV, STAGE] },
-        async ({ page, testSchuleMitDstNr, personCreationPage }) => {
+        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
           const personenParameters: PersonCreationSuccessValidationParams[] = [
             {
               nachname: generateNachname(),
@@ -170,7 +179,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
             );
           });
 
-          let currentCreationPage: PersonCreationViewPage = personCreationPage;
+          let currentCreationPage: PersonCreationViewPage = personCreationPageAsLandesadmin;
           for (const [index, params] of personenParameters.entries()) {
             await test.step(`Nutzer ${index + 1} anlegen und prüfen`, async () => {
               await currentCreationPage.fillForm(params);
@@ -185,7 +194,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
       test(
         'Benutzer mit mehreren Rollen anlegen',
         { tag: [DEV, STAGE] },
-        async ({ page, testSchuleMitDstNr, personCreationPage }) => {
+        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
           const params: PersonCreationSuccessValidationParams = {
             nachname: generateNachname(),
             vorname: generateVorname(),
@@ -201,8 +210,8 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
 
           const personManagementViewPage: PersonManagementViewPage =
             await test.step(`Nutzer anlegen und prüfen`, async () => {
-              await personCreationPage.fillForm(params);
-              const successPage: PersonCreationSuccessPage = await personCreationPage.submit();
+              await personCreationPageAsLandesadmin.fillForm(params);
+              const successPage: PersonCreationSuccessPage = await personCreationPageAsLandesadmin.submit();
               await successPage.assertSuccessfulCreation(params);
               return successPage.backToList();
             });
@@ -218,7 +227,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
         test(
           'Lehrer anlegen, Kontext entfernen und wiederherstellen',
           { tag: [DEV] },
-          async ({ page, testSchuleMitDstNr, personCreationPage }) => {
+          async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
             const params: PersonCreationSuccessValidationParams = {
               nachname: generateNachname(),
               vorname: generateVorname(),
@@ -230,8 +239,8 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
 
             const [createdBenutzername, initialPersonManagementView]: [string, PersonManagementViewPage] =
               await test.step('Nutzer anlegen', async () => {
-                await personCreationPage.fillForm(params);
-                const successPage: PersonCreationSuccessPage = await personCreationPage.submit();
+                await personCreationPageAsLandesadmin.fillForm(params);
+                const successPage: PersonCreationSuccessPage = await personCreationPageAsLandesadmin.submit();
                 await successPage.assertSuccessfulCreation(params);
 
                 return [await successPage.getBenutzername(), await successPage.backToList()];
@@ -285,7 +294,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
     });
 
     test.describe(`Nutzer mit landesspezifischen Rollen anlegen`, () => {
-      test(`${landesadminRolle} anlegen`, { tag: [DEV, STAGE] }, async ({ personCreationPage }) => {
+      test(`${landesadminRolle} anlegen`, { tag: [DEV, STAGE] }, async ({ personCreationPageAsLandesadmin }) => {
         const validationParameters: PersonCreationSuccessValidationParams = {
           nachname: generateNachname(),
           vorname: generateVorname(),
@@ -296,11 +305,11 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
         const creationParameters: PersonCreationParams = { ...validationParameters };
 
         await test.step('Formular ausfüllen', async () => {
-          await personCreationPage.fillForm(creationParameters);
+          await personCreationPageAsLandesadmin.fillForm(creationParameters);
         });
 
         const successPage: PersonCreationSuccessPage = await test.step('Abschicken', async () =>
-          personCreationPage.submit());
+          personCreationPageAsLandesadmin.submit());
 
         const benutzername: string = await test.step('Erfolgsmeldung prüfen', async () => {
           await successPage.assertSuccessfulCreation(validationParameters);

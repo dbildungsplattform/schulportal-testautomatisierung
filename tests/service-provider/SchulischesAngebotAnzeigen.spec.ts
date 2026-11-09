@@ -8,7 +8,7 @@ import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../bas
 import { createServiceProvider } from '../../base/api/serviceProviderApi';
 import { SchuladminAccount, test as base, TestSchule } from '../../base/fixtures';
 import { DEV, STAGE } from '../../base/tags';
-import { loginNewUserAndNavigateToAdministration } from '../../base/testHelperUtils';
+import { switchToNewUserAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateAngebotname, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
 import { ServiceProviderDetailsBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsBySchuleView.page';
 import { ServiceProviderManagementBySchuleViewPage } from '../../pages/admin/service-provider/ServiceProviderManagementBySchuleView.page';
@@ -70,7 +70,7 @@ const test = base.extend<{ angebot: AngebotFixture; angebotMitCloudLogo: Angebot
 test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
   test('Gesamtübersicht eines Angebots öffnen und schließen', { tag: [DEV, STAGE] }, async ({ angebot, page }) => {
     const { schuladmin, angebotName, schule } = angebot;
-    const personManagementPage = await loginNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
+    const personManagementPage = await switchToNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
     const managementPage: ServiceProviderManagementBySchuleViewPage = await personManagementPage
       .getMenu()
       .navigateToAngebotManagementSchulspezifisch();
@@ -97,7 +97,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
     { tag: [DEV, STAGE] },
     async ({ angebotMitCloudLogo, page }) => {
       const { schuladmin, angebotLink, angebotName, schule } = angebotMitCloudLogo;
-      const personManagementPage = await loginNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
+      const personManagementPage = await switchToNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
       const managementPage: ServiceProviderManagementBySchuleViewPage = await personManagementPage
         .getMenu()
         .navigateToAngebotManagementSchulspezifisch();
@@ -135,7 +135,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
       await applyRollenerweiterungChanges(page, angebotId, fremdeSchuleId, [studentRolle.id]);
     });
 
-    const personManagementPage = await loginNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
+    const personManagementPage = await switchToNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
     const managementPage: ServiceProviderManagementBySchuleViewPage = await personManagementPage
       .getMenu()
       .navigateToAngebotManagementSchulspezifisch();
@@ -165,7 +165,7 @@ test.describe('SPSH-3893: Schulisches Angebot anzeigen', () => {
       );
     });
 
-    const personManagementPage = await loginNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
+    const personManagementPage = await switchToNewUserAndNavigateToAdministration(page, schuladmin.userinfo);
     const managementPage: ServiceProviderManagementBySchuleViewPage = await personManagementPage
       .getMenu()
       .navigateToAngebotManagementSchulspezifisch();
