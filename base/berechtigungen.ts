@@ -13,6 +13,7 @@ export const systemrechtLabel: Record<RollenSystemRechtEnum, string> = {
   PERSONEN_VERWALTEN: 'Darf Benutzer verwalten',
   SCHULEN_VERWALTEN: 'Darf Schulen verwalten',
   KLASSEN_VERWALTEN: 'Darf Klassen verwalten',
+  BEHOERDEN_VERWALTEN: 'Darf Behörden verwalten',
   SCHULTRAEGER_VERWALTEN: 'Darf Schulträger verwalten',
   PERSON_SYNCHRONISIEREN: 'Darf Benutzer synchronisieren',
   PERSONEN_ANLEGEN: 'Darf Benutzer anlegen',

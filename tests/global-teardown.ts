@@ -6,10 +6,9 @@ import {
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
+  PersonControllerFindPersons200Response,
   PersonenApi,
   PersonendatensatzResponse,
-  PersonenFrontendApi,
-  PersonFrontendControllerFindPersons200Response,
   ProviderApi,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
   ProviderControllerGetManageableServiceProviders200Response,
@@ -19,7 +18,7 @@ import {
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
-import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
+import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
@@ -98,7 +97,6 @@ export default async function globalTeardown(): Promise<void> {
 async function runCleanup(page: Page): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
-    const personFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
     const providerApi: ProviderApi = constructProviderApi(page);
@@ -113,11 +111,10 @@ async function runCleanup(page: Page): Promise<void> {
 
     await cleanup(
       async () => {
-        const resp: PersonFrontendControllerFindPersons200Response =
-          await personFrontendApi.personFrontendControllerFindPersons({
-            suchFilter: personDataPrefix,
-            limit,
-          });
+        const resp: PersonControllerFindPersons200Response = await personApi.personControllerFindPersons({
+          suchFilter: personDataPrefix,
+          limit,
+        });
         console.log(`${resp.total} personen to delete`);
         return resp.items;
       },
