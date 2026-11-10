@@ -45,7 +45,7 @@ export interface UpdateOrganisationBodyParams {
      */
     zugehoerigZu: string;
     /**
-     * Required, if `typ` is equal to `SCHULE`
+     * Only allowed for SCHULE. Required when creating a SCHULE.
      * @type {string}
      * @memberof UpdateOrganisationBodyParams
      */

@@ -18,12 +18,16 @@ import type {
   DbiamPersonError,
   LockUserBodyParams,
   PersonControllerFindPersonenkontexte200Response,
+  PersonControllerFindPersons200Response,
   PersonLandesbediensteterSearchResponse,
+  PersonLockOccasion,
   PersonLockResponse,
   PersonMetadataBodyParams,
   PersonendatensatzResponse,
   Personenstatus,
+  ScopeOrder,
   Sichtfreigabe,
+  SortFieldPerson,
   UpdatePersonBodyParams,
 } from '../models';
 import {
@@ -33,8 +37,12 @@ import {
     LockUserBodyParamsToJSON,
     PersonControllerFindPersonenkontexte200ResponseFromJSON,
     PersonControllerFindPersonenkontexte200ResponseToJSON,
+    PersonControllerFindPersons200ResponseFromJSON,
+    PersonControllerFindPersons200ResponseToJSON,
     PersonLandesbediensteterSearchResponseFromJSON,
     PersonLandesbediensteterSearchResponseToJSON,
+    PersonLockOccasionFromJSON,
+    PersonLockOccasionToJSON,
     PersonLockResponseFromJSON,
     PersonLockResponseToJSON,
     PersonMetadataBodyParamsFromJSON,
@@ -43,8 +51,12 @@ import {
     PersonendatensatzResponseToJSON,
     PersonenstatusFromJSON,
     PersonenstatusToJSON,
+    ScopeOrderFromJSON,
+    ScopeOrderToJSON,
     SichtfreigabeFromJSON,
     SichtfreigabeToJSON,
+    SortFieldPersonFromJSON,
+    SortFieldPersonToJSON,
     UpdatePersonBodyParamsFromJSON,
     UpdatePersonBodyParamsToJSON,
 } from '../models';
@@ -77,6 +89,21 @@ export interface PersonControllerFindPersonenkontexteRequest {
     username?: string | null;
     personenstatus?: Personenstatus;
     sichtfreigabe?: Sichtfreigabe;
+}
+
+export interface PersonControllerFindPersonsRequest {
+    offset?: number;
+    limit?: number;
+    username?: string | null;
+    familienname?: string | null;
+    vorname?: string | null;
+    sichtfreigabe?: PersonControllerFindPersonsSichtfreigabeEnum;
+    organisationIDs?: Array<string>;
+    rolleIDs?: Array<string>;
+    sperrgruende?: Array<PersonLockOccasion>;
+    suchFilter?: string | null;
+    sortOrder?: ScopeOrder;
+    sortField?: SortFieldPerson;
 }
 
 export interface PersonControllerLockPersonRequest {
@@ -190,6 +217,30 @@ export interface PersonenApiInterface {
     /**
      */
     personControllerFindPersonenkontexte(requestParameters: PersonControllerFindPersonenkontexteRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonControllerFindPersonenkontexte200Response>;
+
+    /**
+     * 
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {string} [username] 
+     * @param {string} [familienname] 
+     * @param {string} [vorname] 
+     * @param {'ja' | 'nein'} [sichtfreigabe] 
+     * @param {Array<string>} [organisationIDs] List of Organisation ID used to filter for Persons.
+     * @param {Array<string>} [rolleIDs] List of Role ID used to filter for Persons.
+     * @param {Array<PersonLockOccasion>} [sperrgruende] Filter persons with at least one of these lock reasons. Omit or pass an empty array to include all persons. Combined with other filters using AND.
+     * @param {string} [suchFilter] Search filter used to filter for Persons. It could be the vorname, familienname, username or the personalnummer.
+     * @param {ScopeOrder} [sortOrder] Order to sort by.
+     * @param {SortFieldPerson} [sortField] Field to sort by.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonenApiInterface
+     */
+    personControllerFindPersonsRaw(requestParameters: PersonControllerFindPersonsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonControllerFindPersons200Response>>;
+
+    /**
+     */
+    personControllerFindPersons(requestParameters: PersonControllerFindPersonsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonControllerFindPersons200Response>;
 
     /**
      * 
@@ -538,6 +589,91 @@ export class PersonenApi extends runtime.BaseAPI implements PersonenApiInterface
 
     /**
      */
+    async personControllerFindPersonsRaw(requestParameters: PersonControllerFindPersonsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonControllerFindPersons200Response>> {
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.username !== undefined) {
+            queryParameters['username'] = requestParameters.username;
+        }
+
+        if (requestParameters.familienname !== undefined) {
+            queryParameters['familienname'] = requestParameters.familienname;
+        }
+
+        if (requestParameters.vorname !== undefined) {
+            queryParameters['vorname'] = requestParameters.vorname;
+        }
+
+        if (requestParameters.sichtfreigabe !== undefined) {
+            queryParameters['sichtfreigabe'] = requestParameters.sichtfreigabe;
+        }
+
+        if (requestParameters.organisationIDs) {
+            queryParameters['organisationIDs'] = requestParameters.organisationIDs;
+        }
+
+        if (requestParameters.rolleIDs) {
+            queryParameters['rolleIDs'] = requestParameters.rolleIDs;
+        }
+
+        if (requestParameters.sperrgruende) {
+            queryParameters['sperrgruende'] = requestParameters.sperrgruende;
+        }
+
+        if (requestParameters.suchFilter !== undefined) {
+            queryParameters['suchFilter'] = requestParameters.suchFilter;
+        }
+
+        if (requestParameters.sortOrder !== undefined) {
+            queryParameters['sortOrder'] = requestParameters.sortOrder;
+        }
+
+        if (requestParameters.sortField !== undefined) {
+            queryParameters['sortField'] = requestParameters.sortField;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/personen`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonControllerFindPersons200ResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async personControllerFindPersons(requestParameters: PersonControllerFindPersonsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonControllerFindPersons200Response> {
+        const response = await this.personControllerFindPersonsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async personControllerLockPersonRaw(requestParameters: PersonControllerLockPersonRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonLockResponse>> {
         if (requestParameters.personId === null || requestParameters.personId === undefined) {
             throw new runtime.RequiredError('personId','Required parameter requestParameters.personId was null or undefined when calling personControllerLockPerson.');
@@ -852,3 +988,12 @@ export class PersonenApi extends runtime.BaseAPI implements PersonenApiInterface
     }
 
 }
+
+/**
+ * @export
+ */
+export const PersonControllerFindPersonsSichtfreigabeEnum = {
+    Ja: 'ja',
+    Nein: 'nein'
+} as const;
+export type PersonControllerFindPersonsSichtfreigabeEnum = typeof PersonControllerFindPersonsSichtfreigabeEnum[keyof typeof PersonControllerFindPersonsSichtfreigabeEnum];

@@ -31,6 +31,7 @@ export const RollenSystemRechtEnum = {
     EingeschraenktNeueBenutzerErstellen: 'EINGESCHRAENKT_NEUE_BENUTZER_ERSTELLEN',
     SchulenVerwalten: 'SCHULEN_VERWALTEN',
     KlassenVerwalten: 'KLASSEN_VERWALTEN',
+    BehoerdenVerwalten: 'BEHOERDEN_VERWALTEN',
     SchultraegerVerwalten: 'SCHULTRAEGER_VERWALTEN',
     PersonSynchronisieren: 'PERSON_SYNCHRONISIEREN',
     CronDurchfuehren: 'CRON_DURCHFUEHREN',
