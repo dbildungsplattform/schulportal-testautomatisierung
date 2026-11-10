@@ -82,36 +82,38 @@ test.describe(`Testfälle für die Rollenanlage: Umgebung: ${process.env.ENV}: U
         await rolleManagementViewPage.checkIfRolleHasServiceProviders(params.name, params.serviceProviders);
       });
 
-      test(`Als Nutzer mit neu angelegter ${baseRolleParams.rollenart}-Rolle anmelden`, { tag: [DEV, STAGE] }, async ({
-        page,
-      }: PlaywrightTestArgs) => {
-        const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
-        const rolleCreationSuccessPage: RolleCreationSuccessPage = await createRolleStep(rolleCreationPage, params);
-        await rolleCreationSuccessPage.checkSuccessPage(params);
-        const organisationId: string = await getOrganisationId(page, testschuleName);
-        const rolleId: string = await getRolleId(page, params.name);
-        const klasseId: string | undefined =
-          params.rollenart === rollenArtLabel.LERN
-            ? await createKlasse(page, organisationId, generateKlassenname())
-            : undefined;
-        const merkmalNames: Set<RollenMerkmal> = new Set<RollenMerkmal>(
-          params.merkmale.includes(rollenMerkmalLabel.BEFRISTUNG_PFLICHT) ? [RollenMerkmal.BefristungPflicht] : [],
-        );
+      test(
+        `Als Nutzer mit neu angelegter ${baseRolleParams.rollenart}-Rolle anmelden`,
+        { tag: [DEV, STAGE] },
+        async ({ page }: PlaywrightTestArgs) => {
+          const params: RolleCreationParams = { ...baseRolleParams, name: generateRolleName() };
+          const rolleCreationSuccessPage: RolleCreationSuccessPage = await createRolleStep(rolleCreationPage, params);
+          await rolleCreationSuccessPage.checkSuccessPage(params);
+          const organisationId: string = await getOrganisationId(page, testschuleName);
+          const rolleId: string = await getRolleId(page, params.name);
+          const klasseId: string | undefined =
+            params.rollenart === rollenArtLabel.LERN
+              ? await createKlasse(page, organisationId, generateKlassenname())
+              : undefined;
+          const merkmalNames: Set<RollenMerkmal> = new Set<RollenMerkmal>(
+            params.merkmale.includes(rollenMerkmalLabel.BEFRISTUNG_PFLICHT) ? [RollenMerkmal.BefristungPflicht] : [],
+          );
 
-        const user: UserInfo = await createPerson(page, {
-          organisationId,
-          rolleId,
-          klasseId,
-          merkmalNames,
-        });
-        const header: HeaderPage = new HeaderPage(page);
-        await header.logout();
-        const loginPage: LoginViewPage = await freshLoginPage(page);
-        const startViewPage: StartViewPage = await loginPage.login(user.username, user.password);
-        await loginPage.updatePassword();
-        await startViewPage.waitForPageLoad();
-        await startViewPage.assertServiceProvidersAreVisible(params.serviceProviders);
-      });
+          const user: UserInfo = await createPerson(page, {
+            organisationId,
+            rolleId,
+            klasseId,
+            merkmalNames,
+          });
+          const header: HeaderPage = new HeaderPage(page);
+          await header.logout();
+          const loginPage: LoginViewPage = await freshLoginPage(page);
+          const startViewPage: StartViewPage = await loginPage.login(user.username, user.password);
+          await loginPage.updatePassword();
+          await startViewPage.waitForPageLoad();
+          await startViewPage.assertServiceProvidersAreVisible(params.serviceProviders);
+        },
+      );
     });
   }
 

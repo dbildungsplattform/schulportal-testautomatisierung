@@ -3,7 +3,6 @@ import { applyRollenerweiterungChanges, createRolle, RollenArt } from '../../bas
 import { createServiceProviderForTestschule, deleteServiceProvider } from '../../base/api/serviceProviderApi';
 import { test as base } from '../../base/fixtures';
 import { DEV, STAGE } from '../../base/tags';
-import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateDienststellenNr, generateRolleName, generateSchulname } from '../../base/utils/generateTestdata';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { ServiceProviderDetailsViewPage } from '../../pages/admin/service-provider/ServiceProviderDetailsView.page';
@@ -35,8 +34,8 @@ const test = base.extend<{
   angebotOhneRollenerweiterung: AngebotDetailsFixture;
   angebotNichtVerfuegbar: AngebotDetailsFixture;
 }>({
-  angebotMitRollenerweiterungen: async ({ page }, use) => {
-    const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
+  angebotMitRollenerweiterungen: async ({ page, asLandesadmin }, use) => {
+    const personManagementViewPage: PersonManagementViewPage = asLandesadmin.personManagementViewPage;
     const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, true);
 
     // Create schools in descending Dienststellennummer order so an unsorted list would fail the ascending-sort check.
@@ -62,8 +61,8 @@ const test = base.extend<{
     await deleteServiceProvider(page, angebotId);
   },
 
-  angebotOhneRollenerweiterung: async ({ page }, use) => {
-    const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
+  angebotOhneRollenerweiterung: async ({ page, asLandesadmin }, use) => {
+    const personManagementViewPage: PersonManagementViewPage = asLandesadmin.personManagementViewPage;
     const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, true);
 
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);
@@ -72,8 +71,8 @@ const test = base.extend<{
     await deleteServiceProvider(page, angebotId);
   },
 
-  angebotNichtVerfuegbar: async ({ page }, use) => {
-    const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
+  angebotNichtVerfuegbar: async ({ page, asLandesadmin }, use) => {
+    const personManagementViewPage: PersonManagementViewPage = asLandesadmin.personManagementViewPage;
     const { id: angebotId, name: angebotName } = await createServiceProviderForTestschule(page, false);
 
     const detailsPage: ServiceProviderDetailsViewPage = await openAngebotDetails(personManagementViewPage, angebotId);

@@ -1,7 +1,8 @@
-import test, { PlaywrightTestArgs } from '@playwright/test';
+import { PlaywrightTestArgs } from '@playwright/test';
 import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
+import { test as baseTest } from '../../base/fixtures';
 import { landSH } from '../../base/organisation';
 import {
   landesadminRolle,
@@ -36,6 +37,15 @@ import {
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { ZuordnungenPage } from '../../pages/admin/personen/details/Zuordnungen.page';
 
+const test = baseTest.extend<{ personCreationPageAsLandesadmin: PersonCreationViewPage }>({
+  personCreationPageAsLandesadmin: async ({ asLandesadmin }, use) => {
+    const personCreationViewPage: PersonCreationViewPage = await asLandesadmin.personManagementViewPage
+      .getMenu()
+      .navigateToPersonCreation();
+    await use(personCreationViewPage);
+  },
+});
+
 function calculateBefristung(): string {
   const currentYear: number = new Date().getFullYear();
   let yearForBefristung: number = currentYear;
@@ -50,187 +60,187 @@ function calculateBefristung(): string {
 
 test.describe(`Testfälle für die Anlage von Personen`, () => {
   test.describe(`Als ${landesadminRolle}`, () => {
-    let schuleId: string;
-    let schuleName: string;
-    let schuleDstNr: string;
-    let personCreationViewPage: PersonCreationViewPage;
-
     test.describe(`Nutzer mit schulspezifischen Rollen anlegen`, () => {
-      test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-        const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
-        schuleName = generateSchulname();
-        schuleDstNr = generateDienststellenNr();
-        schuleId = await createSchule(page, schuleName, schuleDstNr);
-        personCreationViewPage = await personManagementViewPage.getMenu().navigateToPersonCreation();
-      });
-
       [schuladminOeffentlichRolle, lehrkraftOeffentlichRolle, lehrerImVorbereitungsdienstRolle, schuelerRolle].forEach(
         (userRolle: string) => {
-          test(`${userRolle} anlegen`, { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-            const isSchueler: boolean = userRolle === schuelerRolle;
-            const isLehrer: boolean =
-              userRolle === lehrerImVorbereitungsdienstRolle || userRolle === lehrkraftOeffentlichRolle;
-            const isBefristet: boolean = userRolle === lehrerImVorbereitungsdienstRolle;
-            const klasseName: string = generateKlassenname();
+          test(
+            `${userRolle} anlegen`,
+            { tag: [DEV, STAGE] },
+            async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+              const isSchueler: boolean = userRolle === schuelerRolle;
+              const isLehrer: boolean =
+                userRolle === lehrerImVorbereitungsdienstRolle || userRolle === lehrkraftOeffentlichRolle;
+              const isBefristet: boolean = userRolle === lehrerImVorbereitungsdienstRolle;
+              const klasseName: string = generateKlassenname();
 
-            const validationParameters: PersonCreationSuccessValidationParams = {
-              nachname: generateNachname(),
-              vorname: generateVorname(),
-              rollen: [userRolle],
-              organisation: schuleName,
-              dstNr: schuleDstNr,
-            };
+              const validationParameters: PersonCreationSuccessValidationParams = {
+                nachname: generateNachname(),
+                vorname: generateVorname(),
+                rollen: [userRolle],
+                organisation: testSchuleMitDstNr.name,
+                dstNr: testSchuleMitDstNr.dstNr,
+              };
 
-            if (isSchueler) {
-              await test.step('Klasse anlegen', async () => {
-                await createKlasse(page, schuleId, klasseName);
-                validationParameters.klasse = klasseName;
-              });
-            }
-
-            if (isLehrer) {
-              validationParameters.kopersnr = generateKopersNr();
-              if (isBefristet) {
-                validationParameters.befristung = calculateBefristung();
+              if (isSchueler) {
+                await test.step('Klasse anlegen', async () => {
+                  await createKlasse(page, testSchuleMitDstNr.id, klasseName);
+                  validationParameters.klasse = klasseName;
+                });
               }
-            }
 
-            const creationParameters: PersonCreationParams = { ...validationParameters };
+              if (isLehrer) {
+                validationParameters.kopersnr = generateKopersNr();
+                if (isBefristet) {
+                  validationParameters.befristung = calculateBefristung();
+                }
+              }
 
-            await test.step('Formular ausfüllen', async () => {
-              await personCreationViewPage.fillForm(creationParameters);
-            });
+              const creationParameters: PersonCreationParams = { ...validationParameters };
 
-            const successPage: PersonCreationSuccessPage = await test.step('Abschicken', async () =>
-              personCreationViewPage.submit());
-
-            const { benutzername, startpasswort }: { benutzername: string; startpasswort: string } =
-              await test.step('Erfolgsmeldung prüfen', async () => {
-                await successPage.assertSuccessfulCreation(validationParameters);
-                return {
-                  benutzername: await successPage.getBenutzername(),
-                  startpasswort: await successPage.getPassword(),
-                };
+              await test.step('Formular ausfüllen', async () => {
+                await personCreationPageAsLandesadmin.fillForm(creationParameters);
               });
 
-            const personManagementViewPage: PersonManagementViewPage =
-              await test.step('Zurück zur Personenübersicht', async () =>
-                successPage.getMenu().navigateToPersonManagement());
+              const successPage: PersonCreationSuccessPage = await test.step('Abschicken', async () =>
+                personCreationPageAsLandesadmin.submit());
 
-            await test.step('Neuen Benutzer in Übersicht prüfen', async () => {
-              await personManagementViewPage.searchByText(benutzername);
-              await personManagementViewPage.assertThatPersonExists(benutzername);
-            });
+              const { benutzername, startpasswort }: { benutzername: string; startpasswort: string } =
+                await test.step('Erfolgsmeldung prüfen', async () => {
+                  await successPage.assertSuccessfulCreation(validationParameters);
+                  return {
+                    benutzername: await successPage.getBenutzername(),
+                    startpasswort: await successPage.getPassword(),
+                  };
+                });
 
-            const landingPage: LandingViewPage = await test.step('Abmelden', async () => {
-              return personManagementViewPage.getHeader().logout();
-            });
+              const personManagementViewPage: PersonManagementViewPage =
+                await test.step('Zurück zur Personenübersicht', async () =>
+                  successPage.getMenu().navigateToPersonManagement());
 
-            await test.step('Einloggen mit neu angelegtem Benutzer', async () => {
-              const loginPage: LoginViewPage = await landingPage.navigateToLogin();
-              const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(
-                benutzername,
-                startpasswort,
-              );
-              await startPage.assertServiceProvidersAreLoaded();
-            });
-          });
+              await test.step('Neuen Benutzer in Übersicht prüfen', async () => {
+                await personManagementViewPage.searchByText(benutzername);
+                await personManagementViewPage.assertThatPersonExists(benutzername);
+              });
+
+              const landingPage: LandingViewPage = await test.step('Abmelden', async () => {
+                return personManagementViewPage.getHeader().logout();
+              });
+
+              await test.step('Einloggen mit neu angelegtem Benutzer', async () => {
+                const loginPage: LoginViewPage = await landingPage.navigateToLogin();
+                const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(
+                  benutzername,
+                  startpasswort,
+                );
+                await startPage.assertServiceProvidersAreLoaded();
+              });
+            },
+          );
         },
       );
 
-      test('Mehrere Benutzer hintereinander anlegen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-        const personenParameters: PersonCreationSuccessValidationParams[] = [
-          {
-            nachname: generateNachname(),
-            vorname: generateVorname(),
-            rollen: [schuelerRolle],
-            organisation: schuleName,
-            dstNr: schuleDstNr,
-            klasse: generateKlassenname(),
-          },
-          {
-            nachname: generateNachname(),
-            vorname: generateVorname(),
-            rollen: [lehrkraftOeffentlichRolle],
-            organisation: schuleName,
-            dstNr: schuleDstNr,
-            kopersnr: generateKopersNr(),
-          },
-          {
-            nachname: generateNachname(),
-            vorname: generateVorname(),
-            rollen: [lehrkraftOeffentlichRolle],
-            organisation: schuleName,
-            dstNr: schuleDstNr,
-            kopersnr: generateKopersNr(),
-          },
-        ];
+      test(
+        'Mehrere Benutzer hintereinander anlegen',
+        { tag: [DEV, STAGE] },
+        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+          const personenParameters: PersonCreationSuccessValidationParams[] = [
+            {
+              nachname: generateNachname(),
+              vorname: generateVorname(),
+              rollen: [schuelerRolle],
+              organisation: testSchuleMitDstNr.name,
+              dstNr: testSchuleMitDstNr.dstNr,
+              klasse: generateKlassenname(),
+            },
+            {
+              nachname: generateNachname(),
+              vorname: generateVorname(),
+              rollen: [lehrkraftOeffentlichRolle],
+              organisation: testSchuleMitDstNr.name,
+              dstNr: testSchuleMitDstNr.dstNr,
+              kopersnr: generateKopersNr(),
+            },
+            {
+              nachname: generateNachname(),
+              vorname: generateVorname(),
+              rollen: [lehrkraftOeffentlichRolle],
+              organisation: testSchuleMitDstNr.name,
+              dstNr: testSchuleMitDstNr.dstNr,
+              kopersnr: generateKopersNr(),
+            },
+          ];
 
-        await test.step('Klasse anlegen', async () => {
-          await Promise.all(
-            personenParameters.map(
-              (params: PersonCreationSuccessValidationParams) =>
-                params.klasse && createKlasse(page, schuleId, params.klasse),
-            ),
-          );
-        });
-
-        for (const [index, params] of personenParameters.entries()) {
-          await test.step(`Nutzer ${index + 1} anlegen und prüfen`, async () => {
-            await personCreationViewPage.fillForm(params);
-            const successPage: PersonCreationSuccessPage = await personCreationViewPage.submit();
-            await successPage.assertSuccessfulCreation(params);
-            personCreationViewPage = await successPage.createAnotherPerson();
-          });
-        }
-      });
-
-      test('Benutzer mit mehreren Rollen anlegen', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-        const params: PersonCreationSuccessValidationParams = {
-          nachname: generateNachname(),
-          vorname: generateVorname(),
-          rollen: [generateRolleName(), generateRolleName(), generateRolleName()],
-          organisation: schuleName,
-          dstNr: schuleDstNr,
-        };
-
-        await test.step('Rollen anlegen', async () => {
-          const orgaId: string = await getOrganisationId(page, schuleName);
-          await Promise.all(params.rollen.map((name: string) => createRolle(page, RollenArt.Lehr, orgaId, name)));
-        });
-
-        const personManagementViewPage: PersonManagementViewPage =
-          await test.step(`Nutzer anlegen und prüfen`, async () => {
-            await personCreationViewPage.fillForm(params);
-            const successPage: PersonCreationSuccessPage = await personCreationViewPage.submit();
-            await successPage.assertSuccessfulCreation(params);
-            return successPage.backToList();
+          await test.step('Klasse anlegen', async () => {
+            await Promise.all(
+              personenParameters.map(
+                (params: PersonCreationSuccessValidationParams) =>
+                  params.klasse && createKlasse(page, testSchuleMitDstNr.id, params.klasse),
+              ),
+            );
           });
 
-        await test.step('Neuen Benutzer in Übersicht prüfen', async () => {
-          await personManagementViewPage.searchByText(params.vorname);
-          await personManagementViewPage.assertThatPersonExists(params.vorname);
-        });
-      });
+          let currentCreationPage: PersonCreationViewPage = personCreationPageAsLandesadmin;
+          for (const [index, params] of personenParameters.entries()) {
+            await test.step(`Nutzer ${index + 1} anlegen und prüfen`, async () => {
+              await currentCreationPage.fillForm(params);
+              const successPage: PersonCreationSuccessPage = await currentCreationPage.submit();
+              await successPage.assertSuccessfulCreation(params);
+              currentCreationPage = await successPage.createAnotherPerson();
+            });
+          }
+        },
+      );
+
+      test(
+        'Benutzer mit mehreren Rollen anlegen',
+        { tag: [DEV, STAGE] },
+        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+          const params: PersonCreationSuccessValidationParams = {
+            nachname: generateNachname(),
+            vorname: generateVorname(),
+            rollen: [generateRolleName(), generateRolleName(), generateRolleName()],
+            organisation: testSchuleMitDstNr.name,
+            dstNr: testSchuleMitDstNr.dstNr,
+          };
+
+          await test.step('Rollen anlegen', async () => {
+            const orgaId: string = await getOrganisationId(page, testSchuleMitDstNr.name);
+            await Promise.all(params.rollen.map((name: string) => createRolle(page, RollenArt.Lehr, orgaId, name)));
+          });
+
+          const personManagementViewPage: PersonManagementViewPage =
+            await test.step(`Nutzer anlegen und prüfen`, async () => {
+              await personCreationPageAsLandesadmin.fillForm(params);
+              const successPage: PersonCreationSuccessPage = await personCreationPageAsLandesadmin.submit();
+              await successPage.assertSuccessfulCreation(params);
+              return successPage.backToList();
+            });
+
+          await test.step('Neuen Benutzer in Übersicht prüfen', async () => {
+            await personManagementViewPage.searchByText(params.vorname);
+            await personManagementViewPage.assertThatPersonExists(params.vorname);
+          });
+        },
+      );
 
       test.describe('Personenkontext wiederherstellen', () => {
         test(
           'Lehrer anlegen, Kontext entfernen und wiederherstellen',
           { tag: [DEV] },
-          async ({ page }: PlaywrightTestArgs) => {
+          async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
             const params: PersonCreationSuccessValidationParams = {
               nachname: generateNachname(),
               vorname: generateVorname(),
               rollen: [lehrkraftOeffentlichRolle],
-              organisation: schuleName,
-              dstNr: schuleDstNr,
+              organisation: testSchuleMitDstNr.name,
+              dstNr: testSchuleMitDstNr.dstNr,
               kopersnr: generateKopersNr(),
             };
 
             const [createdBenutzername, initialPersonManagementView]: [string, PersonManagementViewPage] =
               await test.step('Nutzer anlegen', async () => {
-                await personCreationViewPage.fillForm(params);
-                const successPage: PersonCreationSuccessPage = await personCreationViewPage.submit();
+                await personCreationPageAsLandesadmin.fillForm(params);
+                const successPage: PersonCreationSuccessPage = await personCreationPageAsLandesadmin.submit();
                 await successPage.assertSuccessfulCreation(params);
 
                 return [await successPage.getBenutzername(), await successPage.backToList()];
@@ -244,7 +254,10 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
 
             personManagementView = await test.step(`Personenkontext entfernen`, async () => {
               const zuordnungenPage: ZuordnungenPage = await personDetailsViewPage.editZuordnungen();
-              return zuordnungenPage.removeLastZuordnung({ organisation: schuleName, dstNr: schuleDstNr });
+              return zuordnungenPage.removeLastZuordnung({
+                organisation: testSchuleMitDstNr.name,
+                dstNr: testSchuleMitDstNr.dstNr,
+              });
             });
 
             personDetailsViewPage = await test.step('Person suchen und Gesamtübersicht erneut öffnen', async () => {
@@ -256,19 +269,22 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
             await test.step('Schulzuordnung wiederherstellen', async () => {
               const zuordnungenView: ZuordnungenPage = new ZuordnungenPage(page);
               await zuordnungenView.assertZuordnungDoesNotExist({
-                organisation: schuleName,
-                dstNr: schuleDstNr,
+                organisation: testSchuleMitDstNr.name,
+                dstNr: testSchuleMitDstNr.dstNr,
                 rolle: lehrkraftOeffentlichRolle,
               });
               const zuordnungenPage: ZuordnungenPage = await personDetailsViewPage.editZuordnungen();
-              await zuordnungenPage.addZuordnung({ organisation: schuleName, rolle: lehrkraftOeffentlichRolle });
+              await zuordnungenPage.addZuordnung({
+                organisation: testSchuleMitDstNr.name,
+                rolle: lehrkraftOeffentlichRolle,
+              });
             });
 
             await test.step('Schulzuordnung prüfen', async () => {
               const zuordnungenView: ZuordnungenPage = new ZuordnungenPage(page);
               await zuordnungenView.assertZuordnungExists({
-                organisation: schuleName,
-                dstNr: schuleDstNr,
+                organisation: testSchuleMitDstNr.name,
+                dstNr: testSchuleMitDstNr.dstNr,
                 rolle: lehrkraftOeffentlichRolle,
               });
             });
@@ -278,14 +294,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
     });
 
     test.describe(`Nutzer mit landesspezifischen Rollen anlegen`, () => {
-      let personCreationViewPage: PersonCreationViewPage;
-
-      test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-        const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
-        personCreationViewPage = await personManagementViewPage.getMenu().navigateToPersonCreation();
-      });
-
-      test(`${landesadminRolle} anlegen`, { tag: [DEV, STAGE] }, async () => {
+      test(`${landesadminRolle} anlegen`, { tag: [DEV, STAGE] }, async ({ personCreationPageAsLandesadmin }) => {
         const validationParameters: PersonCreationSuccessValidationParams = {
           nachname: generateNachname(),
           vorname: generateVorname(),
@@ -296,11 +305,11 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
         const creationParameters: PersonCreationParams = { ...validationParameters };
 
         await test.step('Formular ausfüllen', async () => {
-          await personCreationViewPage.fillForm(creationParameters);
+          await personCreationPageAsLandesadmin.fillForm(creationParameters);
         });
 
         const successPage: PersonCreationSuccessPage = await test.step('Abschicken', async () =>
-          personCreationViewPage.submit());
+          personCreationPageAsLandesadmin.submit());
 
         const benutzername: string = await test.step('Erfolgsmeldung prüfen', async () => {
           await successPage.assertSuccessfulCreation(validationParameters);

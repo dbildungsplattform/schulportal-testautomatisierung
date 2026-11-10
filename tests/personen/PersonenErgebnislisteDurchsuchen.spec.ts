@@ -279,17 +279,9 @@ test.describe(`Schulfilter in der Benutzerübersicht für Schuladmin mit einer S
 });
 
 test.describe('Als Landesadmin Selektion prüfen', () => {
-  let schulId: string;
-  let schulName: string;
-  let schulNr: string;
-  test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-    personManagementViewPage = await loginAndNavigateToAdministration(page);
-    schulName = generateSchulname();
-    schulNr = generateDienststellenNr();
-    schulId = await createSchule(page, schulName, schulNr);
-  });
-
-  test('Schulfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
+  test('Schulfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+    const personManagementViewPage = asLandesadmin.personManagementViewPage;
+    const { name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
@@ -312,66 +304,80 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Rollenfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-    await test.step(`Personen anlegen`, async () => {
-      await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
-      await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
-    });
-    await test.step(`Schule und Rolle filtern`, async () => {
-      await personManagementViewPage.filterBySchule(schulName);
-      await personManagementViewPage.checkIfSchuleIsCorrect(schulName, schulNr);
-      await personManagementViewPage.filterByRolle(lehrkraftOeffentlichRolle);
-      await personManagementViewPage.checkRowCount(2);
-    });
-    await test.step(`Personen selektieren`, async () => {
-      await personManagementViewPage.toggleSelectAllRows(true);
-      await personManagementViewPage.assertSelectedPersonsByCount(2);
-    });
-    await test.step(`Rollenfilter ändern`, async () => {
-      await personManagementViewPage.filterByRolle(lehrkraftOeffentlichRolle);
-      await personManagementViewPage.filterByRolle(schuladminOeffentlichRolle);
-    });
-    await test.step(`Prüfen, dass Personen deselektiert wurden`, async () => {
-      await personManagementViewPage.assertSelectedPersonsByCount(0);
-    });
-  });
+  test(
+    'Rollenfilter löst Selektion auf',
+    { tag: [DEV, STAGE] },
+    async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+      const personManagementViewPage = asLandesadmin.personManagementViewPage;
+      const { name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
+      await test.step(`Personen anlegen`, async () => {
+        await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
+        await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
+      });
+      await test.step(`Schule und Rolle filtern`, async () => {
+        await personManagementViewPage.filterBySchule(schulName);
+        await personManagementViewPage.checkIfSchuleIsCorrect(schulName, schulNr);
+        await personManagementViewPage.filterByRolle(lehrkraftOeffentlichRolle);
+        await personManagementViewPage.checkRowCount(2);
+      });
+      await test.step(`Personen selektieren`, async () => {
+        await personManagementViewPage.toggleSelectAllRows(true);
+        await personManagementViewPage.assertSelectedPersonsByCount(2);
+      });
+      await test.step(`Rollenfilter ändern`, async () => {
+        await personManagementViewPage.filterByRolle(lehrkraftOeffentlichRolle);
+        await personManagementViewPage.filterByRolle(schuladminOeffentlichRolle);
+      });
+      await test.step(`Prüfen, dass Personen deselektiert wurden`, async () => {
+        await personManagementViewPage.assertSelectedPersonsByCount(0);
+      });
+    },
+  );
 
-  test('Klassenfilter löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
-    const klassenUndSchueler: KlassenAndSchuelerData[] = await test.step(`Klassen und SuS anlegen`, async () => {
-      return await createKlassenAndSchuelerForSchulen(page, [
-        {
-          klassenCount: 2,
-          schuelerCount: 2,
-          schuleId: schulId,
-          params: {
-            name: schulName,
-            schulform: Schulform.Oeffentlich,
-            dienststellenNr: schulNr,
-            emailAdress: generateEmailAdress(),
+  test(
+    'Klassenfilter löst Selektion auf',
+    { tag: [DEV, STAGE] },
+    async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+      const personManagementViewPage = asLandesadmin.personManagementViewPage;
+      const { id: schulId, name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
+      const klassenUndSchueler: KlassenAndSchuelerData[] = await test.step(`Klassen und SuS anlegen`, async () => {
+        return await createKlassenAndSchuelerForSchulen(page, [
+          {
+            klassenCount: 2,
+            schuelerCount: 2,
+            schuleId: schulId,
+            params: {
+              name: schulName,
+              schulform: Schulform.Oeffentlich,
+              dienststellenNr: schulNr,
+              emailAdress: generateEmailAdress(),
+            },
           },
-        },
-      ]);
-    });
-    await test.step(`Schule und Klasse filtern`, async () => {
-      await personManagementViewPage.filterBySchule(schulName);
-      await personManagementViewPage.checkIfSchuleIsCorrect(schulName, schulNr);
-      await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[0]);
-      await personManagementViewPage.checkRowCount(2);
-    });
-    await test.step(`Personen selektieren`, async () => {
-      await personManagementViewPage.toggleSelectAllRows(true);
-      await personManagementViewPage.assertSelectedPersonsByCount(2);
-    });
-    await test.step(`Klassenfilter ändern`, async () => {
-      await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[0]);
-      await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[1]);
-    });
-    await test.step(`Prüfen, dass Personen deselektiert wurden`, async () => {
-      await personManagementViewPage.assertSelectedPersonsByCount(0);
-    });
-  });
+        ]);
+      });
+      await test.step(`Schule und Klasse filtern`, async () => {
+        await personManagementViewPage.filterBySchule(schulName);
+        await personManagementViewPage.checkIfSchuleIsCorrect(schulName, schulNr);
+        await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[0]);
+        await personManagementViewPage.checkRowCount(2);
+      });
+      await test.step(`Personen selektieren`, async () => {
+        await personManagementViewPage.toggleSelectAllRows(true);
+        await personManagementViewPage.assertSelectedPersonsByCount(2);
+      });
+      await test.step(`Klassenfilter ändern`, async () => {
+        await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[0]);
+        await personManagementViewPage.filterByKlasse(klassenUndSchueler[0].klassenNamenSchule[1]);
+      });
+      await test.step(`Prüfen, dass Personen deselektiert wurden`, async () => {
+        await personManagementViewPage.assertSelectedPersonsByCount(0);
+      });
+    },
+  );
 
-  test('Textsuche löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
+  test('Textsuche löst Selektion auf', { tag: [DEV, STAGE] }, async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+    const personManagementViewPage = asLandesadmin.personManagementViewPage;
+    const { name: schulName } = testSchuleMitDstNr;
     const nachname: string = generateNachname();
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle, generateVorname(), nachname);
