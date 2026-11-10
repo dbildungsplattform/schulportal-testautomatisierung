@@ -1,53 +1,46 @@
-import { PlaywrightTestArgs, test } from '@playwright/test';
+import { test as baseTest } from '../../base/fixtures';
 
-import { getOrganisationId } from '../../base/api/organisationApi';
 import { createPersonWithPersonenkontext } from '../../base/api/personApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
-import { testschuleName } from '../../base/organisation';
-import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { generateRolleName } from '../../base/utils/generateTestdata';
 import { Alert } from '../../pages/components/Alert';
-import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { RolleDetailsViewPage } from '../../pages/admin/rollen/RolleDetailsView.page';
 import { RolleManagementViewPage } from '../../pages/admin/rollen/RolleManagementView.page';
-import { HeaderPage } from '../../pages/components/Header.page';
+
+interface RolleFixture {
+  rolleName: string;
+  rolleDetailsView: RolleDetailsViewPage;
+}
+
+const test = baseTest.extend<{ rolle: RolleFixture }>({
+  rolle: async ({ page, asLandesadmin: asLandesadmin, testSchule }, use) => {
+    const rolleName: string = generateRolleName();
+    await createRolle(page, RollenArt.Leit, testSchule.id, rolleName);
+    const rolleManagementViewPage: RolleManagementViewPage =
+      await asLandesadmin.personManagementViewPage.menu.navigateToRolleManagement();
+    await rolleManagementViewPage.setPageSize(300);
+    const rolleDetailsView: RolleDetailsViewPage = await rolleManagementViewPage.openGesamtuebersicht(rolleName);
+    await use({ rolleName, rolleDetailsView });
+  },
+});
 
 test.describe(`Testfälle für die Rollenlöschung: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
-  let rolleDetailsView: RolleDetailsViewPage;
-  let rolleName: string;
-  let personManagementView: PersonManagementViewPage;
-  let rolleManagementViewPage: RolleManagementViewPage;
-
-  test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-    personManagementView = await loginAndNavigateToAdministration(page);
-    const organisationId: string = await getOrganisationId(page, testschuleName);
-    rolleName = generateRolleName();
-    await createRolle(page, RollenArt.Leit, organisationId, rolleName);
-
-    rolleManagementViewPage = await personManagementView.menu.navigateToRolleManagement();
-    await rolleManagementViewPage.setPageSize(300);
-    rolleDetailsView = await rolleManagementViewPage.openGesamtuebersicht(rolleName);
-  });
-
-  test.afterEach(async ({ page }: PlaywrightTestArgs) => {
-    const header: HeaderPage = new HeaderPage(page);
-    await header.logout();
-  });
-
-  test('Erfolgreich löschen', async () => {
-    rolleManagementViewPage = await rolleDetailsView.deleteRolle();
+  test('Erfolgreich löschen', async ({ rolle }) => {
+    const { rolleDetailsView, rolleName } = rolle;
+    const rolleManagementViewPage: RolleManagementViewPage = await rolleDetailsView.deleteRolle();
     await rolleManagementViewPage.setPageSize(300);
     await rolleManagementViewPage.checkIfRolleDoesNotExist(rolleName);
   });
 
   // SPSH-2949
-  test('Vergebene Rolle löschen und Fehlermeldung prüfen', async ({ page }: PlaywrightTestArgs) => {
+  test('Vergebene Rolle löschen und Fehlermeldung prüfen', async ({ page, rolle, testSchule }) => {
+    const { rolleDetailsView, rolleName } = rolle;
     await test.step('Rolle einer Person zuordnen', async () => {
-      await createPersonWithPersonenkontext(page, testschuleName, rolleName);
+      await createPersonWithPersonenkontext(page, testSchule.name, rolleName);
     });
     const alert: Alert<RolleManagementViewPage> = await rolleDetailsView.attemptDeletionOfAssignedRolle();
     await alert.assertExpectedTexts();
-    rolleManagementViewPage = await (await alert.confirm()).waitForPageLoad();
+    const rolleManagementViewPage: RolleManagementViewPage = await (await alert.confirm()).waitForPageLoad();
     await rolleManagementViewPage.setPageSize(300);
     await rolleManagementViewPage.checkIfRolleExists(rolleName);
   });

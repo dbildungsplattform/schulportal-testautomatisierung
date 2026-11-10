@@ -1,25 +1,18 @@
-import { PlaywrightTestArgs, test } from '@playwright/test';
+import { test } from '../../base/fixtures';
 import { createRolleAndPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { testschuleName, testschuleDstNr } from '../../base/organisation';
 import { generateRolleName } from '../../base/utils/generateTestdata';
-import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 import { RollenArt } from '../../base/api/generated';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { email } from '../../base/sp';
 import { createRolle } from '../../base/api/rolleApi';
 import { getOrganisationId } from '../../base/api/organisationApi';
-import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 
 test.describe(`Testfälle für Schulzuordnung hinzufügen: ENV: ${process.env.ENV} URL: ${process.env.FRONTEND_URL}`, () => {
-  let personManagementView: PersonManagementViewPage;
-
-  test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-    personManagementView = await loginAndNavigateToAdministration(page);
-  });
-
   test('Unbefristete Schulzuordnung einem Lehrer durch einen Landesadmin hinzufügen', async ({
     page,
-  }: PlaywrightTestArgs) => {
+    asLandesadmin,
+  }) => {
     let userInfoLehrer: UserInfo;
     const nameRolleNeu: string = generateRolleName();
 
@@ -36,7 +29,7 @@ test.describe(`Testfälle für Schulzuordnung hinzufügen: ENV: ${process.env.EN
 
     // ---------- Open person ----------
     const personDetailsView: PersonDetailsViewPage = await test.step('Gesamtübersicht öffnen', async () => {
-      const view: PersonDetailsViewPage = await personManagementView.searchAndOpenGesamtuebersicht(
+      const view: PersonDetailsViewPage = await asLandesadmin.personManagementViewPage.searchAndOpenGesamtuebersicht(
         userInfoLehrer.username,
       );
       await view.waitForPageLoad();
