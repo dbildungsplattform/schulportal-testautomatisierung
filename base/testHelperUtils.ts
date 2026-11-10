@@ -4,7 +4,7 @@ import { LoginViewPage } from '../pages/LoginView.page';
 import { StartViewPage } from '../pages/StartView.page';
 import { PersonManagementViewPage } from '../pages/admin/personen/PersonManagementView.page';
 import { SharedCredentialManager } from './2fa';
-import { freshLoginPage } from './api/personApi';
+import { freshLoginPage, UserInfo } from './api/personApi';
 import { HeaderPage } from '../pages/components/Header.page';
 import { LandingViewPage } from '../pages/LandingView.page';
 
@@ -37,4 +37,15 @@ export async function loginAndNavigateToAdministration(
 export async function logout(page: Page): Promise<LandingViewPage> {
   const header: HeaderPage = new HeaderPage(page);
   return header.logout();
+}
+
+export async function switchToNewUserAndNavigateToAdministration(
+  page: Page,
+  userinfo: UserInfo,
+): Promise<PersonManagementViewPage> {
+  const landingPage: LandingViewPage = await logout(page);
+  const loginPage: LoginViewPage = await landingPage.navigateToLogin();
+  const startPage: StartViewPage = await loginPage.loginNewUserWithPasswordChange(userinfo.username, userinfo.password);
+  const personManagementPage: PersonManagementViewPage = await startPage.navigateToAdministration();
+  return personManagementPage.waitForPageLoad();
 }

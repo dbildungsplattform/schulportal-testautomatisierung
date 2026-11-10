@@ -78,11 +78,11 @@ async function loginAsNewUserAndNavigateToAngebotManagementSchulspezifisch(
 }
 
 const test = base.extend<{
-  asLandesadmin: GlobalAngebotFixture;
+  asLandesadminWithAngebot: GlobalAngebotFixture;
   asSchuladminEingeschraenktVerwalten: SchuladminEingeschraenktVerwaltenFixture;
   asLandesadminSchulspezifisch: SchulspezifischesAngebotFixture;
 }>({
-  asLandesadmin: async ({ page }, use) => {
+  asLandesadminWithAngebot: async ({ page }, use) => {
     const personManagementViewPage: PersonManagementViewPage = await loginAndNavigateToAdministration(page);
     const organisationId: string = await getOrganisationId(page, landSH);
     const angebotName: string = generateAngebotname();
@@ -197,8 +197,8 @@ test.describe('Angebot löschen', () => {
   test(
     'Als Landesadmin ein Angebot erfolgreich aus der globalen Angebotsliste löschen',
     { tag: [DEV, STAGE] },
-    async ({ asLandesadmin }) => {
-      const { managementPage, angebotName } = asLandesadmin;
+    async ({ asLandesadminWithAngebot }) => {
+      const { managementPage, angebotName } = asLandesadminWithAngebot;
 
       await test.step('Angebot suchen', async () => {
         await managementPage.searchByName(angebotName);
@@ -240,30 +240,34 @@ test.describe('Angebot löschen', () => {
   );
 
   // SPSH-3614
-  test('Löschvorgang über den Abbrechen-Button abbrechen', { tag: [DEV, STAGE] }, async ({ asLandesadmin }) => {
-    const { managementPage, angebotName } = asLandesadmin;
+  test(
+    'Löschvorgang über den Abbrechen-Button abbrechen',
+    { tag: [DEV, STAGE] },
+    async ({ asLandesadminWithAngebot }) => {
+      const { managementPage, angebotName } = asLandesadminWithAngebot;
 
-    await test.step('Angebot suchen', async () => {
-      await managementPage.searchByName(angebotName);
-    });
+      await test.step('Angebot suchen', async () => {
+        await managementPage.searchByName(angebotName);
+      });
 
-    const deleteDialog = await test.step('Löschdialog öffnen', async () => {
-      return managementPage.openDeleteDialog(angebotName);
-    });
+      const deleteDialog = await test.step('Löschdialog öffnen', async () => {
+        return managementPage.openDeleteDialog(angebotName);
+      });
 
-    await test.step('Löschvorgang abbrechen', async () => {
-      await deleteDialog.cancel();
-    });
+      await test.step('Löschvorgang abbrechen', async () => {
+        await deleteDialog.cancel();
+      });
 
-    await managementPage.assertServiceProviderPresent(angebotName);
-  });
+      await managementPage.assertServiceProviderPresent(angebotName);
+    },
+  );
 
   // SPSH-3615
   test(
     'Angebot löschen schlägt fehl, da noch eine Rolle zugeordnet ist',
     { tag: [DEV, STAGE] },
-    async ({ page, asLandesadmin }) => {
-      const { managementPage, angebotId, angebotName } = asLandesadmin;
+    async ({ page, asLandesadminWithAngebot }) => {
+      const { managementPage, angebotId, angebotName } = asLandesadminWithAngebot;
 
       await test.step('Rolle mit direkt zugeordnetem Angebot anlegen', async () => {
         const organisationId: string = await getOrganisationId(page, landSH);
@@ -303,8 +307,8 @@ test.describe('Angebot löschen', () => {
   test(
     'Angebot löschen schlägt fehl, da noch schulspezifische Rollenerweiterungen existieren',
     { tag: [DEV, STAGE] },
-    async ({ page, asLandesadmin }) => {
-      const { managementPage, angebotId, angebotName } = asLandesadmin;
+    async ({ page, asLandesadminWithAngebot }) => {
+      const { managementPage, angebotId, angebotName } = asLandesadminWithAngebot;
 
       await test.step('Schulspezifische Rollenerweiterung für das Angebot anlegen', async () => {
         const schuleName: string = generateSchulname();

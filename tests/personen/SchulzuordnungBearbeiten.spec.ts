@@ -1,4 +1,4 @@
-import { PlaywrightTestArgs, test } from '@playwright/test';
+import { test } from '../../base/fixtures';
 import { RollenArt, RollenMerkmal } from '../../base/api/generated';
 import {
   createRolleAndPersonWithPersonenkontext,
@@ -7,7 +7,6 @@ import {
 } from '../../base/api/personApi';
 import { testschuleDstNr, testschuleName } from '../../base/organisation';
 import { email } from '../../base/sp';
-import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   formatDateDMY,
   generateCurrentDate,
@@ -15,18 +14,12 @@ import {
   generateRolleName,
 } from '../../base/utils/generateTestdata';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
-import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 
 test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV} URL: ${process.env.FRONTEND_URL}`, () => {
-  let personManagementView: PersonManagementViewPage;
-
-  test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-    personManagementView = await loginAndNavigateToAdministration(page);
-  });
-
   test('Befristung einer Schulzuordnung von einem Lehrer durch einen Landesadmin bearbeiten', async ({
     page,
-  }: PlaywrightTestArgs) => {
+    asLandesadmin,
+  }) => {
     let userInfoLehrer: UserInfo;
     const nameRolle: string = generateRolleName();
     const timeLimitTeacherRolle: string = formatDateDMY(generateCurrentDate({ days: 3, months: 5 }));
@@ -52,7 +45,7 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
 
     // ---------- Open person ----------
     const personDetailsView: PersonDetailsViewPage = await test.step('Gesamtübersicht öffnen', async () => {
-      const view: PersonDetailsViewPage = await personManagementView.searchAndOpenGesamtuebersicht(
+      const view: PersonDetailsViewPage = await asLandesadmin.personManagementViewPage.searchAndOpenGesamtuebersicht(
         userInfoLehrer.username,
       );
       await view.waitForPageLoad();
@@ -108,7 +101,8 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
 
   test('Prüfen, dass eine Person mit einer befristeten Rolle wie z.B. LiV, nicht die Option "Unbefristet" bekommen kann wenn man eine Befristung bearbeitet', async ({
     page,
-  }: PlaywrightTestArgs) => {
+    asLandesadmin,
+  }) => {
     let userInfoLehrer: UserInfo;
     const nameRolle: string = generateRolleName();
 
@@ -124,7 +118,7 @@ test.describe(`Testfälle für Schulzuordnung bearbeiten: ENV: ${process.env.ENV
     });
 
     const personDetailsView: PersonDetailsViewPage = await test.step('Gesamtübersicht öffnen', async () => {
-      const view: PersonDetailsViewPage = await personManagementView.searchAndOpenGesamtuebersicht(
+      const view: PersonDetailsViewPage = await asLandesadmin.personManagementViewPage.searchAndOpenGesamtuebersicht(
         userInfoLehrer.username,
       );
       await view.waitForPageLoad();

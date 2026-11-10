@@ -1,12 +1,10 @@
-import { PlaywrightTestArgs, test } from '@playwright/test';
+import { test as baseTest } from '../../base/fixtures';
 
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { testschuleName } from '../../base/organisation';
 import { lehrkraftOeffentlichRolle } from '../../base/rollen';
-import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
-import { HeaderPage } from '../../pages/components/Header.page';
 
 interface LockOption {
   description: string;
@@ -27,31 +25,20 @@ const lockOptions: LockOption[] = [
   },
 ];
 
+const test = baseTest.extend<{ lehrkraft: UserInfo }>({
+  lehrkraft: async ({ page, asLandesadmin: _asLandesadmin }, use) => {
+    await use(await createPersonWithPersonenkontext(page, testschuleName, lehrkraftOeffentlichRolle));
+  },
+});
+
 test.describe(`Testfälle für das Personen sperren: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
-  let userInfo: UserInfo;
-
-  test.beforeEach(async ({ page }: PlaywrightTestArgs) => {
-    await test.step(`Login`, async () => {
-      await loginAndNavigateToAdministration(page);
-    });
-
-    await test.step(`Daten anlegen`, async () => {
-      userInfo = await createPersonWithPersonenkontext(page, testschuleName, lehrkraftOeffentlichRolle);
-    });
-  });
-
-  test.afterEach(async ({ page }: PlaywrightTestArgs) => {
-    const header: HeaderPage = new HeaderPage(page);
-    await header.logout();
-  });
-
   lockOptions.forEach(({ description, until, expectUntil }: LockOption) => {
-    test(`Person via Gesamtübersicht ${description}`, async ({ page }: PlaywrightTestArgs) => {
+    test(`Person via Gesamtübersicht ${description}`, async ({ asLandesadmin, lehrkraft }) => {
       const personDetailsViewPage: PersonDetailsViewPage =
         await test.step(`Zur Gesamtübersicht navigieren`, async () => {
-          const personenManagementViewPage: PersonManagementViewPage = new PersonManagementViewPage(page);
+          const personenManagementViewPage: PersonManagementViewPage = asLandesadmin.personManagementViewPage;
           await personenManagementViewPage.waitForPageLoad();
-          return personenManagementViewPage.searchAndOpenGesamtuebersicht(userInfo.username);
+          return personenManagementViewPage.searchAndOpenGesamtuebersicht(lehrkraft.username);
         });
 
       await test.step(`Person sperren (${description})`, async () => {
