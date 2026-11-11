@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import * as path from 'node:path';
 import { fileURLToPath } from 'url';
 
+import { initializeTestRunId } from './base/utils/generateTestdata';
+
 const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);
 
@@ -14,6 +16,8 @@ dotenv.config({
 
 dotenv.config({ path: path.resolve(dirname, '.env'), override: true });
 
+initializeTestRunId();
+
 export const workers: number = 4;
 
 export default defineConfig({
@@ -23,7 +27,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  maxFailures: 2,
+  maxFailures: 0,
   workers,
   reporter: [['html']],
   globalSetup: './tests/global-setup.ts',
@@ -46,6 +50,9 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
         ignoreHTTPSErrors: true,
+        launchOptions: {
+          executablePath: '/usr/bin/chromium',
+        },
       },
     },
     {
