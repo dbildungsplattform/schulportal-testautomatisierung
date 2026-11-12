@@ -94,7 +94,7 @@ export class PersonCreationViewPage {
   }
 
   public async searchOrganisation(org: string, exact: boolean): Promise<void> {
-    await this.organisationAutocomplete.searchByTitle(org, exact, PersonCreationViewPage.WORKFLOW_ENDPOINT);
+    await this.organisationAutocomplete.searchByTitle(org, exact);
   }
 
   public async addRolle(rolle: string): Promise<void> {
