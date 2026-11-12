@@ -15,10 +15,13 @@
 
 import * as runtime from '../runtime';
 import type {
+  PersonInfoDtoV2,
   PersonInfoResponse,
   PersonInfoResponseV1,
 } from '../models';
 import {
+    PersonInfoDtoV2FromJSON,
+    PersonInfoDtoV2ToJSON,
     PersonInfoResponseFromJSON,
     PersonInfoResponseToJSON,
     PersonInfoResponseV1FromJSON,
@@ -67,12 +70,12 @@ export interface PersonInfoApiInterface {
      * @throws {RequiredError}
      * @memberof PersonInfoApiInterface
      */
-    personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>>;
+    personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoDtoV2>>;
 
     /**
      * Info about logged in person with intern role types.
      */
-    personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1>;
+    personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoDtoV2>;
 
 }
 
@@ -162,7 +165,7 @@ export class PersonInfoApi extends runtime.BaseAPI implements PersonInfoApiInter
     /**
      * Info about logged in person with intern role types.
      */
-    async personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoResponseV1>> {
+    async personInfoControllerInfoV2Raw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonInfoDtoV2>> {
         const queryParameters: any = {};
 
         const headerParameters: runtime.HTTPHeaders = {};
@@ -187,13 +190,13 @@ export class PersonInfoApi extends runtime.BaseAPI implements PersonInfoApiInter
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => PersonInfoResponseV1FromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonInfoDtoV2FromJSON(jsonValue));
     }
 
     /**
      * Info about logged in person with intern role types.
      */
-    async personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoResponseV1> {
+    async personInfoControllerInfoV2(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonInfoDtoV2> {
         const response = await this.personInfoControllerInfoV2Raw(initOverrides);
         return await response.value();
     }

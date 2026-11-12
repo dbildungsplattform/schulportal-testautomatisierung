@@ -24,7 +24,7 @@ export interface UserExternalDataV2PersonenkontextResponse {
      * @type {string}
      * @memberof UserExternalDataV2PersonenkontextResponse
      */
-    dienststellennr: string;
+    dstNr: string;
     /**
      * 
      * @type {string}
@@ -38,7 +38,7 @@ export interface UserExternalDataV2PersonenkontextResponse {
  */
 export function instanceOfUserExternalDataV2PersonenkontextResponse(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "dienststellennr" in value;
+    isInstance = isInstance && "dstNr" in value;
     isInstance = isInstance && "rolleId" in value;
 
     return isInstance;
@@ -54,7 +54,7 @@ export function UserExternalDataV2PersonenkontextResponseFromJSONTyped(json: any
     }
     return {
         
-        'dienststellennr': json['dienststellennr'],
+        'dstNr': json['dstNr'],
         'rolleId': json['rolleId'],
     };
 }
@@ -68,7 +68,7 @@ export function UserExternalDataV2PersonenkontextResponseToJSON(value?: UserExte
     }
     return {
         
-        'dienststellennr': value.dienststellennr,
+        'dstNr': value.dstNr,
         'rolleId': value.rolleId,
     };
 }

@@ -14,7 +14,6 @@ export * from './MetricsApi';
 export * from './OrganisationenApi';
 export * from './PersonInfoApi';
 export * from './PersonenApi';
-export * from './PersonenFrontendApi';
 export * from './PersonenInfoApi';
 export * from './PersonenkontextApi';
 export * from './ProviderApi';

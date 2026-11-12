@@ -96,7 +96,7 @@ export class PersonManagementViewPage extends AbstractAdminPage {
   }
 
   public async toggleColumnSort(columnName: string): Promise<void> {
-    await this.personTable.clickColumnHeader(columnName, 'personen-frontend');
+    await this.personTable.clickColumnHeader(columnName, 'personen');
   }
 
   public async openGesamtuebersicht(name: string): Promise<PersonDetailsViewPage> {
