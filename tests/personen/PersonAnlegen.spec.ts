@@ -66,7 +66,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
           test(
             `${userRolle} anlegen`,
             { tag: [DEV, STAGE] },
-            async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+            async ({ page, testSchuleMitDstNrUndEmail: testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
               const isSchueler: boolean = userRolle === schuelerRolle;
               const isLehrer: boolean =
                 userRolle === lehrerImVorbereitungsdienstRolle || userRolle === lehrkraftOeffentlichRolle;
@@ -142,7 +142,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
       test(
         'Mehrere Benutzer hintereinander anlegen',
         { tag: [DEV, STAGE] },
-        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+        async ({ page, testSchuleMitDstNrUndEmail: testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
           const personenParameters: PersonCreationSuccessValidationParams[] = [
             {
               nachname: generateNachname(),
@@ -194,7 +194,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
       test(
         'Benutzer mit mehreren Rollen anlegen',
         { tag: [DEV, STAGE] },
-        async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+        async ({ page, testSchuleMitDstNrUndEmail: testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
           const params: PersonCreationSuccessValidationParams = {
             nachname: generateNachname(),
             vorname: generateVorname(),
@@ -227,7 +227,7 @@ test.describe(`Testfälle für die Anlage von Personen`, () => {
         test(
           'Lehrer anlegen, Kontext entfernen und wiederherstellen',
           { tag: [DEV] },
-          async ({ page, testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
+          async ({ page, testSchuleMitDstNrUndEmail: testSchuleMitDstNr, personCreationPageAsLandesadmin }) => {
             const params: PersonCreationSuccessValidationParams = {
               nachname: generateNachname(),
               vorname: generateVorname(),

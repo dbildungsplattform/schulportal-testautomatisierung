@@ -13,7 +13,7 @@ import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateDienststellenNr,
-  generateEmailAdress,
+  generateEmailAddress,
   generateKlassenname,
   generateSchulname,
 } from '../../base/utils/generateTestdata';
@@ -44,7 +44,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
       schuleId = await createSchule(page, schuleParams.name, schuleParams.dienststellenNr);
 

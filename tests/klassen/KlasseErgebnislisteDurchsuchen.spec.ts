@@ -9,7 +9,7 @@ import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateDienststellenNr,
-  generateEmailAdress,
+  generateEmailAddress,
   generateKlassenname,
   generateSchulname,
 } from '../../base/utils/generateTestdata';
@@ -59,7 +59,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           name: generateSchulname(),
           dienststellenNr: generateDienststellenNr(),
           schulform: Schulform.Oeffentlich,
-          emailAdress: generateEmailAdress(),
+          emailAddress: generateEmailAddress(),
         };
         let schuleSuccessPage: SchuleCreationSuccessPage = await schuleCreationViewPage.createSchule(schuleParams);
         await schuleSuccessPage.waitForPageLoad();
@@ -74,7 +74,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
             name: generateSchulname(),
             dienststellenNr: generateDienststellenNr(),
             schulform: Schulform.Oeffentlich,
-            emailAdress: generateEmailAdress(),
+            emailAddress: generateEmailAddress(),
           };
           schuleCreationViewPage = await schuleSuccessPage.goBackToCreateAnotherSchule();
           schuleSuccessPage = await schuleCreationViewPage.createSchule(zweiteSchule);

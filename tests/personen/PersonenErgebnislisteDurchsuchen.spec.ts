@@ -10,7 +10,7 @@ import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateDienststellenNr,
-  generateEmailAdress,
+  generateEmailAddress,
   generateKopersNr,
   generateNachname,
   generateSchulname,
@@ -62,7 +62,7 @@ interface AdminFixture {
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
       await createSchule(page, schuleParams.name, schuleParams.dienststellenNr);
 
@@ -279,9 +279,9 @@ test.describe(`Schulfilter in der Benutzerübersicht für Schuladmin mit einer S
 });
 
 test.describe('Als Landesadmin Selektion prüfen', () => {
-  test('Schulfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+  test('Schulfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNrUndEmail }) => {
     const personManagementViewPage = asLandesadmin.personManagementViewPage;
-    const { name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
+    const { name: schulName, dstNr: schulNr } = testSchuleMitDstNrUndEmail;
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
@@ -304,9 +304,9 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Rollenfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+  test('Rollenfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNrUndEmail }) => {
     const personManagementViewPage = asLandesadmin.personManagementViewPage;
-    const { name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
+    const { name: schulName, dstNr: schulNr } = testSchuleMitDstNrUndEmail;
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle);
@@ -330,9 +330,9 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Klassenfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+  test('Klassenfilter löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNrUndEmail }) => {
     const personManagementViewPage = asLandesadmin.personManagementViewPage;
-    const { id: schulId, name: schulName, dstNr: schulNr } = testSchuleMitDstNr;
+    const { id: schulId, name: schulName, dstNr: schulNr } = testSchuleMitDstNrUndEmail;
     const klassenUndSchueler: KlassenAndSchuelerData[] = await test.step(`Klassen und SuS anlegen`, async () => {
       return await createKlassenAndSchuelerForSchulen(page, [
         {
@@ -343,7 +343,7 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
             name: schulName,
             schulform: Schulform.Oeffentlich,
             dienststellenNr: schulNr,
-            emailAdress: generateEmailAdress(),
+            emailAddress: generateEmailAddress(),
           },
         },
       ]);
@@ -367,9 +367,9 @@ test.describe('Als Landesadmin Selektion prüfen', () => {
     });
   });
 
-  test('Textsuche löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNr }) => {
+  test('Textsuche löst Selektion auf', async ({ page, asLandesadmin, testSchuleMitDstNrUndEmail }) => {
     const personManagementViewPage = asLandesadmin.personManagementViewPage;
-    const { name: schulName } = testSchuleMitDstNr;
+    const { name: schulName } = testSchuleMitDstNrUndEmail;
     const nachname: string = generateNachname();
     await test.step(`Personen anlegen`, async () => {
       await createPersonWithPersonenkontext(page, schulName, lehrkraftOeffentlichRolle, generateVorname(), nachname);

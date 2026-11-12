@@ -49,6 +49,6 @@ export class SchuleCreationSuccessPage {
     await expect(this.page.getByTestId('created-schule-form')).toHaveText(schulform);
     await expect(this.page.getByTestId('created-schule-dienststellennummer')).toHaveText(params.dienststellenNr);
     await expect(this.page.getByTestId('created-schule-name')).toHaveText(params.name);
-    await expect(this.page.getByTestId('created-schule-email')).toHaveText(params.emailAdress);
+    await expect(this.page.getByTestId('created-schule-email')).toHaveText(params.emailAddress);
   }
 }
