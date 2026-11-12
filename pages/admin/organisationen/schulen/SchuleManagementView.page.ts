@@ -2,6 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 import { DataTable } from '../../../components/DataTable.page';
 import { MenuBarPage } from '../../../components/MenuBar.page';
 import { SearchFilter } from '../../../components/SearchFilter';
+import { SchuleDetailsViewPage } from './SchuleDetailsView.page';
 
 export class SchuleManagementViewPage {
   /* add global locators here */
@@ -28,6 +29,12 @@ export class SchuleManagementViewPage {
 
   public async searchByText(text: string): Promise<void> {
     await this.searchFilter.searchByText(text);
+  }
+
+  public async searchAndOpenGesamtuebersicht(schulname: string): Promise<SchuleDetailsViewPage> {
+    await this.searchByText(schulname);
+    await this.schuleTable.getRow(schulname).click();
+    return new SchuleDetailsViewPage(this.page).waitForPageLoad();
   }
 
   public async setPageSize(size: 5 | 30 | 50 | 100 | 300): Promise<void> {

@@ -10,7 +10,7 @@ export interface SchuleCreationParams {
   name: string;
   dienststellenNr: string;
   schulform: Schulform;
-  emailAdress: string;
+  emailAddress: string;
 }
 
 export class SchuleCreationViewPage {
@@ -19,7 +19,7 @@ export class SchuleCreationViewPage {
   private readonly ersatzSchuleOption: Locator = this.page.getByTestId('schulform-radio-button-1');
   private readonly dienststellenNrInputContainer: Locator = this.page.getByTestId('dienststellennummer-input');
   private readonly schulnameInputContainer: Locator = this.page.getByTestId('schulname-input');
-  private readonly emailAdressInputContainer: Locator = this.page.getByTestId('email-adress-input');
+  private readonly emailAddressInputContainer: Locator = this.page.getByTestId('email-adress-input');
   private readonly schuleVerwerfenButton: Locator = this.page.getByTestId('schule-creation-form-discard-button');
   private readonly schuleAnlegenButton: Locator = this.page.getByTestId('schule-creation-form-submit-button');
 
@@ -48,9 +48,9 @@ export class SchuleCreationViewPage {
     await schuleNameInput.waitFor({ state: 'visible' });
     await schuleNameInput.fill(params.name);
 
-    const emailAdressInput: Locator = this.emailAdressInputContainer.locator('input');
-    await emailAdressInput.waitFor({ state: 'visible' });
-    await emailAdressInput.fill(params.emailAdress);
+    const emailAddressInput: Locator = this.emailAddressInputContainer.locator('input');
+    await emailAddressInput.waitFor({ state: 'visible' });
+    await emailAddressInput.fill(params.emailAddress);
 
     await this.schuleAnlegenButton.waitFor({ state: 'visible' });
     await this.schuleAnlegenButton.click();
@@ -83,7 +83,7 @@ export class SchuleCreationViewPage {
     await expect(this.schulnameInputContainer).toBeVisible();
 
     await expect(this.page.getByText('4. E-Mail-Adresse eingeben', { exact: false })).toBeVisible();
-    await expect(this.emailAdressInputContainer).toBeVisible();
+    await expect(this.emailAddressInputContainer).toBeVisible();
 
     await expect(this.schuleVerwerfenButton).toBeVisible();
     await expect(this.schuleAnlegenButton).toBeVisible();

@@ -138,7 +138,7 @@ export async function createOrganisation(
 
     return response.value();
   } catch (error) {
-    console.error('[ERROR] createSchule failed:', error);
+    console.error('[ERROR] createOrganisation failed:', error);
     throw error;
   }
 }
@@ -150,7 +150,7 @@ export async function createOrganisation(
  * @param kennung
  * @returns id of created schule
  */
-export async function createSchule(page: Page, name: string, kennung?: string): Promise<string> {
+export async function createSchule(page: Page, name: string, kennung?: string, emailAddress?: string): Promise<string> {
   try {
     const traegerId: string = await getOrganisationId(page, oeffentlichLandSH);
     const createOrganisationBodyParams: CreateOrganisationBodyParams = {
@@ -158,6 +158,7 @@ export async function createSchule(page: Page, name: string, kennung?: string): 
       zugehoerigZu: traegerId,
       name: name,
       kennung: kennung ?? generateDienststellenNr(),
+      ...(emailAddress === undefined ? {} : { emailAdress: emailAddress }),
       typ: OrganisationsTyp.Schule,
     };
 
