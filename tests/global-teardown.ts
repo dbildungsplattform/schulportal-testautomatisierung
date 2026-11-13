@@ -23,13 +23,10 @@ import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
+import { getTestDataPrefix } from '../base/utils/generateTestdata';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
-const shardIndex = process.env.SHARD_INDEX ?? '0';
-const shardLetter = String.fromCharCode(65 + parseInt(shardIndex, 10)); // 0→A, 1→B, 2→C
 
-const testDataPrefix: string = `TAuto-PW-S${shardIndex}`;
-const personDataPrefix = `TAuto-PW-S${shardLetter}`;
 const limit: number = 100;
 const batchSize: number = 20;
 
@@ -69,6 +66,7 @@ function* getBatchedDelPromise<T>(
 const maxAttempts: number = 3;
 
 export default async function globalTeardown(): Promise<void> {
+  const testDataPrefix: string = getTestDataPrefix();
   console.log('Global teardown started');
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -81,7 +79,7 @@ export default async function globalTeardown(): Promise<void> {
     const page: Page = await context.newPage();
 
     try {
-      await runCleanup(page);
+      await runCleanup(page, testDataPrefix);
       console.log('Global teardown finished successfully');
       return;
     } catch (error) {
@@ -95,7 +93,7 @@ export default async function globalTeardown(): Promise<void> {
   }
 }
 
-async function runCleanup(page: Page): Promise<void> {
+async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
     const personFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
@@ -115,7 +113,7 @@ async function runCleanup(page: Page): Promise<void> {
       async () => {
         const resp: PersonFrontendControllerFindPersons200Response =
           await personFrontendApi.personFrontendControllerFindPersons({
-            suchFilter: personDataPrefix,
+            suchFilter: testDataPrefix,
             limit,
           });
         console.log(`${resp.total} personen to delete`);

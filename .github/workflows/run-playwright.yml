@@ -159,6 +159,7 @@ jobs:
           PW: '${{ secrets.PW }}'
           OTP_SEED_B32: '${{ secrets.OTP_SEED_B32 }}'
           NODE_OPTIONS: --no-experimental-strip-types
+          TEST_RUN_ID: '${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ github.job }}-${{ inputs.browser }}-${{ inputs.tag }}-${{ matrix.shard }}'
           SHARD_INDEX: ${{ matrix.shard }}
         run: |
           npx playwright test \

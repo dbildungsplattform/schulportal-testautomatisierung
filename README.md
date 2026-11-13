@@ -163,8 +163,7 @@ npm run lint
 
 ## Testdatenerstellung durch die Playwright-Tests
 
-Neue Testdaten, die während der Testausführung erstellt werden, haben den Prefix 'TAuto-PW-', gefolgt von einem Buchstaben für den Typ des Objekts + einen Zufallswert
-aus faker oder einem festen Wert. Der Name einer Rolle ist z.B. TAuto-PW-R-xxxxxxxxx. Somit ist es einfacher, die Testdaten zu erkennen, die durch die Playwright-Tests erstellt wurden.
+Generated test data uses `TAuto-PW-<runToken>-S<shardToken>-`, followed by an entity marker and random data. Playwright initializes one `TEST_RUN_ID` before loading tests: a UUID locally, or a run/attempt/job/matrix-specific ID supplied by CI. Global teardown uses the same complete namespace and never deletes another run's data through a shard-only search. See [test data generation and cleanup](docs/testdaten.md#run-and-shard-isolation) for details.
 
 ## Hinweise für die Entwicklung der Tests
 
