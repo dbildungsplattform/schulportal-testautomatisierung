@@ -7,6 +7,7 @@ const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL || '';
+const ignoreHTTPSErrors: boolean = FRONTEND_URL.includes('localhost') || FRONTEND_URL.includes('127.0.0.1');
 
 dotenv.config({
   path: './.env.dev',
@@ -37,6 +38,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     baseURL: FRONTEND_URL,
     headless: true,
+    ignoreHTTPSErrors,
   },
 
   projects: [
@@ -45,7 +47,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
       },
     },
     {
@@ -53,7 +54,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
       },
     },
     {
@@ -62,7 +62,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
         contextOptions: {
           reducedMotion: 'reduce',
         },
