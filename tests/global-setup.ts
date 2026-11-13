@@ -16,7 +16,7 @@ import FromAnywhere from '../pages/FromAnywhere';
 import { LandingViewPage } from '../pages/LandingView.page';
 import { LoginViewPage } from '../pages/LoginView.page';
 import { StartViewPage } from '../pages/StartView.page';
-import { workers } from '../playwright.config';
+import { ignoreHTTPSErrors, workers } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
 
@@ -40,7 +40,7 @@ export default async function globalSetup(): Promise<void> {
   const browser: Browser = await chromium.launch();
   const context: BrowserContext = await browser.newContext({
     baseURL: FRONTEND_URL,
-    ignoreHTTPSErrors: true,
+    ignoreHTTPSErrors,
   });
 
   const page: Page = await context.newPage();

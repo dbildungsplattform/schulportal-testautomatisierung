@@ -7,7 +7,7 @@ const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL || '';
-const ignoreHTTPSErrors: boolean =
+export const ignoreHTTPSErrors: boolean =
   FRONTEND_URL !== '' && ['localhost', '127.0.0.1'].includes(new URL(FRONTEND_URL).hostname);
 
 dotenv.config({
