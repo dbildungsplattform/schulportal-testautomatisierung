@@ -26,7 +26,7 @@ export class PersonManagementViewPage extends AbstractAdminPage {
   constructor(protected readonly page: Page) {
     super(page);
     this.table = this.page.getByTestId('person-table');
-    this.personTable = new DataTable(this.page, this.table, this.page.getByTestId('selected-count'));
+    this.personTable = new DataTable(this.page, this.table, this.page.getByTestId('selected-count').first());
     this.searchFilter = new SearchFilter(this.page);
     this.organisationAutocomplete = new Autocomplete(
       this.page,

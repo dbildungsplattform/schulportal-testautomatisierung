@@ -2,10 +2,11 @@ import { test as baseTest } from '../../base/fixtures';
 
 import { createPersonWithPersonenkontext } from '../../base/api/personApi';
 import { createRolle, RollenArt } from '../../base/api/rolleApi';
+import { DEV, STAGE } from '../../base/tags';
 import { generateRolleName } from '../../base/utils/generateTestdata';
-import { Alert } from '../../pages/components/Alert';
 import { RolleDetailsViewPage } from '../../pages/admin/rollen/RolleDetailsView.page';
 import { RolleManagementViewPage } from '../../pages/admin/rollen/RolleManagementView.page';
+import { Alert } from '../../pages/components/Alert';
 
 interface RolleFixture {
   rolleName: string;
@@ -25,7 +26,7 @@ const test = baseTest.extend<{ rolle: RolleFixture }>({
 });
 
 test.describe(`Testfälle für die Rollenlöschung: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
-  test('Erfolgreich löschen', async ({ rolle }) => {
+  test('Erfolgreich löschen', { tag: [DEV, STAGE] }, async ({ rolle }) => {
     const { rolleDetailsView, rolleName } = rolle;
     const rolleManagementViewPage: RolleManagementViewPage = await rolleDetailsView.deleteRolle();
     await rolleManagementViewPage.setPageSize(300);
@@ -33,15 +34,19 @@ test.describe(`Testfälle für die Rollenlöschung: Umgebung: ${process.env.ENV}
   });
 
   // SPSH-2949
-  test('Vergebene Rolle löschen und Fehlermeldung prüfen', async ({ page, rolle, testSchule }) => {
-    const { rolleDetailsView, rolleName } = rolle;
-    await test.step('Rolle einer Person zuordnen', async () => {
-      await createPersonWithPersonenkontext(page, testSchule.name, rolleName);
-    });
-    const alert: Alert<RolleManagementViewPage> = await rolleDetailsView.attemptDeletionOfAssignedRolle();
-    await alert.assertExpectedTexts();
-    const rolleManagementViewPage: RolleManagementViewPage = await (await alert.confirm()).waitForPageLoad();
-    await rolleManagementViewPage.setPageSize(300);
-    await rolleManagementViewPage.checkIfRolleExists(rolleName);
-  });
+  test(
+    'Vergebene Rolle löschen und Fehlermeldung prüfen',
+    { tag: [DEV, STAGE] },
+    async ({ page, rolle, testSchule }) => {
+      const { rolleDetailsView, rolleName } = rolle;
+      await test.step('Rolle einer Person zuordnen', async () => {
+        await createPersonWithPersonenkontext(page, testSchule.name, rolleName);
+      });
+      const alert: Alert<RolleManagementViewPage> = await rolleDetailsView.attemptDeletionOfAssignedRolle();
+      await alert.assertExpectedTexts();
+      const rolleManagementViewPage: RolleManagementViewPage = await (await alert.confirm()).waitForPageLoad();
+      await rolleManagementViewPage.setPageSize(300);
+      await rolleManagementViewPage.checkIfRolleExists(rolleName);
+    },
+  );
 });
