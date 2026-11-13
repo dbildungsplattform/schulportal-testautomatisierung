@@ -6,13 +6,15 @@ import { fileURLToPath } from 'url';
 const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);
 
-const FRONTEND_URL: string = process.env.FRONTEND_URL || '';
-
 dotenv.config({
   path: './.env.dev',
 });
 
 dotenv.config({ path: path.resolve(dirname, '.env'), override: true });
+
+const FRONTEND_URL: string = process.env.FRONTEND_URL || '';
+export const ignoreHTTPSErrors: boolean =
+  FRONTEND_URL !== '' && ['localhost', '127.0.0.1'].includes(new URL(FRONTEND_URL).hostname);
 
 export const workers: number = 4;
 
@@ -37,6 +39,7 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     baseURL: FRONTEND_URL,
     headless: true,
+    ignoreHTTPSErrors,
   },
 
   projects: [
@@ -45,7 +48,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
       },
     },
     {
@@ -53,7 +55,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Firefox'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
       },
     },
     {
@@ -62,7 +63,6 @@ export default defineConfig({
       use: {
         ...devices['Desktop Safari'],
         viewport: { width: 1920, height: 1080 },
-        ignoreHTTPSErrors: true,
         contextOptions: {
           reducedMotion: 'reduce',
         },
