@@ -7,6 +7,7 @@ import { createKlasse, createSchule } from '../../base/api/organisationApi';
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { landSH } from '../../base/organisation';
 import { landesadminRolle, schuelerRolle } from '../../base/rollen';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import {
   generateKlassenname,
@@ -93,7 +94,7 @@ for (const szenario of klassennameSzenarien) {
       personImportPage = await personManagementPage.getMenu().navigateToPersonImport();
     });
 
-    test(`Benutzer importieren`, async ({ page }: PlaywrightTestArgs) => {
+    test(`Benutzer importieren`, { tag: [DEV, STAGE] }, async ({ page }: PlaywrightTestArgs) => {
       test.slow();
 
       await test.step('Schule auswählen', async () => {

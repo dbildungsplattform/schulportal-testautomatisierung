@@ -1,6 +1,7 @@
 import { expect, Page } from '@playwright/test';
 import { ServiceProviderKategorie } from '../../base/api/generated';
 import { test as base, TestSchule } from '../../base/fixtures';
+import { DEV, STAGE } from '../../base/tags';
 import { generateAngebotname } from '../../base/utils/generateTestdata';
 import { ServiceProviderCreationSuccessPage } from '../../pages/admin/service-provider/ServiceProviderCreationSuccessPage.page';
 import {
@@ -67,104 +68,118 @@ const test = base.extend<{
 });
 
 test.describe('Schulisches Angebot erstellen', () => {
-  test('Als Landesadmin ein schulisches Angebot erstellen', async ({ angebotCreation, testSchule }) => {
-    const { serviceProviderCreationPage, angebot } = angebotCreation;
-    await test.step('Schule auswählen', async () => {
-      await serviceProviderCreationPage.selectOrganisation(testSchule.name);
-    });
+  test(
+    'Als Landesadmin ein schulisches Angebot erstellen',
+    { tag: [DEV, STAGE] },
+    async ({ angebotCreation, testSchule }) => {
+      const { serviceProviderCreationPage, angebot } = angebotCreation;
 
-    await test.step('Name eingeben', async () => {
-      await serviceProviderCreationPage.enterName(angebot.name);
-    });
+      await test.step('Schule auswählen', async () => {
+        await serviceProviderCreationPage.selectOrganisation(testSchule.name);
+      });
 
-    await test.step('Url eingeben', async () => {
-      await serviceProviderCreationPage.enterUrl(angebot.url);
-    });
+      await test.step('Name eingeben', async () => {
+        await serviceProviderCreationPage.enterName(angebot.name);
+      });
 
-    await test.step('Url testen', async () => {
-      const newPage: Page = await serviceProviderCreationPage.clickTestUrl();
-      expect(newPage.url()).toBe(angebot.url);
-    });
+      await test.step('Url eingeben', async () => {
+        await serviceProviderCreationPage.enterUrl(angebot.url);
+      });
 
-    await test.step('Logo auswählen', async () => {
-      await serviceProviderCreationPage.selectLogo({ logoAlt: angebot.logoAlt });
-    });
+      await test.step('Url testen', async () => {
+        const newPage: Page = await serviceProviderCreationPage.clickTestUrl();
+        expect(newPage.url()).toBe(angebot.url);
+      });
 
-    await test.step('Vorschau prüfen', async () => {
-      await serviceProviderCreationPage.assertPreview(angebot.name, angebot.logoAlt);
-    });
+      await test.step('Logo auswählen', async () => {
+        await serviceProviderCreationPage.selectLogo({ logoAlt: angebot.logoAlt });
+      });
 
-    await test.step('Standardwerte prüfen', async () => {
-      await serviceProviderCreationPage.assertDefaultValuesSet();
-    });
+      await test.step('Vorschau prüfen', async () => {
+        await serviceProviderCreationPage.assertPreview(angebot.name, angebot.logoAlt);
+      });
 
-    const successPage: ServiceProviderCreationSuccessPage = await test.step('Angebot anlegen', async () => {
-      return await serviceProviderCreationPage.clickSubmit();
-    });
+      await test.step('Standardwerte prüfen', async () => {
+        await serviceProviderCreationPage.assertDefaultValuesSet();
+      });
 
-    await test.step('Erfolgsmeldung prüfen', async () => {
-      await successPage.assertSuccessPage(angebot);
-    });
+      const successPage: ServiceProviderCreationSuccessPage = await test.step('Angebot anlegen', async () => {
+        return await serviceProviderCreationPage.clickSubmit();
+      });
 
-    await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
-      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
-      await detailsPage.assertServiceProviderDetailsHeadline(testSchule.name);
-      await detailsPage.assertServiceProviderDetails(angebot);
-      await detailsPage.assertRollenerweiterungenDetails();
-    });
-  });
+      await test.step('Erfolgsmeldung prüfen', async () => {
+        await successPage.assertSuccessPage(angebot);
+      });
 
-  test('Als Schuladmin ein schulisches Angebot erstellen', async ({ angebotCreationSchuladmin, asSchuladmin }) => {
-    const { serviceProviderCreationPage, angebot } = angebotCreationSchuladmin;
-    await test.step('Schule ist ausgewählt', async () => {
-      await serviceProviderCreationPage.assertSchulePreselected(asSchuladmin.schule.name);
-    });
+      await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
+        const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
+        await detailsPage.assertServiceProviderDetailsHeadline(testSchule.name);
+        await detailsPage.assertServiceProviderDetails(angebot);
+        await detailsPage.assertRollenerweiterungenDetails();
+      });
+    },
+  );
 
-    await test.step('Name eingeben', async () => {
-      await serviceProviderCreationPage.enterName(angebot.name);
-    });
+  test(
+    'Als Schuladmin ein schulisches Angebot erstellen',
+    { tag: [DEV, STAGE] },
+    async ({ angebotCreationSchuladmin, asSchuladmin }) => {
+      const { serviceProviderCreationPage, angebot } = angebotCreationSchuladmin;
 
-    await test.step('Url eingeben', async () => {
-      await serviceProviderCreationPage.enterUrl(angebot.url);
-    });
+      await test.step('Schule ist ausgewählt', async () => {
+        await serviceProviderCreationPage.assertSchulePreselected(asSchuladmin.schule.name);
+      });
 
-    await test.step('Logo auswählen', async () => {
-      await serviceProviderCreationPage.selectLogo({ logoAlt: angebot.logoAlt });
-    });
+      await test.step('Name eingeben', async () => {
+        await serviceProviderCreationPage.enterName(angebot.name);
+      });
 
-    await test.step('Vorschau prüfen', async () => {
-      await serviceProviderCreationPage.assertPreview(angebot.name, angebot.logoAlt);
-    });
+      await test.step('Url eingeben', async () => {
+        await serviceProviderCreationPage.enterUrl(angebot.url);
+      });
 
-    await test.step('Standardwerte prüfen', async () => {
-      await serviceProviderCreationPage.assertDefaultValuesSet();
-    });
+      await test.step('Logo auswählen', async () => {
+        await serviceProviderCreationPage.selectLogo({ logoAlt: angebot.logoAlt });
+      });
 
-    await test.step('Felder sind für Schuladmin nicht änderbar', async () => {
-      await serviceProviderCreationPage.assertSchuladminFieldsDisabled();
-    });
+      await test.step('Vorschau prüfen', async () => {
+        await serviceProviderCreationPage.assertPreview(angebot.name, angebot.logoAlt);
+      });
 
-    const successPage: ServiceProviderCreationSuccessPage = await test.step('Angebot anlegen', async () => {
-      return await serviceProviderCreationPage.clickSubmit();
-    });
+      await test.step('Standardwerte prüfen', async () => {
+        await serviceProviderCreationPage.assertDefaultValuesSet();
+      });
 
-    await test.step('Erfolgsmeldung prüfen', async () => {
-      await successPage.assertSuccessPage(angebot);
-    });
+      await test.step('Felder sind für Schuladmin nicht änderbar', async () => {
+        await serviceProviderCreationPage.assertSchuladminFieldsDisabled();
+      });
 
-    await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
-      const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
-      await detailsPage.assertServiceProviderDetailsHeadline(asSchuladmin.schule.name);
-      await detailsPage.assertServiceProviderDetails(angebot);
-      await detailsPage.assertRollenerweiterungenDetails();
-    });
-  });
+      const successPage: ServiceProviderCreationSuccessPage = await test.step('Angebot anlegen', async () => {
+        return await serviceProviderCreationPage.clickSubmit();
+      });
 
-  test('Als Schuladmin mit 2 Schulen Organisationsfilter prüfen', async ({ angebotCreationSchuladminWith2Schulen }) => {
-    const { serviceProviderCreationPage, schulen } = angebotCreationSchuladminWith2Schulen;
+      await test.step('Erfolgsmeldung prüfen', async () => {
+        await successPage.assertSuccessPage(angebot);
+      });
 
-    await test.step('Schulen sind auswählbar', async () => {
-      await serviceProviderCreationPage.assertSelectableSchulen(schulen.map((schule) => schule.name));
-    });
-  });
+      await test.step('Zur Rollenauswahl navigieren, angezeigte Werte und Bearbeitbarkeit prüfen', async () => {
+        const detailsPage: ServiceProviderDetailsBySchuleViewPage = await successPage.navigateToRollenauswahl();
+        await detailsPage.assertServiceProviderDetailsHeadline(asSchuladmin.schule.name);
+        await detailsPage.assertServiceProviderDetails(angebot);
+        await detailsPage.assertRollenerweiterungenDetails();
+      });
+    },
+  );
+
+  test(
+    'Als Schuladmin mit 2 Schulen Organisationsfilter prüfen',
+    { tag: [DEV, STAGE] },
+    async ({ angebotCreationSchuladminWith2Schulen }) => {
+      const { serviceProviderCreationPage, schulen } = angebotCreationSchuladminWith2Schulen;
+
+      await test.step('Schulen sind auswählbar', async () => {
+        await serviceProviderCreationPage.assertSelectableSchulen(schulen.map((schule) => schule.name));
+      });
+    },
+  );
 });
