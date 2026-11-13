@@ -3,6 +3,7 @@ import { test as baseTest } from '../../base/fixtures';
 import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { testschuleName } from '../../base/organisation';
 import { lehrkraftOeffentlichRolle } from '../../base/rollen';
+import { DEV, STAGE } from '../../base/tags';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 import { PersonManagementViewPage } from '../../pages/admin/personen/PersonManagementView.page';
 
@@ -33,7 +34,7 @@ const test = baseTest.extend<{ lehrkraft: UserInfo }>({
 
 test.describe(`Testfälle für das Personen sperren: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
   lockOptions.forEach(({ description, until, expectUntil }: LockOption) => {
-    test(`Person via Gesamtübersicht ${description}`, async ({ asLandesadmin, lehrkraft }) => {
+    test(`Person via Gesamtübersicht ${description}`, { tag: [DEV, STAGE] }, async ({ asLandesadmin, lehrkraft }) => {
       const personDetailsViewPage: PersonDetailsViewPage =
         await test.step(`Zur Gesamtübersicht navigieren`, async () => {
           const personenManagementViewPage: PersonManagementViewPage = asLandesadmin.personManagementViewPage;
