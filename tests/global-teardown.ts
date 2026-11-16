@@ -23,6 +23,7 @@ import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
+import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
 const shardIndex = process.env.SHARD_INDEX ?? '0';
@@ -76,7 +77,7 @@ export default async function globalTeardown(): Promise<void> {
     const browser: Browser = await chromium.launch();
     const context: BrowserContext = await browser.newContext({
       baseURL: FRONTEND_URL,
-      ignoreHTTPSErrors: true,
+      ignoreHTTPSErrors,
     });
     const page: Page = await context.newPage();
 

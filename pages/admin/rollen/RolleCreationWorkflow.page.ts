@@ -36,6 +36,7 @@ export class RolleCreationWorkflow {
 
   public async selectSystemrechte(systemrechte: RolleCreationParams['systemrechte']): Promise<void> {
     for (const systemrecht of systemrechte) {
+      await this.page.getByTestId('systemrechte-select').scrollIntoViewIfNeeded();
       await this.rolleForm.systemrechte.inputElement.selectByTitle(systemrecht);
     }
   }

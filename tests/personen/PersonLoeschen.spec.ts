@@ -2,10 +2,11 @@ import { createPersonWithPersonenkontext, UserInfo } from '../../base/api/person
 import { test } from '../../base/fixtures';
 import { testschuleName } from '../../base/organisation';
 import { lehrkraftOeffentlichRolle } from '../../base/rollen';
+import { DEV, STAGE } from '../../base/tags';
 import { PersonDetailsViewPage } from '../../pages/admin/personen/details/PersonDetailsView.page';
 
 test.describe(`Testfälle für das Personen löschen: Umgebung: ${process.env.ENV}: URL: ${process.env.FRONTEND_URL}:`, () => {
-  test('Person via Gesamtübersicht löschen', async ({ page, asLandesadmin }) => {
+  test('Person via Gesamtübersicht löschen', { tag: [DEV, STAGE] }, async ({ page, asLandesadmin }) => {
     const userInfo: UserInfo = await test.step('Daten anlegen', async () =>
       createPersonWithPersonenkontext(page, testschuleName, lehrkraftOeffentlichRolle));
     const personDetailsViewPage: PersonDetailsViewPage = await test.step(`Zur Gesamtübersicht navigieren`, async () => {
