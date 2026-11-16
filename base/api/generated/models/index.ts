@@ -57,7 +57,6 @@ export * from './OrganisationRefResponse';
 export * from './OrganisationResponse';
 export * from './OrganisationResponseLegacy';
 export * from './OrganisationRootChildrenResponse';
-export * from './OrganisationsByIdsBodyParams';
 export * from './OrganisationsTyp';
 export * from './OrganisationsbeziehungResponse';
 export * from './OrganisationsbeziehungsTyp';
