@@ -16,13 +16,16 @@
 import * as runtime from '../runtime';
 import type {
   CreateOrganisationBodyParams,
+  CreateOrganisationsbeziehungBodyParams,
   DbiamOrganisationError,
   OrganisationByIdBodyParams,
   OrganisationByNameBodyParams,
   OrganisationResponse,
   OrganisationResponseLegacy,
   OrganisationRootChildrenResponse,
+  OrganisationsByIdsBodyParams,
   OrganisationsTyp,
+  OrganisationsbeziehungResponse,
   ParentOrganisationenResponse,
   ParentOrganisationsByIdsBodyParams,
   RollenSystemRechtEnum,
@@ -31,6 +34,8 @@ import type {
 import {
     CreateOrganisationBodyParamsFromJSON,
     CreateOrganisationBodyParamsToJSON,
+    CreateOrganisationsbeziehungBodyParamsFromJSON,
+    CreateOrganisationsbeziehungBodyParamsToJSON,
     DbiamOrganisationErrorFromJSON,
     DbiamOrganisationErrorToJSON,
     OrganisationByIdBodyParamsFromJSON,
@@ -43,8 +48,12 @@ import {
     OrganisationResponseLegacyToJSON,
     OrganisationRootChildrenResponseFromJSON,
     OrganisationRootChildrenResponseToJSON,
+    OrganisationsByIdsBodyParamsFromJSON,
+    OrganisationsByIdsBodyParamsToJSON,
     OrganisationsTypFromJSON,
     OrganisationsTypToJSON,
+    OrganisationsbeziehungResponseFromJSON,
+    OrganisationsbeziehungResponseToJSON,
     ParentOrganisationenResponseFromJSON,
     ParentOrganisationenResponseToJSON,
     ParentOrganisationsByIdsBodyParamsFromJSON,
@@ -64,8 +73,16 @@ export interface OrganisationControllerCreateOrganisationRequest {
     createOrganisationBodyParams: CreateOrganisationBodyParams;
 }
 
+export interface OrganisationControllerCreateOrganisationsbeziehungRequest {
+    createOrganisationsbeziehungBodyParams: CreateOrganisationsbeziehungBodyParams;
+}
+
 export interface OrganisationControllerDeleteOrganisationRequest {
     organisationId: string;
+}
+
+export interface OrganisationControllerDeleteOrganisationsbeziehungRequest {
+    organisationsbeziehungId: string;
 }
 
 export interface OrganisationControllerEnableForitslearningRequest {
@@ -74,6 +91,10 @@ export interface OrganisationControllerEnableForitslearningRequest {
 
 export interface OrganisationControllerFindOrganisationByIdRequest {
     organisationId: string;
+}
+
+export interface OrganisationControllerFindOrganisationsByIdsRequest {
+    organisationsByIdsBodyParams: OrganisationsByIdsBodyParams;
 }
 
 export interface OrganisationControllerFindOrganizationsRequest {
@@ -87,7 +108,6 @@ export interface OrganisationControllerFindOrganizationsRequest {
     excludeTyp?: Array<OrganisationsTyp>;
     administriertVon?: Array<string>;
     zugehoerigZu?: Array<string>;
-    organisationIds?: Array<string>;
     sortOrder?: OrganisationControllerFindOrganizationsSortOrderEnum;
     sortField?: OrganisationControllerFindOrganizationsSortFieldEnum;
     getChildrenRecursively?: boolean | null;
@@ -153,6 +173,22 @@ export interface OrganisationenApiInterface {
     organisationControllerCreateOrganisation(requestParameters: OrganisationControllerCreateOrganisationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganisationResponse>;
 
     /**
+     * Create a relationship between two organisations.
+     * @summary 
+     * @param {CreateOrganisationsbeziehungBodyParams} createOrganisationsbeziehungBodyParams 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrganisationenApiInterface
+     */
+    organisationControllerCreateOrganisationsbeziehungRaw(requestParameters: OrganisationControllerCreateOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganisationsbeziehungResponse>>;
+
+    /**
+     * Create a relationship between two organisations.
+     * 
+     */
+    organisationControllerCreateOrganisationsbeziehung(requestParameters: OrganisationControllerCreateOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganisationsbeziehungResponse>;
+
+    /**
      * Delete an organisation by id.
      * @summary 
      * @param {string} organisationId The id of an organization
@@ -167,6 +203,22 @@ export interface OrganisationenApiInterface {
      * 
      */
     organisationControllerDeleteOrganisation(requestParameters: OrganisationControllerDeleteOrganisationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
+
+    /**
+     * Delete an organisation relationship by id.
+     * @summary 
+     * @param {string} organisationsbeziehungId ID der Organisationsbeziehung.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrganisationenApiInterface
+     */
+    organisationControllerDeleteOrganisationsbeziehungRaw(requestParameters: OrganisationControllerDeleteOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>>;
+
+    /**
+     * Delete an organisation relationship by id.
+     * 
+     */
+    organisationControllerDeleteOrganisationsbeziehung(requestParameters: OrganisationControllerDeleteOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void>;
 
     /**
      * 
@@ -196,6 +248,19 @@ export interface OrganisationenApiInterface {
 
     /**
      * 
+     * @param {OrganisationsByIdsBodyParams} organisationsByIdsBodyParams 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrganisationenApiInterface
+     */
+    organisationControllerFindOrganisationsByIdsRaw(requestParameters: OrganisationControllerFindOrganisationsByIdsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OrganisationResponse>>>;
+
+    /**
+     */
+    organisationControllerFindOrganisationsByIds(requestParameters: OrganisationControllerFindOrganisationsByIdsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OrganisationResponse>>;
+
+    /**
+     * 
      * @param {number} [offset] The offset of the paginated list.
      * @param {number} [limit] The requested limit for the page size.
      * @param {string} [kennung] 
@@ -206,7 +271,6 @@ export interface OrganisationenApiInterface {
      * @param {Array<OrganisationsTyp>} [excludeTyp] 
      * @param {Array<string>} [administriertVon] 
      * @param {Array<string>} [zugehoerigZu] Liefert die Kind-Organisationen, die den angegebenen IDs zugehörig sind.
-     * @param {Array<string>} [organisationIds] Liefert Organisationen mit den angegebenen IDs, selbst wenn andere Filterkriterien nicht zutreffen (ODER-verknüpft mit anderen Kriterien).
      * @param {'asc' | 'desc'} [sortOrder] Order to sort by.
      * @param {'name' | 'kennung'} [sortField] Field to sort by.
      * @param {boolean} [getChildrenRecursively] 
@@ -413,6 +477,54 @@ export class OrganisationenApi extends runtime.BaseAPI implements Organisationen
     }
 
     /**
+     * Create a relationship between two organisations.
+     * 
+     */
+    async organisationControllerCreateOrganisationsbeziehungRaw(requestParameters: OrganisationControllerCreateOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OrganisationsbeziehungResponse>> {
+        if (requestParameters.createOrganisationsbeziehungBodyParams === null || requestParameters.createOrganisationsbeziehungBodyParams === undefined) {
+            throw new runtime.RequiredError('createOrganisationsbeziehungBodyParams','Required parameter requestParameters.createOrganisationsbeziehungBodyParams was null or undefined when calling organisationControllerCreateOrganisationsbeziehung.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/organisationen/beziehungen`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: CreateOrganisationsbeziehungBodyParamsToJSON(requestParameters.createOrganisationsbeziehungBodyParams),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OrganisationsbeziehungResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Create a relationship between two organisations.
+     * 
+     */
+    async organisationControllerCreateOrganisationsbeziehung(requestParameters: OrganisationControllerCreateOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganisationsbeziehungResponse> {
+        const response = await this.organisationControllerCreateOrganisationsbeziehungRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
      * Delete an organisation by id.
      * 
      */
@@ -454,6 +566,50 @@ export class OrganisationenApi extends runtime.BaseAPI implements Organisationen
      */
     async organisationControllerDeleteOrganisation(requestParameters: OrganisationControllerDeleteOrganisationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.organisationControllerDeleteOrganisationRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * Delete an organisation relationship by id.
+     * 
+     */
+    async organisationControllerDeleteOrganisationsbeziehungRaw(requestParameters: OrganisationControllerDeleteOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<void>> {
+        if (requestParameters.organisationsbeziehungId === null || requestParameters.organisationsbeziehungId === undefined) {
+            throw new runtime.RequiredError('organisationsbeziehungId','Required parameter requestParameters.organisationsbeziehungId was null or undefined when calling organisationControllerDeleteOrganisationsbeziehung.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/organisationen/beziehungen/{organisationsbeziehungId}`.replace(`{${"organisationsbeziehungId"}}`, encodeURIComponent(String(requestParameters.organisationsbeziehungId))),
+            method: 'DELETE',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.VoidApiResponse(response);
+    }
+
+    /**
+     * Delete an organisation relationship by id.
+     * 
+     */
+    async organisationControllerDeleteOrganisationsbeziehung(requestParameters: OrganisationControllerDeleteOrganisationsbeziehungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
+        await this.organisationControllerDeleteOrganisationsbeziehungRaw(requestParameters, initOverrides);
     }
 
     /**
@@ -540,6 +696,50 @@ export class OrganisationenApi extends runtime.BaseAPI implements Organisationen
 
     /**
      */
+    async organisationControllerFindOrganisationsByIdsRaw(requestParameters: OrganisationControllerFindOrganisationsByIdsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OrganisationResponse>>> {
+        if (requestParameters.organisationsByIdsBodyParams === null || requestParameters.organisationsByIdsBodyParams === undefined) {
+            throw new runtime.RequiredError('organisationsByIdsBodyParams','Required parameter requestParameters.organisationsByIdsBodyParams was null or undefined when calling organisationControllerFindOrganisationsByIds.');
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/organisationen/by-ids`,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: OrganisationsByIdsBodyParamsToJSON(requestParameters.organisationsByIdsBodyParams),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OrganisationResponseFromJSON));
+    }
+
+    /**
+     */
+    async organisationControllerFindOrganisationsByIds(requestParameters: OrganisationControllerFindOrganisationsByIdsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OrganisationResponse>> {
+        const response = await this.organisationControllerFindOrganisationsByIdsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async organisationControllerFindOrganizationsRaw(requestParameters: OrganisationControllerFindOrganizationsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OrganisationResponse>>> {
         const queryParameters: any = {};
 
@@ -581,10 +781,6 @@ export class OrganisationenApi extends runtime.BaseAPI implements Organisationen
 
         if (requestParameters.zugehoerigZu) {
             queryParameters['zugehoerigZu'] = requestParameters.zugehoerigZu;
-        }
-
-        if (requestParameters.organisationIds) {
-            queryParameters['organisationIds'] = requestParameters.organisationIds;
         }
 
         if (requestParameters.sortOrder !== undefined) {

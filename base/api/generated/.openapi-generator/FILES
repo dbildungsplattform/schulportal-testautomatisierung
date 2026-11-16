@@ -27,8 +27,8 @@ models/AssignHardwareTokenBodyParams.ts
 models/AssignHardwareTokenResponse.ts
 models/CreateOrUpdateMeldungBodyParams.ts
 models/CreateOrganisationBodyParams.ts
+models/CreateOrganisationsbeziehungBodyParams.ts
 models/CreateRolleBodyParams.ts
-models/CreateRollenerweiterungBodyParams.ts
 models/CreateServiceProviderBodyParams.ts
 models/CreateServiceProviderResponse.ts
 models/CsrfTokenResponse.ts
@@ -48,6 +48,7 @@ models/DbiamPersonError.ts
 models/DbiamPersonenkontextBodyParams.ts
 models/DbiamPersonenkontextError.ts
 models/DbiamPersonenkontexteUpdateError.ts
+models/DbiamPrivacyIdeaAdministrationError.ts
 models/DbiamRolleError.ts
 models/DbiamUpdatePersonenkontexteBodyParams.ts
 models/EmailAddressStatus.ts
@@ -77,7 +78,10 @@ models/OrganisationRefResponse.ts
 models/OrganisationResponse.ts
 models/OrganisationResponseLegacy.ts
 models/OrganisationRootChildrenResponse.ts
+models/OrganisationsByIdsBodyParams.ts
 models/OrganisationsTyp.ts
+models/OrganisationsbeziehungResponse.ts
+models/OrganisationsbeziehungsTyp.ts
 models/ParentOrganisationenResponse.ts
 models/ParentOrganisationsByIdsBodyParams.ts
 models/PersonControllerFindPersonenkontexte200Response.ts
@@ -85,8 +89,13 @@ models/PersonControllerFindPersonenkontexte200ResponseAllOf.ts
 models/PersonEmailResponse.ts
 models/PersonFrontendControllerFindPersons200Response.ts
 models/PersonFrontendControllerFindPersons200ResponseAllOf.ts
+models/PersonInfoDtoV2.ts
+models/PersonInfoKontextDtoV2.ts
+models/PersonInfoKontextErreichbarkeitDtoV2.ts
 models/PersonInfoKontextErreichbarkeitResponseV1.ts
 models/PersonInfoKontextResponseV1.ts
+models/PersonInfoPersonDtoV2.ts
+models/PersonInfoPersonNameDtoV2.ts
 models/PersonInfoPersonNameResponseV1.ts
 models/PersonInfoPersonResponseV1.ts
 models/PersonInfoResponse.ts
@@ -101,7 +110,9 @@ models/PersonNestedInPersonInfoResponse.ts
 models/PersonResponse.ts
 models/PersonResponseEmail.ts
 models/PersonTimeLimitInfoResponse.ts
+models/PersonenInfoKontextGruppeDtoV2.ts
 models/PersonenInfoKontextGruppeResponseV1.ts
+models/PersonenInfoKontextOrganisationDtoV2.ts
 models/PersonenInfoKontextOrganisationResponse.ts
 models/PersonenInfoKontextOrganisationResponseV1.ts
 models/PersonenInfoKontextResponse.ts
@@ -113,6 +124,7 @@ models/PersonenkontextWorkflowResponse.ts
 models/PersonenkontexteUpdateResponse.ts
 models/Personenstatus.ts
 models/PersonenuebersichtBodyParams.ts
+models/PrivacyIdeaErrorEnum.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200Response.ts
 models/ProviderControllerFindRollenerweiterungenByServiceProviderId200ResponseAllOf.ts
 models/ProviderControllerGetAvailableServiceProviders200Response.ts
@@ -133,7 +145,6 @@ models/RollenMerkmal.ts
 models/RollenSystemRechtEnum.ts
 models/RollenSystemRechtServiceProviderIDResponse.ts
 models/RollenerweiterungForManageableServiceProviderResponse.ts
-models/RollenerweiterungResponse.ts
 models/RollenerweiterungWithExtendedDataResponse.ts
 models/ScopeOrder.ts
 models/ServiceProviderIdNameResponse.ts
