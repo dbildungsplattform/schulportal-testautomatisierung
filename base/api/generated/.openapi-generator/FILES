@@ -79,6 +79,7 @@ models/OrganisationRefResponse.ts
 models/OrganisationResponse.ts
 models/OrganisationResponseLegacy.ts
 models/OrganisationRootChildrenResponse.ts
+models/OrganisationsByIdsBodyParams.ts
 models/OrganisationsTyp.ts
 models/OrganisationsbeziehungResponse.ts
 models/OrganisationsbeziehungsTyp.ts
