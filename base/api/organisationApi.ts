@@ -158,7 +158,7 @@ export async function createSchule(page: Page, name: string, kennung?: string, e
       zugehoerigZu: traegerId,
       name: name,
       kennung: kennung ?? generateDienststellenNr(),
-      ...(emailAddress === undefined ? {} : { emailAdress: emailAddress }),
+      emailAdress: emailAddress,
       typ: OrganisationsTyp.Schule,
     };
 

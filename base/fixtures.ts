@@ -92,6 +92,8 @@ export const test = base.extend<{
   asLandesadmin: LandesadminFixture;
   /** Creates a school without a DstNr; Landesadmin stays logged in on PersonManagementView. */
   testSchule: TestSchule;
+  /** Creates a school with a DstNr; Landesadmin stays logged in on PersonManagementView. */
+  testSchuleMitDstNr: TestSchuleMitDstNr;
   /** Creates a school with a DstNr and email; Landesadmin stays logged in on PersonManagementView. */
   testSchuleMitDstNrUndEmail: TestSchuleMitDstNrUndEmail;
   /** Creates a class in testSchule; Landesadmin stays logged in on PersonManagementView. */
@@ -151,6 +153,13 @@ export const test = base.extend<{
     const name: string = generateSchulname();
     const id: string = await createSchule(page, name);
     await use({ id, name });
+  },
+
+  testSchuleMitDstNr: async ({ page, asLandesadmin: _asLandesadmin }, use) => {
+    const name: string = generateSchulname();
+    const dstNr: string = generateDienststellenNr();
+    const id: string = await createSchule(page, name, dstNr);
+    await use({ id, name, dstNr });
   },
 
   testSchuleMitDstNrUndEmail: async ({ page, asLandesadmin: _asLandesadmin }, use) => {
