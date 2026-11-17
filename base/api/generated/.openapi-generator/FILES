@@ -13,7 +13,6 @@ apis/MetricsApi.ts
 apis/OrganisationenApi.ts
 apis/PersonInfoApi.ts
 apis/PersonenApi.ts
-apis/PersonenFrontendApi.ts
 apis/PersonenInfoApi.ts
 apis/PersonenkontextApi.ts
 apis/ProviderApi.ts
@@ -87,9 +86,9 @@ models/ParentOrganisationenResponse.ts
 models/ParentOrganisationsByIdsBodyParams.ts
 models/PersonControllerFindPersonenkontexte200Response.ts
 models/PersonControllerFindPersonenkontexte200ResponseAllOf.ts
+models/PersonControllerFindPersons200Response.ts
+models/PersonControllerFindPersons200ResponseAllOf.ts
 models/PersonEmailResponse.ts
-models/PersonFrontendControllerFindPersons200Response.ts
-models/PersonFrontendControllerFindPersons200ResponseAllOf.ts
 models/PersonInfoDtoV2.ts
 models/PersonInfoKontextDtoV2.ts
 models/PersonInfoKontextErreichbarkeitDtoV2.ts
@@ -103,6 +102,7 @@ models/PersonInfoResponse.ts
 models/PersonInfoResponseV1.ts
 models/PersonLandesbediensteterSearchPersonenkontextResponse.ts
 models/PersonLandesbediensteterSearchResponse.ts
+models/PersonLockOccasion.ts
 models/PersonLockResponse.ts
 models/PersonMetadataBodyParams.ts
 models/PersonNameParams.ts

@@ -23,39 +23,39 @@ import {
 /**
  * 
  * @export
- * @interface PersonFrontendControllerFindPersons200Response
+ * @interface PersonControllerFindPersons200Response
  */
-export interface PersonFrontendControllerFindPersons200Response {
+export interface PersonControllerFindPersons200Response {
     /**
      * 
      * @type {number}
-     * @memberof PersonFrontendControllerFindPersons200Response
+     * @memberof PersonControllerFindPersons200Response
      */
     total: number;
     /**
      * 
      * @type {number}
-     * @memberof PersonFrontendControllerFindPersons200Response
+     * @memberof PersonControllerFindPersons200Response
      */
     offset: number;
     /**
      * 
      * @type {number}
-     * @memberof PersonFrontendControllerFindPersons200Response
+     * @memberof PersonControllerFindPersons200Response
      */
     limit: number;
     /**
      * 
      * @type {Array<PersonendatensatzResponse>}
-     * @memberof PersonFrontendControllerFindPersons200Response
+     * @memberof PersonControllerFindPersons200Response
      */
     items: Array<PersonendatensatzResponse>;
 }
 
 /**
- * Check if a given object implements the PersonFrontendControllerFindPersons200Response interface.
+ * Check if a given object implements the PersonControllerFindPersons200Response interface.
  */
-export function instanceOfPersonFrontendControllerFindPersons200Response(value: object): boolean {
+export function instanceOfPersonControllerFindPersons200Response(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "total" in value;
     isInstance = isInstance && "offset" in value;
@@ -65,11 +65,11 @@ export function instanceOfPersonFrontendControllerFindPersons200Response(value: 
     return isInstance;
 }
 
-export function PersonFrontendControllerFindPersons200ResponseFromJSON(json: any): PersonFrontendControllerFindPersons200Response {
-    return PersonFrontendControllerFindPersons200ResponseFromJSONTyped(json, false);
+export function PersonControllerFindPersons200ResponseFromJSON(json: any): PersonControllerFindPersons200Response {
+    return PersonControllerFindPersons200ResponseFromJSONTyped(json, false);
 }
 
-export function PersonFrontendControllerFindPersons200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): PersonFrontendControllerFindPersons200Response {
+export function PersonControllerFindPersons200ResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): PersonControllerFindPersons200Response {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -82,7 +82,7 @@ export function PersonFrontendControllerFindPersons200ResponseFromJSONTyped(json
     };
 }
 
-export function PersonFrontendControllerFindPersons200ResponseToJSON(value?: PersonFrontendControllerFindPersons200Response | null): any {
+export function PersonControllerFindPersons200ResponseToJSON(value?: PersonControllerFindPersons200Response | null): any {
     if (value === undefined) {
         return undefined;
     }
