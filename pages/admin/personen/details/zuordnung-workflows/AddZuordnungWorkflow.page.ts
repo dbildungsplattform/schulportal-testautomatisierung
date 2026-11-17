@@ -33,7 +33,7 @@ export class AddZuordnungWorkflowPage extends BaseZuordnungWorkflowPage {
   }
 
   public async selectRolle(rolle: string): Promise<void> {
-    await this.rollen.searchByTitle(rolle, true, this.ENDPOINT);
+    await this.rollen.searchByTitle(rolle, true);
   }
 
   public async fillKopers(kopers: string): Promise<void> {

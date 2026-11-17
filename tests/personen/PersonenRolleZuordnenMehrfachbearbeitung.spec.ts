@@ -20,7 +20,7 @@ import {
 } from '../../base/rollen';
 import { typeSchueler } from '../../base/rollentypen';
 import { itslearning } from '../../base/sp';
-import { DEV } from '../../base/tags';
+import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration, logout } from '../../base/testHelperUtils';
 import { createMany } from '../../base/utils/concurrency';
 import {
@@ -459,83 +459,87 @@ for (const { adminType, rollenAssertions } of LEHR_ROLLEN_TEST_SCENARIOS) {
       await startPage.navigateToAdministration();
     });
 
-    test(`Rolle ${rolleToAssign} per Mehrfachbearbeitung zuweisen`, async ({ page }: PlaywrightTestArgs) => {
-      if (!rolleToAssign) {
-        throw new Error('Rolle zum Zuweisen ist nicht definiert');
-      }
-
-      let personManagementViewPage: PersonManagementViewPage = new PersonManagementViewPage(page);
-
-      await test.step('Personen auswählen', async () => {
-        if (adminType === 'Landesadmin') {
-          await personManagementViewPage.filterBySchule(schulName);
+    test(
+      `Rolle ${rolleToAssign} per Mehrfachbearbeitung zuweisen`,
+      { tag: [DEV, STAGE] },
+      async ({ page }: PlaywrightTestArgs) => {
+        if (!rolleToAssign) {
+          throw new Error('Rolle zum Zuweisen ist nicht definiert');
         }
-        await personManagementViewPage.filterByRolle(rolleName);
-        await personManagementViewPage.checkRowCount(userInfos.length);
-        await personManagementViewPage.toggleSelectAllRows(true);
-      });
 
-      const rolleZuordnenPage: RolleZuordnenPage = await test.step('Mehrfachbearbeitung auswählen', async () => {
-        return personManagementViewPage.startRolleZuordnen();
-      });
+        let personManagementViewPage: PersonManagementViewPage = new PersonManagementViewPage(page);
 
-      if (adminType === 'Schuladmin') {
-        await test.step('Prüfen, dass Schule vorausgewählt ist', async () => {
-          await rolleZuordnenPage.assertSelectedOrganisation(schulName);
-        });
-      } else {
-        await test.step('Schule auswählen', async () => {
-          await rolleZuordnenPage.selectOrganisation(schulName);
-        });
-      }
-
-      await test.step(`Prüfen, dass keine LEIT-Rolle gefunden wird`, async () => {
-        await rolleZuordnenPage.assertRolleNotFound(schuladminOeffentlichRolle);
-      });
-
-      for (const { rollenName, shouldKopersTextBeVisible, expectedBefristung } of rollenAssertions) {
-        await test.step(`Rolle ${rollenName} auswählen und Prüfen, dass der Submit-Button aktiviert ist`, async () => {
-          await rolleZuordnenPage.selectRolle(rollenName);
-          await rolleZuordnenPage.assertSubmitButtonEnabled();
-        });
-
-        await test.step('Ausgewählte Befristungsoption prüfen', async () => {
-          if (expectedBefristung === 'schuljahresende') {
-            await rolleZuordnenPage.assertSchuljahresendeChecked();
-          } else {
-            await rolleZuordnenPage.assertUnbefristetChecked();
+        await test.step('Personen auswählen', async () => {
+          if (adminType === 'Landesadmin') {
+            await personManagementViewPage.filterBySchule(schulName);
           }
+          await personManagementViewPage.filterByRolle(rolleName);
+          await personManagementViewPage.checkRowCount(userInfos.length);
+          await personManagementViewPage.toggleSelectAllRows(true);
         });
 
-        await test.step('KoPers.-Hinweis prüfen', async () => {
-          if (shouldKopersTextBeVisible) {
-            await rolleZuordnenPage.assertKopersTextIsVisible();
-          } else {
-            await rolleZuordnenPage.assertKopersTextIsNotVisible();
-          }
+        const rolleZuordnenPage: RolleZuordnenPage = await test.step('Mehrfachbearbeitung auswählen', async () => {
+          return personManagementViewPage.startRolleZuordnen();
         });
-      }
 
-      await test.step('Ausführen und Erfolgsmeldung prüfen', async () => {
-        await rolleZuordnenPage.submitRolleAssignment();
-        await rolleZuordnenPage.assertSuccessMessageIsVisible();
-      });
+        if (adminType === 'Schuladmin') {
+          await test.step('Prüfen, dass Schule vorausgewählt ist', async () => {
+            await rolleZuordnenPage.assertSelectedOrganisation(schulName);
+          });
+        } else {
+          await test.step('Schule auswählen', async () => {
+            await rolleZuordnenPage.selectOrganisation(schulName);
+          });
+        }
 
-      personManagementViewPage = await test.step('Dialog schließen', async () => {
-        return rolleZuordnenPage.closeModal();
-      });
+        await test.step(`Prüfen, dass keine LEIT-Rolle gefunden wird`, async () => {
+          await rolleZuordnenPage.assertRolleNotFound(schuladminOeffentlichRolle);
+        });
 
-      await test.step('Prüfen, dass die Rolle korrekt zugeordnet wurde', async () => {
-        await personManagementViewPage.assertThatAllPersonsHaveRolle(rolleToAssign);
-      });
+        for (const { rollenName, shouldKopersTextBeVisible, expectedBefristung } of rollenAssertions) {
+          await test.step(`Rolle ${rollenName} auswählen und Prüfen, dass der Submit-Button aktiviert ist`, async () => {
+            await rolleZuordnenPage.selectRolle(rollenName);
+            await rolleZuordnenPage.assertSubmitButtonEnabled();
+          });
 
-      await test.step('Prüfen, dass die Auswahl bestehen bleibt', async () => {
-        await Promise.all(
-          userInfos.map(async (userInfo: UserInfo) => {
-            return personManagementViewPage.checkPersonSelected(userInfo.username);
-          }),
-        );
-      });
-    });
+          await test.step('Ausgewählte Befristungsoption prüfen', async () => {
+            if (expectedBefristung === 'schuljahresende') {
+              await rolleZuordnenPage.assertSchuljahresendeChecked();
+            } else {
+              await rolleZuordnenPage.assertUnbefristetChecked();
+            }
+          });
+
+          await test.step('KoPers.-Hinweis prüfen', async () => {
+            if (shouldKopersTextBeVisible) {
+              await rolleZuordnenPage.assertKopersTextIsVisible();
+            } else {
+              await rolleZuordnenPage.assertKopersTextIsNotVisible();
+            }
+          });
+        }
+
+        await test.step('Ausführen und Erfolgsmeldung prüfen', async () => {
+          await rolleZuordnenPage.submitRolleAssignment();
+          await rolleZuordnenPage.assertSuccessMessageIsVisible();
+        });
+
+        personManagementViewPage = await test.step('Dialog schließen', async () => {
+          return rolleZuordnenPage.closeModal();
+        });
+
+        await test.step('Prüfen, dass die Rolle korrekt zugeordnet wurde', async () => {
+          await personManagementViewPage.assertThatAllPersonsHaveRolle(rolleToAssign);
+        });
+
+        await test.step('Prüfen, dass die Auswahl bestehen bleibt', async () => {
+          await Promise.all(
+            userInfos.map(async (userInfo: UserInfo) => {
+              return personManagementViewPage.checkPersonSelected(userInfo.username);
+            }),
+          );
+        });
+      },
+    );
   });
 }

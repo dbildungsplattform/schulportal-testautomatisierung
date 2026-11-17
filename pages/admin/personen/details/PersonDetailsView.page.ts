@@ -326,7 +326,7 @@ export class PersonDetailsViewPage {
     await expect(this.page.getByTestId('person-lock-card').getByTestId('layout-card-headline')).toHaveText(
       'Benutzer sperren',
     );
-    await expect(this.page.getByTestId('person-lock-card').getByRole('combobox', { name: 'Öffnen' })).toHaveValue(
+    await expect(this.page.getByTestId('person-lock-card').getByTestId('schule-select')).toContainText(
       'Land Schleswig-Holstein',
     );
     await expect(this.page.getByTestId('lock-user-info-text')).toHaveText(
@@ -480,6 +480,6 @@ export class PersonDetailsViewPage {
   public async assertUnbefristetIsDisabled(): Promise<void> {
     await expect(this.radioButtonBefristungSchuljahresende).toBeVisible();
     await expect(this.radioButtonUnbefristet).toBeVisible();
-    await expect(this.radioButtonUnbefristet).toBeDisabled();
+    await expect(this.radioButtonUnbefristet.getByLabel('Unbefristet')).toBeDisabled();
   }
 }

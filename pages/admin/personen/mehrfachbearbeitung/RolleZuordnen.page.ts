@@ -54,7 +54,10 @@ export class RolleZuordnenPage {
 
   public async assertRolleNotFound(name: string): Promise<void> {
     await this.rolleSelect.validateItemNotExists(name, true);
-    await this.page.waitForResponse('/api/rolle/for-personenkontext-creation*');
+    await this.page.waitForResponse((response: Response): boolean => {
+      const url: string = response.url();
+      return url.includes('rolle/for-personenkontext-creation');
+    });
     await this.rolleSelect.assertThatNoDataWasFound();
   }
 
