@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   sonarcloud:
-    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-nest-test-sonarcloud.yaml@8
+    uses: dBildungsplattform/dbp-github-workflows/.github/workflows/check-nest-test-sonarcloud.yaml@ac540af7a37263a102c7bc6c8c9447a7b176f027 # 8.6.0
     with:
       node_version: '18'
       skip_tests: true
