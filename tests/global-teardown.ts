@@ -6,10 +6,9 @@ import {
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
+  PersonControllerFindPersons200Response,
   PersonenApi,
   PersonendatensatzResponse,
-  PersonenFrontendApi,
-  PersonFrontendControllerFindPersons200Response,
   ProviderApi,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
   ProviderControllerGetManageableServiceProviders200Response,
@@ -19,11 +18,12 @@ import {
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
-import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
+import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
 import { getTestDataPrefix } from '../base/utils/generateTestdata';
+import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
 
@@ -74,7 +74,7 @@ export default async function globalTeardown(): Promise<void> {
     const browser: Browser = await chromium.launch();
     const context: BrowserContext = await browser.newContext({
       baseURL: FRONTEND_URL,
-      ignoreHTTPSErrors: true,
+      ignoreHTTPSErrors,
     });
     const page: Page = await context.newPage();
 
@@ -96,7 +96,6 @@ export default async function globalTeardown(): Promise<void> {
 async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
-    const personFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
     const providerApi: ProviderApi = constructProviderApi(page);
@@ -111,11 +110,10 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
 
     await cleanup(
       async () => {
-        const resp: PersonFrontendControllerFindPersons200Response =
-          await personFrontendApi.personFrontendControllerFindPersons({
-            suchFilter: testDataPrefix,
-            limit,
-          });
+        const resp: PersonControllerFindPersons200Response = await personApi.personControllerFindPersons({
+          suchFilter: testDataPrefix,
+          limit,
+        });
         console.log(`${resp.total} personen to delete`);
         return resp.items;
       },
