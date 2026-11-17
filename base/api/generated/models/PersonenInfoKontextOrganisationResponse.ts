@@ -53,6 +53,7 @@ export const PersonenInfoKontextOrganisationResponseTypEnum = {
     Root: 'ROOT',
     Land: 'LAND',
     Traeger: 'TRAEGER',
+    Behoerde: 'BEHOERDE',
     Schule: 'SCHULE',
     Klasse: 'KLASSE',
     Anbieter: 'ANBIETER',
