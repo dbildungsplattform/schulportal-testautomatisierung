@@ -23,32 +23,32 @@ import {
 /**
  * 
  * @export
- * @interface PersonFrontendControllerFindPersons200ResponseAllOf
+ * @interface PersonControllerFindPersons200ResponseAllOf
  */
-export interface PersonFrontendControllerFindPersons200ResponseAllOf {
+export interface PersonControllerFindPersons200ResponseAllOf {
     /**
      * 
      * @type {Array<PersonendatensatzResponse>}
-     * @memberof PersonFrontendControllerFindPersons200ResponseAllOf
+     * @memberof PersonControllerFindPersons200ResponseAllOf
      */
     items: Array<PersonendatensatzResponse>;
 }
 
 /**
- * Check if a given object implements the PersonFrontendControllerFindPersons200ResponseAllOf interface.
+ * Check if a given object implements the PersonControllerFindPersons200ResponseAllOf interface.
  */
-export function instanceOfPersonFrontendControllerFindPersons200ResponseAllOf(value: object): boolean {
+export function instanceOfPersonControllerFindPersons200ResponseAllOf(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "items" in value;
 
     return isInstance;
 }
 
-export function PersonFrontendControllerFindPersons200ResponseAllOfFromJSON(json: any): PersonFrontendControllerFindPersons200ResponseAllOf {
-    return PersonFrontendControllerFindPersons200ResponseAllOfFromJSONTyped(json, false);
+export function PersonControllerFindPersons200ResponseAllOfFromJSON(json: any): PersonControllerFindPersons200ResponseAllOf {
+    return PersonControllerFindPersons200ResponseAllOfFromJSONTyped(json, false);
 }
 
-export function PersonFrontendControllerFindPersons200ResponseAllOfFromJSONTyped(json: any, ignoreDiscriminator: boolean): PersonFrontendControllerFindPersons200ResponseAllOf {
+export function PersonControllerFindPersons200ResponseAllOfFromJSONTyped(json: any, ignoreDiscriminator: boolean): PersonControllerFindPersons200ResponseAllOf {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -58,7 +58,7 @@ export function PersonFrontendControllerFindPersons200ResponseAllOfFromJSONTyped
     };
 }
 
-export function PersonFrontendControllerFindPersons200ResponseAllOfToJSON(value?: PersonFrontendControllerFindPersons200ResponseAllOf | null): any {
+export function PersonControllerFindPersons200ResponseAllOfToJSON(value?: PersonControllerFindPersons200ResponseAllOf | null): any {
     if (value === undefined) {
         return undefined;
     }

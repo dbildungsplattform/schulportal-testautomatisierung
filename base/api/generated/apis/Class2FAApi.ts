@@ -17,6 +17,7 @@ import * as runtime from '../runtime';
 import type {
   AssignHardwareTokenBodyParams,
   AssignHardwareTokenResponse,
+  DbiamPrivacyIdeaAdministrationError,
   TokenInitBodyParams,
   TokenRequiredResponse,
   TokenStateResponse,
@@ -27,6 +28,8 @@ import {
     AssignHardwareTokenBodyParamsToJSON,
     AssignHardwareTokenResponseFromJSON,
     AssignHardwareTokenResponseToJSON,
+    DbiamPrivacyIdeaAdministrationErrorFromJSON,
+    DbiamPrivacyIdeaAdministrationErrorToJSON,
     TokenInitBodyParamsFromJSON,
     TokenInitBodyParamsToJSON,
     TokenRequiredResponseFromJSON,
