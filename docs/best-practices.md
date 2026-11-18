@@ -30,6 +30,10 @@ Every page must have a `waitForPageLoad()` method that checks at least one uniqu
 
 Inside pages, the term *workflow* describes a business process executed in the frontend that is composed in Playwright of multiple units (e.g. actions, pages, etc.).
 
+### Logout
+
+Use `HeaderPage.logout()` for logout and user switching. It waits for the logout redirect to the landing page and verifies the unauthenticated header before clearing cookies and invalidating the CSRF cache. Do not start a competing navigation to `/` or catch and ignore logout failures. Teardown should skip the test-user logout only when setup did not complete that user's login.
+
 ## Assertions
 
 - Prefer web-first assertions: `await expect(locator).toBeVisible()` instead of a separate `waitFor(...)` plus an additional `expect`.
