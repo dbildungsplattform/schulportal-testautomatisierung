@@ -159,7 +159,7 @@ import { HeaderPage } from '../../pages/components/Header.page';
           },
         );
 
-        test.only(`Als ${bezeichnung}: in der Ergebnisliste die Filter benutzen`, { tag: [DEV, STAGE] }, async () => {
+        test(`Als ${bezeichnung}: in der Ergebnisliste die Filter benutzen`, { tag: [DEV, STAGE] }, async () => {
           const testKlasse: string = generierteKlassenNamen[0];
 
           await test.step(`In der Ergebnisliste eine Klasse durch Filter suchen`, async () => {
