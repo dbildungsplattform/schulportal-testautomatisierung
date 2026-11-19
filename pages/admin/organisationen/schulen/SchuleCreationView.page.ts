@@ -19,7 +19,7 @@ export class SchuleCreationViewPage {
   private readonly ersatzSchuleOption: Locator = this.page.getByTestId('schulform-radio-button-1');
   private readonly dienststellenNrInputContainer: Locator = this.page.getByTestId('dienststellennummer-input');
   private readonly schulnameInputContainer: Locator = this.page.getByTestId('schulname-input');
-  private readonly emailAddressInputContainer: Locator = this.page.getByTestId('email-adress-input');
+  private readonly emailAddressInputContainer: Locator = this.page.getByTestId('email-address-input');
   private readonly schuleVerwerfenButton: Locator = this.page.getByTestId('schule-creation-form-discard-button');
   private readonly schuleAnlegenButton: Locator = this.page.getByTestId('schule-creation-form-submit-button');
 

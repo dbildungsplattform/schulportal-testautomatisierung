@@ -19,7 +19,7 @@ export class SchuleEditViewPage {
   public async editSchule(name: string, emailAddress?: string): Promise<SchuleEditSuccessPage> {
     await this.page.getByTestId('schulname-input').locator('input').fill(name);
     if (emailAddress !== undefined) {
-      await this.page.getByTestId('email-adress-input').locator('input').fill(emailAddress);
+      await this.page.getByTestId('email-address-input').locator('input').fill(emailAddress);
     }
     await this.page.getByTestId('schule-edit-form-submit-button').click();
     return new SchuleEditSuccessPage(this.page).waitForPageLoad();
