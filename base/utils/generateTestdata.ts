@@ -26,7 +26,7 @@ export function getTestDataPrefix(): string {
 }
 
 function encodeHexAsLetters(value: string): string {
-  return value.replace(/[0-9a-f]/g, (character: string): string => String.fromCharCode(65 + parseInt(character, 16)));
+  return value.replace(/[0-9a-f]/g, (character: string): string => String.fromCodePoint(65 + Number.parseInt(character, 16)));
 }
 
 export function generateVorname(): string {
