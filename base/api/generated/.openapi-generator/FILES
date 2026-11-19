@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/AuthApi.ts
 apis/Class2FAApi.ts
 apis/ConfigApi.ts
