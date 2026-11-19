@@ -66,7 +66,7 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 - The run token uses the first 80 bits of a SHA-256 hash, encoded as 20 letters. Shard digits are also encoded as letters (`0` becomes `A`, `1` becomes `B`, `10` becomes `BA`). This keeps the namespace compact and compatible with Personen names.
 - Generators resolve the namespace when called, not when imported. Neither generators nor teardown create a missing run ID.
 
-Entity-specific markers and random suffixes remain part of generated names. Numeric fields such as KoPers-Nr and Dienststellen-Nr retain their existing formats. Email local parts stay within 64 characters, including the namespace.
+Entity-specific markers and random suffixes remain part of generated names. Numeric fields such as KoPers-Nr and Dienststellen-Nr retain their existing formats. Email local parts stay within 64 characters, including the namespace. `generateNachname(suffix?)` reduces the Faker surname to ASCII letters and shortens it so the derived username (first letter of the Vorname plus the Nachname) stays within privacyIDEA's 40-character limit; an optional suffix is included in that budget.
 
 
 ## Generatoren ([base/utils/generateTestdata.ts](../base/utils/generateTestdata.ts))

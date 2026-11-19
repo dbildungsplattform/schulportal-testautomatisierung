@@ -39,12 +39,22 @@ export function generateVorname(): string {
   );
 }
 
-export function generateNachname(): string {
-  return (
-    `${getTestDataPrefix()}N` +
-    faker.person.lastName() +
-    generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic })
+// privacyIDEA stores usernames in a VARCHAR(40) column; the backend derives the username
+// from the first letter of the Vorname plus the Nachname reduced to ASCII letters.
+const maxUsernameLength: number = 40;
+
+function toAsciiLetters(value: string): string {
+  return value.normalize('NFD').replace(/[^A-Za-z]/g, '');
+}
+
+export function generateNachname(suffix: string = ''): string {
+  const prefix: string = `${getTestDataPrefix()}N`;
+  const randomPart: string = generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic });
+  const lastNameBudget: number = Math.max(
+    0,
+    maxUsernameLength - 1 - toAsciiLetters(prefix + randomPart + suffix).length,
   );
+  return prefix + toAsciiLetters(faker.person.lastName()).slice(0, lastNameBudget) + randomPart + suffix;
 }
 
 export function generateRolleName(): string {
