@@ -22,7 +22,7 @@ import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
-import { getTestDataPrefix } from '../base/utils/generateTestdata';
+import { getSchulnamePrefix, getTestDataPrefix } from '../base/utils/generateTestdata';
 import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
@@ -67,6 +67,7 @@ const maxAttempts: number = 3;
 
 export default async function globalTeardown(): Promise<void> {
   const testDataPrefix: string = getTestDataPrefix();
+  const schulnamePrefix: string = getSchulnamePrefix();
   console.log('Global teardown started');
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -79,7 +80,7 @@ export default async function globalTeardown(): Promise<void> {
     const page: Page = await context.newPage();
 
     try {
-      await runCleanup(page, testDataPrefix);
+      await runCleanup(page, testDataPrefix, schulnamePrefix);
       console.log('Global teardown finished successfully');
       return;
     } catch (error) {
@@ -93,7 +94,7 @@ export default async function globalTeardown(): Promise<void> {
   }
 }
 
-async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
+async function runCleanup(page: Page, testDataPrefix: string, schulnamePrefix: string): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
@@ -219,7 +220,7 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
       async () => {
         const wrappedResponse: ApiResponse<OrganisationResponse[]> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
-            searchString: testDataPrefix,
+            searchString: schulnamePrefix,
             typ: OrganisationsTyp.Schule,
             limit,
           });

@@ -62,8 +62,9 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 - CI supplies an ID containing the repository, workflow run, rerun attempt, job, browser, tag, and matrix shard.
 - Explicit IDs must contain only ASCII letters, digits, underscores, and hyphens. Never reuse an ID across independent runs.
 - `SHARD_INDEX` defaults to `0` for unsharded local runs and otherwise must be a non-negative safe integer without leading zeros.
-- `getTestDataPrefix()` in [generateTestdata.ts](../base/utils/generateTestdata.ts) is the single source for generation and cleanup: `TAuto-PW-<runToken>-S<shardToken>-`.
+- `getTestDataPrefix()` in [generateTestdata.ts](../base/utils/generateTestdata.ts) is the single source for generation and cleanup: `TAuto-PW-<runToken>-S<shardToken>-`. Schulen are the exception (see below).
 - The run token uses the first 80 bits of a SHA-256 hash, encoded as 20 letters. Shard digits are also encoded as letters (`0` becomes `A`, `1` becomes `B`, `10` becomes `BA`). This keeps the namespace compact and compatible with Personen names.
+- Schulnamen use `getSchulnamePrefix()`: `TAuto-PW-<schulToken>-`, where the Schul token encodes the first 24 bits of a SHA-256 hash of run ID and shard as 6 letters. The person details view truncates Schulnamen after 30 characters, and generated Schulnamen (29 characters) must stay below that limit to remain distinguishable.
 - Generators resolve the namespace when called, not when imported. Neither generators nor teardown create a missing run ID.
 
 Entity-specific markers and random suffixes remain part of generated names. Numeric fields such as KoPers-Nr and Dienststellen-Nr retain their existing formats. Email local parts stay within 64 characters, including the namespace. `generateNachname(suffix?)` reduces the Faker surname to ASCII letters and shortens it so the derived username (first letter of the Vorname plus the Nachname) stays within privacyIDEA's 40-character limit; an optional suffix is included in that budget.
@@ -71,7 +72,7 @@ Entity-specific markers and random suffixes remain part of generated names. Nume
 
 ## Generatoren ([base/utils/generateTestdata.ts](../base/utils/generateTestdata.ts))
 
-Examples below use shard `1`; `<runToken>` represents the run's encoded token.
+Examples below use shard `1`; `<runToken>` represents the run's encoded token and `<schulToken>` the 6-letter Schul token.
 
 | Function                                                    | Example output                                    |
 | ----------------------------------------------------------- | ------------------------------------------------- |
@@ -79,7 +80,7 @@ Examples below use shard `1`; `<runToken>` represents the run's encoded token.
 | `generateNachname()`                                         | `TAuto-PW-<runToken>-SB-NMeyerAbc`                   |
 | `generateRolleName()`                                        | `TAuto-PW-<runToken>-SB-R-fluminoQwe`                |
 | `generateKlassenname()`                                      | `TAuto-PW-<runToken>-SB-K-fluminorQwe`               |
-| `generateSchulname()`                                        | `TAuto-PW-<runToken>-SB-S-fluminorQwe`               |
+| `generateSchulname()`                                        | `TAuto-PW-<schulToken>-S-fluminorQwe`                |
 | `generateAngebotname()`                                      | `TAuto-PW-<runToken>-SB-A-fluminorQwe`               |
 | `generateEmailAdress()`                                     | `TAuto-PW-<runToken>-SB-E-Lara@example.orgXyz`       |
 | `generateKopersNr()`                                         | `081512345678`                                    |
@@ -88,7 +89,7 @@ Examples below use shard `1`; `<runToken>` represents the run's encoded token.
 
 ## Aufräumen
 
-[Global teardown](../tests/global-teardown.ts) searches only the complete current run-and-shard prefix, including its trailing separator. Search results are treated as owned by that namespace. Missing or invalid run/shard identities abort cleanup before a browser is opened; cleanup never falls back to a broad `TAuto-PW` or shard-only search.
+[Global teardown](../tests/global-teardown.ts) searches only the complete current run-and-shard prefix, including its trailing separator; Schulen are searched by the current Schul prefix (`TAuto-PW-<schulToken>-`). Search results are treated as owned by that namespace. The shorter Schul token makes accidental matches with other runs more likely than the full prefix, but still rare. Missing or invalid run/shard identities abort cleanup before a browser is opened; cleanup never falls back to a broad `TAuto-PW` or shard-only search.
 
 Deletion order remains Personen, Rollen, Angebote (including their Rollenerweiterungen), Klassen, and Schulen. Unprefixed Klassen are deleted only beneath Schulen returned by the namespaced search. Renamed entities must retain the namespace; tests using other names must track and delete their own resource IDs. Cleanup of abandoned runs is separate and is not performed by normal teardown. New tests should not duplicate this lifecycle with an `afterEach` cleanup.
 

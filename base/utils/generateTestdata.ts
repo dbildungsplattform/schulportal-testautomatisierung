@@ -9,6 +9,25 @@ export function initializeTestRunId(): void {
 }
 
 export function getTestDataPrefix(): string {
+  const { runId, shardIndex }: { runId: string; shardIndex: string } = getRunIdentity();
+
+  // Keep 80 bits of the run hash, encoded as letters for Personen names.
+  const runToken: string = encodeHexAsLetters(createHash('sha256').update(runId).digest('hex').slice(0, 20));
+  const shardToken: string = encodeHexAsLetters(shardIndex);
+  return `TAuto-PW-${runToken}-S${shardToken}-`;
+}
+
+// The person details view truncates Schulnamen after 30 characters, so Schulen use a
+// compact 24-bit run-and-shard token instead of the full prefix.
+export function getSchulnamePrefix(): string {
+  const { runId, shardIndex }: { runId: string; shardIndex: string } = getRunIdentity();
+  const schulToken: string = encodeHexAsLetters(
+    createHash('sha256').update(`${runId}:${shardIndex}`).digest('hex').slice(0, 6),
+  );
+  return `TAuto-PW-${schulToken}-`;
+}
+
+function getRunIdentity(): { runId: string; shardIndex: string } {
   const runId: string | undefined = process.env.TEST_RUN_ID;
   if (!runId || !/^[A-Za-z0-9_-]+$/.test(runId)) {
     throw new Error('TEST_RUN_ID must be initialized and contain only letters, digits, underscores, and hyphens.');
@@ -19,10 +38,7 @@ export function getTestDataPrefix(): string {
     throw new Error('SHARD_INDEX must be a non-negative safe integer without leading zeros.');
   }
 
-  // Keep 80 bits of the run hash, encoded as letters for Personen names.
-  const runToken: string = encodeHexAsLetters(createHash('sha256').update(runId).digest('hex').slice(0, 20));
-  const shardToken: string = encodeHexAsLetters(shardIndex);
-  return `TAuto-PW-${runToken}-S${shardToken}-`;
+  return { runId, shardIndex };
 }
 
 function encodeHexAsLetters(value: string): string {
@@ -79,7 +95,7 @@ export function generateKlassenname(): string {
 
 export function generateSchulname(): string {
   return (
-    `${getTestDataPrefix()}S-` +
+    `${getSchulnamePrefix()}S-` +
     faker.lorem.word({ length: { min: 8, max: 8 } }) +
     generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic })
   );
