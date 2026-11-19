@@ -95,7 +95,6 @@ export interface RolleControllerFindRollenRequest {
     searchStr?: string;
     organisationIds?: Array<string>;
     rolleIds?: Array<string>;
-    systemrechte?: Array<RollenSystemRechtEnum>;
     rollenarten?: Array<RollenArt>;
     merkmale?: Array<RollenMerkmal>;
     serviceProviderIds?: Array<string>;
@@ -257,7 +256,6 @@ export interface RolleApiInterface {
      * @param {string} [searchStr] The name for the role.
      * @param {Array<string>} [organisationIds] Filters the result to Rollen administered by any of the given organisations.
      * @param {Array<string>} [rolleIds] The ids of the selected Rollen. If provided, these Rollen will be returned regardless of the other filters since they are required by the frontend
-     * @param {Array<RollenSystemRechtEnum>} [systemrechte] Restricts the result to roles administered at organisations where the requesting user holds the given systemrechte. Must be ROLLEN_VERWALTEN, ROLLEN_ERWEITERN, or MPT_ROLLEN_ZUORDNEN. Defaults to ROLLEN_VERWALTEN.
      * @param {Array<RollenArt>} [rollenarten] Filter roles by rollenart.
      * @param {Array<RollenMerkmal>} [merkmale] Filter roles by merkmal.
      * @param {Array<string>} [serviceProviderIds] Filter roles by service provider ids.
@@ -735,10 +733,6 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
 
         if (requestParameters.rolleIds) {
             queryParameters['rolleIds'] = requestParameters.rolleIds;
-        }
-
-        if (requestParameters.systemrechte) {
-            queryParameters['systemrechte'] = requestParameters.systemrechte;
         }
 
         if (requestParameters.rollenarten) {

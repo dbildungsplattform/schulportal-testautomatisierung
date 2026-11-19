@@ -1,4 +1,5 @@
 import { Download, Page, PlaywrightTestArgs } from '@playwright/test';
+import { OperationContext } from '../../base/api/generated';
 import { RollenArt } from '../../base/api/generated/models/RollenArt';
 import { createKlasse, createSchule } from '../../base/api/organisationApi';
 import {
@@ -150,7 +151,13 @@ async function logoutAndFirstLoginWithAnotherUser(
         schuleId2 = await createSchule(page, schule2Name, schule2Kennung);
 
         const rolleId: string = await getRolleId(page, rolleName);
-        await addOrganisationenToPerson(page, admin.personId, [schuleId, schuleId2], rolleId);
+        await addOrganisationenToPerson(
+          page,
+          admin.personId,
+          [schuleId, schuleId2],
+          rolleId,
+          OperationContext.PersonBearbeiten,
+        );
       }
     });
 

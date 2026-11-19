@@ -1,4 +1,5 @@
 import { PlaywrightTestArgs } from '@playwright/test';
+import { OperationContext } from '../../base/api/generated';
 import { createKlasse, createSchule, getOrganisationId } from '../../base/api/organisationApi';
 import {
   addOrganisationenToPerson,
@@ -240,7 +241,13 @@ test.describe(`Mehrfachbearbeitung Rolle zuordnen: Umgebung: ${process.env.ENV}:
         // Schuladmin mit 2 Schulen anlegen
         const admin: UserInfo = await createPersonWithPersonenkontext(page, schuleName, schuladminOeffentlichRolle);
         const schuladminRolleId: string = await getRolleId(page, schuladminOeffentlichRolle);
-        await addOrganisationenToPerson(page, admin.personId, [schuleId, zweiteSchuleId], schuladminRolleId);
+        await addOrganisationenToPerson(
+          page,
+          admin.personId,
+          [schuleId, zweiteSchuleId],
+          schuladminRolleId,
+          OperationContext.PersonAnlegen,
+        );
 
         // Als Schuladmin neu anmelden (inkl. Passwortwechsel)
         const landingPage: LandingViewPage = await personManagementViewPage.getHeader().logout();

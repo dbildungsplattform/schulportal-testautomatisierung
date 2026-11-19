@@ -1,9 +1,9 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { waitForAPIResponse } from '../../../../base/api/baseApi';
 import { formatDateDMY, generateCurrentDate } from '../../../../base/utils/generateTestdata';
-import { ZuordnungenPage, ZuordnungValidationParams } from './Zuordnungen.page';
-import { PersonManagementViewPage } from '../PersonManagementView.page';
 import { Autocomplete } from '../../../components/Autocomplete';
+import { PersonManagementViewPage } from '../PersonManagementView.page';
+import { ZuordnungenPage, ZuordnungValidationParams } from './Zuordnungen.page';
 
 interface PersonDetailsValidationParams {
   username: string;
@@ -93,7 +93,7 @@ export class PersonDetailsViewPage {
       this.page,
       this.page.getByTestId('personenkontext-create-organisation-select'),
     );
-    await organisationAutocomplete.searchByTitle(organisation, false, 'personenkontext-workflow/**');
+    await organisationAutocomplete.searchByTitle(organisation, false, 'organisationen');
   }
 
   public async selectRolle(rolle: string): Promise<void> {

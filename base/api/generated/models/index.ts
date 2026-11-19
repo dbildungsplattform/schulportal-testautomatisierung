@@ -42,8 +42,6 @@ export * from './ImportVorgangResponse';
 export * from './ImportVorgangStatusResponse';
 export * from './ImportedUserResponse';
 export * from './ImportvorgangByIdBodyParams';
-export * from './LandesbediensteterWorkflowCommitBodyParams';
-export * from './LandesbediensteterWorkflowStepResponse';
 export * from './LockUserBodyParams';
 export * from './LoeschungResponse';
 export * from './ManageableServiceProviderListEntryResponse';

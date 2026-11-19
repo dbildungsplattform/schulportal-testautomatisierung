@@ -1,6 +1,7 @@
 import { PlaywrightTestArgs } from '@playwright/test';
 import { test } from '../../base/fixtures';
 
+import { OperationContext } from '../../base/api/generated';
 import { createSchule, getKlassenNamenBySchule, getOrganisationId } from '../../base/api/organisationApi';
 import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { getRolleId } from '../../base/api/rolleApi';
@@ -73,7 +74,13 @@ interface AdminFixture {
       klassenNamen = await getKlassenNamenBySchule(page, playwrightSchuleId);
       const rolleId: string = await getRolleId(page, rolleName);
       if (rolleName === schuladminOeffentlichRolle) {
-        await addOrganisationenToPerson(page, admin.personId, [schuleId1, schuleId2, playwrightSchuleId], rolleId);
+        await addOrganisationenToPerson(
+          page,
+          admin.personId,
+          [schuleId1, schuleId2, playwrightSchuleId],
+          rolleId,
+          OperationContext.PersonBearbeiten,
+        );
       }
       landingPage = await header.logout();
       const loginPage: LoginViewPage = await landingPage.navigateToLogin();
