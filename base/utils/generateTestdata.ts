@@ -49,7 +49,7 @@ export function generateSchulname(): string {
   );
 }
 
-export function generateEmailAdress(): string {
+export function generateEmailAddress(): string {
   return (
     `TAuto-PW-S${shardIndex}-E-` +
     faker.internet.email() +
