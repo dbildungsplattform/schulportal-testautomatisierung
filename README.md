@@ -163,7 +163,7 @@ npm run lint
 
 ## Testdatenerstellung durch die Playwright-Tests
 
-Generated test data uses `TAuto-PW-<runToken>-S<shardToken>-`, followed by an entity marker and random data; Schulen use a shorter `TAuto-PW-<schulToken>-` prefix so their names fit the 30-character display limit. Playwright initializes one `TEST_RUN_ID` before loading tests: a UUID locally, or a run/attempt/job/matrix-specific ID supplied by CI. Global teardown uses the same complete namespace and never deletes another run's data through a shard-only search. See [test data generation and cleanup](docs/testdaten.md#run-and-shard-isolation) for details.
+Generated test data uses the prefix `TAuto-PW-`, followed by an entity marker and random data, so it is recognizable as test data. Ownership is tracked by ID: every Person, Rolle, Angebot, Klasse, Schule, and Import created during a run (via API helpers or the UI) is recorded under `.test-data-ledger/<TEST_RUN_ID>/`, and global teardown deletes exactly those IDs. Playwright initializes one `TEST_RUN_ID` before loading tests: a UUID locally, or a run/attempt/job/matrix-specific ID supplied by CI. See [test data generation and cleanup](docs/testdaten.md#run-isolation) for details.
 
 ## Hinweise für die Entwicklung der Tests
 

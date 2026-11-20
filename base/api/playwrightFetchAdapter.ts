@@ -1,4 +1,5 @@
 import { APIRequestContext, APIResponse, Page } from '@playwright/test';
+import { recordCreatedEntitiesFromResponse } from '../utils/testDataLedger';
 import { FetchAPI } from './generated';
 import { constructAuthApi, getCsrfToken } from './authApi';
 
@@ -94,6 +95,8 @@ export function makeFetchWithPlaywright(page: Page, options?: { withCsrf?: boole
       }
       throw error;
     }
+
+    await recordCreatedEntitiesFromResponse(init?.method ?? 'GET', resp.url(), resp.status(), () => resp.json());
 
     return {
       ok: resp.ok(),

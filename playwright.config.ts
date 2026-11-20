@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import * as path from 'node:path';
 import { fileURLToPath } from 'url';
 
-import { initializeTestRunId } from './base/utils/generateTestdata';
+import { initializeTestRunId } from './base/utils/testDataLedger';
 
 const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);

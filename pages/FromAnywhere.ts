@@ -1,9 +1,11 @@
 import { Page } from '@playwright/test';
+import { trackCreatedEntities } from '../base/utils/testDataLedger';
 import { LandingViewPage } from './LandingView.page';
 
 function FromAnywhere(page: Page): { start: () => Promise<LandingViewPage> } {
   return {
     async start(): Promise<LandingViewPage> {
+      trackCreatedEntities(page);
       await page.goto('/', { waitUntil: 'load' });
       try {
         const landingPage: LandingViewPage = await new LandingViewPage(page).waitForPageLoad();

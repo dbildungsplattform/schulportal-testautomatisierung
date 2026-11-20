@@ -66,7 +66,7 @@ export default async function globalSetup(): Promise<void> {
       const userInfo = await createPerson(page, {
         organisationId,
         rolleId,
-        familienname: generateNachname(encodeNumberAsLetters(index + 1)),
+        familienname: generateNachname() + encodeNumberAsLetters(index + 1),
         vorname: generateVorname(),
       });
       userInfos.push(userInfo);

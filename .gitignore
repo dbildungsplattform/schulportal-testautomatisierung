@@ -13,6 +13,7 @@ node_modules/
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/.test-data-ledger/
 error-global-setup.png
 
 # Ignore editor files

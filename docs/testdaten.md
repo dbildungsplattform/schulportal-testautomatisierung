@@ -8,7 +8,7 @@ Diese Übersicht beschreibt, wie in diesem Projekt Testdaten für Playwright-Tes
 - **UI wird nur für das tatsächliche Testszenario verwendet** (z. B. Login, Navigation, das zu prüfende Verhalten).
 - **Testdaten werden im `beforeEach` erstellt – nicht mitten im eigentlichen Testablauf.** Der Testkörper enthält nur das zu prüfende Verhalten und die Assertions.
 - **Das globale Teardown räumt die Testdaten nach dem Testlauf auf** (siehe Abschnitt „Aufräumen").
-- **Generierte Namen tragen den Präfix `TAuto-PW-…`**, damit Testdaten erkennbar und im Notfall zentral aufräumbar sind.
+- **Generierte Namen tragen den Präfix `TAuto-PW-…`**, damit Testdaten erkennbar sind. Für das Aufräumen ist der Präfix nicht maßgeblich – das globale Teardown löscht anhand der aufgezeichneten IDs.
 - **Eindeutigkeit:** Vornamen, Nachnamen, Rollennamen, Klassen- und Schulnamen werden mit Faker und Zufallssuffix generiert, um Kollisionen bei parallelen Tests zu vermeiden.
 
 ## Verzeichnisse und Bausteine
@@ -54,44 +54,41 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 
 - `getServiceProviderId(page, name, schulstrukturknotenOfRolle, rollenArt)` und `getServiceProviderIds(page, names[])` – IDs für `email`, `kalender`, `adressbuch`, `Schulportal-Administration` etc. (Konstanten in [base/sp.ts](../base/sp.ts)).
 
-## Run and shard isolation
+## Run isolation
 
-[playwright.config.ts](../playwright.config.ts) calls `initializeTestRunId()` before setup or spec loading, including test-data generation at module scope. Setup, workers, and teardown share the same `TEST_RUN_ID` through the process environment.
+[playwright.config.ts](../playwright.config.ts) calls `initializeTestRunId()` from [testDataLedger.ts](../base/utils/testDataLedger.ts) before setup or spec loading. Setup, workers, and teardown share the same `TEST_RUN_ID` through the process environment.
 
 - Local runs generate a UUID once when `TEST_RUN_ID` is unset.
 - CI supplies an ID containing the repository, workflow run, rerun attempt, job, browser, tag, and matrix shard.
 - Explicit IDs must contain only ASCII letters, digits, underscores, and hyphens. Never reuse an ID across independent runs.
-- `SHARD_INDEX` defaults to `0` for unsharded local runs and otherwise must be a non-negative safe integer without leading zeros.
-- `getTestDataPrefix()` in [generateTestdata.ts](../base/utils/generateTestdata.ts) is the single source for generation and cleanup: `TAuto-PW-<runToken>-S<shardToken>-`. Schulen are the exception (see below).
-- The run token uses the first 80 bits of a SHA-256 hash, encoded as 20 letters. Shard digits are also encoded as letters (`0` becomes `A`, `1` becomes `B`, `10` becomes `BA`). This keeps the namespace compact and compatible with Personen names.
-- Schulnamen use `getSchulnamePrefix()`: `TAuto-PW-<schulToken>-`, where the Schul token encodes the first 24 bits of a SHA-256 hash of run ID and shard as 6 letters. The person details view truncates Schulnamen after 30 characters, and generated Schulnamen (29 characters) must stay below that limit to remain distinguishable.
-- Generators resolve the namespace when called, not when imported. Neither generators nor teardown create a missing run ID.
 
-Entity-specific markers and random suffixes remain part of generated names. Numeric fields such as KoPers-Nr and Dienststellen-Nr retain their existing formats. Email local parts stay within 64 characters, including the namespace. `generateNachname(suffix?)` reduces the Faker surname to ASCII letters and shortens it so the derived username (first letter of the Vorname plus the Nachname) stays within privacyIDEA's 40-character limit; an optional suffix is included in that budget.
+Every created entity is recorded by ID in `.test-data-ledger/<TEST_RUN_ID>/<process-id>.jsonl` (one file per process, because setup and workers run in separate processes):
 
+- **API helpers:** [playwrightFetchAdapter.ts](../base/api/playwrightFetchAdapter.ts) records successful `POST` requests to `/api/personenkontext-workflow` (Personen), `/api/organisationen` (Schulen, Klassen), `/api/rolle`, `/api/provider` (Angebote), and `/api/import/upload` (Importvorgänge), as well as the usernames returned by `GET /api/import/importedUsers` (imported Personen).
+- **UI flows:** [FromAnywhere.ts](../pages/FromAnywhere.ts) registers `trackCreatedEntities(page)` on the browser context, which records the same requests when the frontend sends them. All logins go through `FromAnywhere`, so every authenticated page is covered.
+
+Because ownership is tracked by ID, generated names no longer encode the run and are not subject to length limits of the UI or of privacyIDEA. Test data created without one of the endpoints above is not recorded and must be cleaned up by the test itself.
 
 ## Generatoren ([base/utils/generateTestdata.ts](../base/utils/generateTestdata.ts))
 
-Examples below use shard `1`; `<runToken>` represents the run's encoded token and `<schulToken>` the 6-letter Schul token.
-
-| Function                                                    | Example output                                    |
-| ----------------------------------------------------------- | ------------------------------------------------- |
-| `generateVorname()`                                          | `TAuto-PW-<runToken>-SB-VLaraXyz`                    |
-| `generateNachname()`                                         | `TAuto-PW-<runToken>-SB-NMeyerAbc`                   |
-| `generateRolleName()`                                        | `TAuto-PW-<runToken>-SB-R-fluminoQwe`                |
-| `generateKlassenname()`                                      | `TAuto-PW-<runToken>-SB-K-fluminorQwe`               |
-| `generateSchulname()`                                        | `TAuto-PW-<schulToken>-S-fluminorQwe`                |
-| `generateAngebotname()`                                      | `TAuto-PW-<runToken>-SB-A-fluminorQwe`               |
-| `generateEmailAdress()`                                     | `TAuto-PW-<runToken>-SB-E-Lara@example.orgXyz`       |
-| `generateKopersNr()`                                         | `081512345678`                                    |
-| `generateDienststellenNr()`                                  | `012345678`                                       |
-| `generateCurrentDate({ days, months })` / `formatDateDMY(date)` | Date helpers (for example Befristung)              |
+| Function                                                        | Example output                          |
+| --------------------------------------------------------------- | --------------------------------------- |
+| `generateVorname()`                                             | `TAuto-PW-VLaraXyzab`                   |
+| `generateNachname()`                                            | `TAuto-PW-NMeyerAbcde`                  |
+| `generateRolleName()`                                           | `TAuto-PW-R-fluminoQwert`               |
+| `generateKlassenname()`                                         | `TAuto-PW-K-fluminorQwert`              |
+| `generateSchulname()`                                           | `TAuto-PW-S-fluminorQwert`              |
+| `generateAngebotname()`                                         | `TAuto-PW-A-fluminorQwert`              |
+| `generateEmailAdress()`                                         | `TAuto-PW-E-Lara@example.orgXyzab`      |
+| `generateKopersNr()`                                            | `081512345678`                          |
+| `generateDienststellenNr()`                                     | `012345678`                             |
+| `generateCurrentDate({ days, months })` / `formatDateDMY(date)` | Date helpers (for example Befristung)   |
 
 ## Aufräumen
 
-[Global teardown](../tests/global-teardown.ts) searches only the complete current run-and-shard prefix, including its trailing separator; Schulen are searched by the current Schul prefix (`TAuto-PW-<schulToken>-`). Search results are treated as owned by that namespace. The shorter Schul token makes accidental matches with other runs more likely than the full prefix, but still rare. Missing or invalid run/shard identities abort cleanup before a browser is opened; cleanup never falls back to a broad `TAuto-PW` or shard-only search.
+[Global teardown](../tests/global-teardown.ts) reads the ledger of the current run and deletes exactly the recorded IDs, in the order Personen, Rollen, Angebote (including their Rollenerweiterungen), Klassen, and Schulen. Imported Personen are resolved by their usernames, recorded from the import result or read from a recorded Importvorgang that still exists (the frontend deletes it after the result download). Klassen beneath a recorded Schule are deleted too, including Klassen created implicitly (e.g. by an import). It never searches by name, so it cannot delete another run's data.
 
-Deletion order remains Personen, Rollen, Angebote (including their Rollenerweiterungen), Klassen, and Schulen. Unprefixed Klassen are deleted only beneath Schulen returned by the namespaced search. Renamed entities must retain the namespace; tests using other names must track and delete their own resource IDs. Cleanup of abandoned runs is separate and is not performed by normal teardown. New tests should not duplicate this lifecycle with an `afterEach` cleanup.
+IDs that no longer exist (HTTP 404, e.g. deleted by the test itself) count as deleted. Other failed deletions are retried up to three times; afterwards the ledger is kept in `.test-data-ledger/` for inspection. On success the run's ledger is removed. Data of runs that were cancelled before teardown (e.g. a CI timeout) is not cleaned up automatically. New tests should not duplicate this lifecycle with an `afterEach` cleanup.
 
 Ein `afterEach`-Cleanup ist nur bei einer ausdrücklich begründeten Ausnahme erforderlich, wenn Daten noch innerhalb desselben Testlaufs entfernt werden müssen. Dann können die folgenden Hilfsfunktionen verwendet werden:
 

@@ -212,7 +212,7 @@ Avoid:
 
 ### Global teardown
 `tests/global-teardown.ts`:
-- Cleans data with `TAuto`-style prefixes
+- Deletes exactly the test data recorded by ID during the run (`.test-data-ledger/`, see `docs/testdaten.md`)
 - Deletes persons, roles, classes, schools, and related service-provider data
 
 Rules:

@@ -1,34 +1,38 @@
 import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
 
+import { constructApi } from '../base/api/apiFactory';
 import {
   ApiResponse,
-  ManageableServiceProviderSimpleListEntryResponse,
+  ImportApi,
+  ImportResultResponse,
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
   PersonControllerFindPersons200Response,
-  PersonenApi,
   PersonendatensatzResponse,
+  PersonenApi,
   ProviderApi,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
-  ProviderControllerGetManageableServiceProviders200Response,
   ResponseError,
   RolleApi,
   RollenerweiterungWithExtendedDataResponse,
-  RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
 import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
-import { getSchulnamePrefix, getTestDataPrefix } from '../base/utils/generateTestdata';
+import { LedgerEntityType, LedgerEntry, readLedger, removeLedger } from '../base/utils/testDataLedger';
 import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
 
 const limit: number = 100;
 const batchSize: number = 20;
+
+function isNotFound(reason: unknown): boolean {
+  return reason instanceof ResponseError && reason.response.status === 404;
+}
 
 async function logDeleteError(reason: unknown): Promise<void> {
   if (reason instanceof ResponseError) {
@@ -39,19 +43,22 @@ async function logDeleteError(reason: unknown): Promise<void> {
   }
 }
 
-async function cleanup<T>(get: () => Promise<T[]>, del: (item: T) => Promise<void>): Promise<void> {
-  let items: T[] = await get();
-  do {
-    for (const promise of getBatchedDelPromise(items, del)) {
-      const results: PromiseSettledResult<void>[] = await promise;
-      for (const result of results) {
-        if (result.status === 'rejected') {
-          await logDeleteError(result.reason);
-        }
+/**
+ * Deletes all items in batches. Items that no longer exist (404) count as deleted.
+ * @returns the number of failed deletions
+ */
+async function deleteAll<T>(items: T[], del: (item: T) => Promise<void>): Promise<number> {
+  let failures: number = 0;
+  for (const promise of getBatchedDelPromise(items, del)) {
+    const results: PromiseSettledResult<void>[] = await promise;
+    for (const result of results) {
+      if (result.status === 'rejected' && !isNotFound(result.reason)) {
+        failures++;
+        await logDeleteError(result.reason);
       }
     }
-    items = await get();
-  } while (items.length > 0);
+  }
+  return failures;
 }
 
 function* getBatchedDelPromise<T>(
@@ -66,12 +73,15 @@ function* getBatchedDelPromise<T>(
 const maxAttempts: number = 3;
 
 export default async function globalTeardown(): Promise<void> {
-  const testDataPrefix: string = getTestDataPrefix();
-  const schulnamePrefix: string = getSchulnamePrefix();
-  console.log('Global teardown started');
+  const ledger: LedgerEntry[] = readLedger();
+  console.log(`Global teardown started: ${ledger.length} recorded test data entities`);
+  if (ledger.length === 0) {
+    removeLedger();
+    return;
+  }
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-    // fresh browser/session per attempt: a disposed request context can't be reused, cleanup queries are idempotent (prefix-based)
+    // fresh browser/session per attempt: a disposed request context can't be reused, deletions by ID are idempotent
     const browser: Browser = await chromium.launch();
     const context: BrowserContext = await browser.newContext({
       baseURL: FRONTEND_URL,
@@ -80,9 +90,16 @@ export default async function globalTeardown(): Promise<void> {
     const page: Page = await context.newPage();
 
     try {
-      await runCleanup(page, testDataPrefix, schulnamePrefix);
-      console.log('Global teardown finished successfully');
-      return;
+      const failures: number = await runCleanup(page, ledger);
+      if (failures === 0) {
+        removeLedger();
+        console.log('Global teardown finished successfully');
+        return;
+      }
+      console.warn(`Global teardown attempt ${attempt}/${maxAttempts}: ${failures} deletions failed`);
+      if (attempt === maxAttempts) {
+        console.warn('Global teardown finished with failed deletions; the ledger is kept in .test-data-ledger/');
+      }
     } catch (error) {
       console.error(`Global teardown attempt ${attempt}/${maxAttempts} failed`, error);
       if (attempt === maxAttempts) {
@@ -94,12 +111,45 @@ export default async function globalTeardown(): Promise<void> {
   }
 }
 
-async function runCleanup(page: Page, testDataPrefix: string, schulnamePrefix: string): Promise<void> {
+async function getImportedUsernames(importApi: ImportApi, importvorgangId: string): Promise<string[]> {
+  const usernames: string[] = [];
+  try {
+    let total: number = 1;
+    while (usernames.length < total) {
+      const result: ImportResultResponse = await importApi.importControllerGetImportedUsers({
+        importvorgangId,
+        offset: usernames.length,
+        limit: 100,
+      });
+      if (result.importedUsers.length === 0) break;
+      total = result.total;
+      usernames.push(...result.importedUsers.map((user: { benutzername: string }) => user.benutzername));
+    }
+  } catch (error) {
+    // An import that was uploaded but never executed has no imported users.
+    if (!(error instanceof ResponseError)) throw error;
+  }
+  return usernames;
+}
+
+async function findPersonIdByUsername(personApi: PersonenApi, username: string): Promise<string | undefined> {
+  const response: PersonControllerFindPersons200Response = await personApi.personControllerFindPersons({
+    suchFilter: username,
+    limit: 10,
+  });
+  return response.items.find((item: PersonendatensatzResponse) => item.person.username === username)?.person.id;
+}
+
+async function runCleanup(page: Page, ledger: LedgerEntry[]): Promise<number> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
     const providerApi: ProviderApi = constructProviderApi(page);
+    const importApi: ImportApi = constructApi(page, ImportApi);
+    const idsOf = (type: LedgerEntityType): string[] =>
+      ledger.filter((entry: LedgerEntry) => entry.type === type).map((entry: LedgerEntry) => entry.id);
+    let failures: number = 0;
 
     console.log('Login');
     await loginAndNavigateToAdministration(page, process.env.USER!, process.env.PW!);
@@ -107,144 +157,93 @@ async function runCleanup(page: Page, testDataPrefix: string, schulnamePrefix: s
     // ---------------------------------------------------------------------
     // PERSONEN LÖSCHEN
     // ---------------------------------------------------------------------
-    console.log('Personen löschen');
+    // Imported Personen are only known by username: recorded from the import result, or resolved via
+    // a recorded Importvorgang that still exists (e.g. when the test failed before completing the import).
+    const usernames = new Set<string>(idsOf('personUsername'));
+    for (const importvorgangId of idsOf('import')) {
+      for (const username of await getImportedUsernames(importApi, importvorgangId)) {
+        usernames.add(username);
+      }
+    }
+    const personIds = new Set<string>(idsOf('person'));
+    for (const username of usernames) {
+      const personId: string | undefined = await findPersonIdByUsername(personApi, username);
+      if (personId) personIds.add(personId);
+    }
+    console.log(`${personIds.size} personen to delete`);
 
-    await cleanup(
-      async () => {
-        const resp: PersonControllerFindPersons200Response = await personApi.personControllerFindPersons({
-          suchFilter: testDataPrefix,
-          limit,
-        });
-        console.log(`${resp.total} personen to delete`);
-        return resp.items;
-      },
-      async (item: PersonendatensatzResponse) =>
-        await personApi.personControllerDeletePersonById({ personId: item.person.id }),
+    failures += await deleteAll([...personIds], async (personId: string) =>
+      personApi.personControllerDeletePersonById({ personId }),
     );
 
     // ---------------------------------------------------------------------
     // ROLLEN LÖSCHEN
     // ---------------------------------------------------------------------
-    console.log('Rollen löschen');
+    const rolleIds: string[] = idsOf('rolle');
+    console.log(`${rolleIds.length} rollen to delete`);
 
-    await cleanup(
-      async () => {
-        const wrappedResponse: ApiResponse<RolleWithServiceProvidersResponse[]> =
-          await rolleApi.rolleControllerFindRollenRaw({
-            searchStr: testDataPrefix,
-            limit,
-          });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} rollen to delete`);
-        return wrappedResponse.value();
-      },
-      async (item: RolleWithServiceProvidersResponse) =>
-        await rolleApi.rolleControllerDeleteRolle({ rolleId: item.id }),
-    );
+    failures += await deleteAll(rolleIds, async (rolleId: string) => rolleApi.rolleControllerDeleteRolle({ rolleId }));
 
     // ---------------------------------------------------------------------
     // ANGEBOTE LÖSCHEN
     // ---------------------------------------------------------------------
-    // Muss vor dem Löschen der Schulen passieren: Schulen können offenbar nicht gelöscht werden,
-    // solange irgendein Angebot (auch nur geerbt/sichtbar, nicht direkt administriert) existiert.
-    // Sucht auf allen Ebenen (nicht nur Landesebene) und ignoriert Merkmale, da sonst Angebote ohne
-    // VERFUEGBAR_FUER_ROLLENERWEITERUNG in der merkmal-gefilterten Schulverwaltungsliste unsichtbar
-    // blieben und ihre Schule dauerhaft mit ORGANISATION_HAT_ANGEBOTE blockiert hätten.
-    console.log('Angebote löschen');
+    // Muss vor dem Löschen der Schulen passieren: Schulen können nicht gelöscht werden,
+    // solange ein Angebot an ihnen existiert. Rollenerweiterungen blockieren das Löschen eines Angebots.
+    const angebotIds: string[] = idsOf('angebot');
+    console.log(`${angebotIds.length} angebote to delete`);
 
-    await cleanup(
-      async () => {
-        const wrappedResponse: ApiResponse<ProviderControllerGetManageableServiceProviders200Response> =
-          await providerApi.providerControllerGetManageableServiceProvidersRaw({
-            searchFilter: testDataPrefix,
-            limit,
-          });
-        const response: ProviderControllerGetManageableServiceProviders200Response = await wrappedResponse.value();
-        console.log(`${response.total} Angebote löschen`);
-        return response.items;
-      },
-      async (item: ManageableServiceProviderSimpleListEntryResponse) => {
-        await cleanup(
-          async () => {
-            const wrappedResponse: ApiResponse<ProviderControllerFindRollenerweiterungenByServiceProviderId200Response> =
-              await providerApi.providerControllerFindRollenerweiterungenByServiceProviderIdRaw({
-                angebotId: item.id,
-                limit: 500,
-              });
-            return (await wrappedResponse.value()).items;
+    failures += await deleteAll(angebotIds, async (angebotId: string) => {
+      const wrappedResponse: ApiResponse<ProviderControllerFindRollenerweiterungenByServiceProviderId200Response> =
+        await providerApi.providerControllerFindRollenerweiterungenByServiceProviderIdRaw({ angebotId, limit: 500 });
+      const rollenerweiterungen: RollenerweiterungWithExtendedDataResponse[] = (await wrappedResponse.value()).items;
+      for (const rollenerweiterung of rollenerweiterungen) {
+        await rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
+          angebotId,
+          organisationId: rollenerweiterung.organisationId,
+          applyRollenerweiterungBodyParams: {
+            addErweiterungenForRolleIds: [],
+            removeErweiterungenForRolleIds: [rollenerweiterung.rolleId],
           },
-          async (rollenerweiterung: RollenerweiterungWithExtendedDataResponse) =>
-            rolleApi.rollenerweiterungControllerApplyRollenerweiterungChanges({
-              angebotId: item.id,
-              organisationId: rollenerweiterung.organisationId,
-              applyRollenerweiterungBodyParams: {
-                addErweiterungenForRolleIds: [],
-                removeErweiterungenForRolleIds: [rollenerweiterung.rolleId],
-              },
-            }),
-        );
-        await providerApi.providerControllerDeleteServiceProvider({ angebotId: item.id });
-      },
-    );
+        });
+      }
+      await providerApi.providerControllerDeleteServiceProvider({ angebotId });
+    });
 
     // ---------------------------------------------------------------------
     // KLASSEN LÖSCHEN
     // ---------------------------------------------------------------------
-    console.log('Klassen löschen');
+    const klasseIds: string[] = idsOf('klasse');
+    console.log(`${klasseIds.length} klassen to delete`);
 
-    await cleanup(
-      async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
-          await organisationApi.organisationControllerFindOrganizationsRaw({
-            searchString: testDataPrefix,
-            typ: OrganisationsTyp.Klasse,
-            limit,
-          });
-        const items: OrganisationResponse[] = await wrappedResponse.value();
-        console.log(
-          'Sample klassen found:',
-          items.slice(0, 10).map((i: OrganisationResponse) => i.name),
-        );
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} klassen to delete`);
-        return items;
-      },
-      async (item: OrganisationResponse) =>
-        organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),
+    failures += await deleteAll(klasseIds, async (organisationId: string) =>
+      organisationApi.organisationControllerDeleteOrganisation({ organisationId }),
     );
 
     // ---------------------------------------------------------------------
-    // SCHULEN LÖSCHEN
+    // SCHULEN (UND ANDERE ORGANISATIONEN) LÖSCHEN
     // ---------------------------------------------------------------------
-    console.log('Schulen löschen');
+    const organisationIds: string[] = idsOf('organisation');
+    console.log(`${organisationIds.length} schulen/organisationen to delete`);
 
-    await cleanup(
-      async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
-          await organisationApi.organisationControllerFindOrganizationsRaw({
-            searchString: schulnamePrefix,
-            typ: OrganisationsTyp.Schule,
-            limit,
-          });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} schulen to delete`);
-        return wrappedResponse.value();
-      },
-      async (item: OrganisationResponse) => {
-        // Klassen der Schule löschen (auch solche mit numerischen Namen ohne Testdaten-Präfix)
-        await cleanup(
-          async () => {
-            const wrappedResponse: ApiResponse<OrganisationResponse[]> =
-              await organisationApi.organisationControllerFindOrganizationsRaw({
-                administriertVon: [item.id],
-                typ: OrganisationsTyp.Klasse,
-                limit,
-              });
-            return wrappedResponse.value();
-          },
-          async (klasse: OrganisationResponse) =>
-            organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),
-        );
+    failures += await deleteAll(organisationIds, async (organisationId: string) => {
+      // Klassen beneath an owned Schule are owned too, including those created implicitly (e.g. by an import).
+      const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+        await organisationApi.organisationControllerFindOrganizationsRaw({
+          administriertVon: [organisationId],
+          typ: OrganisationsTyp.Klasse,
+          limit,
+        });
+      const klassen: OrganisationResponse[] = await wrappedResponse.value();
+      const klassenFailures: number = await deleteAll(klassen, async (klasse: OrganisationResponse) =>
+        organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),
+      );
+      if (klassenFailures > 0) {
+        throw new Error(`${klassenFailures} Klassen beneath organisation ${organisationId} could not be deleted`);
+      }
 
-        return organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id });
-      },
-    );
+      await organisationApi.organisationControllerDeleteOrganisation({ organisationId });
+    });
+
+    return failures;
   }
 }
