@@ -45,7 +45,8 @@ export interface DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInner {
  */
 export const DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerErrorIdTypeEnum = {
     Rolle: 'ROLLE',
-    Angebot: 'ANGEBOT'
+    Angebot: 'ANGEBOT',
+    RollenartBeschraenkung: 'ROLLENART_BESCHRAENKUNG'
 } as const;
 export type DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerErrorIdTypeEnum = typeof DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerErrorIdTypeEnum[keyof typeof DbiamApplyRollenerweiterungMultiErrorIdsWithI18nKeysInnerErrorIdTypeEnum];
 

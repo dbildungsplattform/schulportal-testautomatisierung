@@ -80,7 +80,9 @@ models/OrganisationResponseLegacy.ts
 models/OrganisationRootChildrenResponse.ts
 models/OrganisationsByIdsBodyParams.ts
 models/OrganisationsTyp.ts
+models/OrganisationsbeziehungOrganisationResponse.ts
 models/OrganisationsbeziehungResponse.ts
+models/OrganisationsbeziehungWithOrganisationenResponse.ts
 models/OrganisationsbeziehungsTyp.ts
 models/ParentOrganisationenResponse.ts
 models/ParentOrganisationsByIdsBodyParams.ts
@@ -155,6 +157,7 @@ models/ServiceProviderResponse.ts
 models/ServiceProviderSystem.ts
 models/ServiceProviderTarget.ts
 models/Sichtfreigabe.ts
+models/SortFieldOrganisationsbeziehung.ts
 models/SortFieldPerson.ts
 models/SystemRechtResponse.ts
 models/TokenInitBodyParams.ts
@@ -166,17 +169,6 @@ models/UpdateOrganisationBodyParams.ts
 models/UpdatePersonBodyParams.ts
 models/UpdateRolleBodyParams.ts
 models/UpdateServiceProviderBodyParams.ts
-models/UserExeternalDataResponseItslearning.ts
-models/UserExeternalDataResponseOnlineDateiablage.ts
-models/UserExeternalDataResponseOpsh.ts
-models/UserExeternalDataResponseOpshPk.ts
-models/UserExeternalDataResponseVidis.ts
-models/UserExternalDataBodyParams.ts
-models/UserExternalDataResponse.ts
-models/UserExternalDataResponseIqshHelpdesk.ts
-models/UserExternalDataResponseIqshHelpdeskPk.ts
-models/UserExternalDataResponseOx.ts
-models/UserExternalDataResponsePolyteia.ts
 models/UserExternalDataV2BodyParams.ts
 models/UserExternalDataV2PersonenkontextResponse.ts
 models/UserExternalDataV2Response.ts

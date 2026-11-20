@@ -436,8 +436,8 @@ export interface RolleApiInterface {
     /**
      * Apply changes to rollen-erweiterung for a given angebot and organisation.
      * @summary 
-     * @param {string} angebotId The spshPersonId of the person.
-     * @param {string} organisationId The spshPersonId of the person.
+     * @param {string} angebotId The angebotId for the rollenerweiterung.
+     * @param {string} organisationId The organisationId for the rollenerweiterung.
      * @param {ApplyRollenerweiterungBodyParams} applyRollenerweiterungBodyParams 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
