@@ -20,7 +20,7 @@ export enum PersonCreationMode {
 }
 
 export class PersonCreationViewPage {
-  private static readonly WORKFLOW_ENDPOINT: string = 'personenkontext-workflow/**';
+  private static readonly WORKFLOW_ENDPOINT: string = 'organisationen';
 
   private readonly organisationAutocomplete: Autocomplete = new Autocomplete(
     this.page,

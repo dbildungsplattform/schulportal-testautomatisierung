@@ -32,6 +32,7 @@ import {
   DBiamPersonResponse,
   DbiamUpdatePersonenkontexteBodyParams,
   LockUserBodyParams,
+  OperationContext,
   PersonControllerFindPersons200Response,
   PersonendatensatzResponse,
   PersonenkontexteUpdateResponse,
@@ -97,6 +98,7 @@ async function commitPersonenkontexteWithRetry(
     personenuebersicht: DBiamPersonenuebersichtResponse,
   ) => DbiamUpdatePersonenkontexteBodyParams['personenkontexte'] | null,
   validate?: (result: PersonenkontexteUpdateResponse) => void,
+  operationContext?: OperationContext,
 ): Promise<void> {
   const personenuebersichtApi: DbiamPersonenuebersichtApi = constructPersonenuebersichtApi(page);
   const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
@@ -116,6 +118,7 @@ async function commitPersonenkontexteWithRetry(
       lastModified: personenuebersicht.lastModifiedZuordnungen ?? undefined,
       count: personenuebersicht.zuordnungen.length,
       personenkontexte,
+      operationContext: operationContext ?? OperationContext.PersonAnlegen,
     };
 
     try {
@@ -344,7 +347,7 @@ export async function createRolleAndPersonWithPersonenkontext(
 
 export async function removeAllPersonenkontexte(page: Page, personId: string): Promise<void> {
   try {
-    await commitPersonenkontexteWithRetry(page, personId, () => []);
+    await commitPersonenkontexteWithRetry(page, personId, () => [], undefined, OperationContext.PersonBearbeiten);
   } catch (error) {
     console.error('[ERROR] removeAllPersonenkontexte failed:', error);
     throw error;
@@ -382,6 +385,7 @@ export async function addOrganisationenToPerson(
   personId: string,
   organisationIds: string[],
   rolleId: string,
+  operationContext?: OperationContext,
 ): Promise<void> {
   try {
     await commitPersonenkontexteWithRetry(
@@ -400,6 +404,7 @@ export async function addOrganisationenToPerson(
       (result) => {
         expect(result.dBiamPersonenkontextResponses.length).toBe(organisationIds.length);
       },
+      operationContext,
     );
   } catch (error) {
     console.error('[ERROR] addOrganisationenToPerson failed:', error);
@@ -491,16 +496,21 @@ export async function setTimeLimitPersonenkontext(
   timeLimit: Date,
 ): Promise<void> {
   try {
-    await commitPersonenkontexteWithRetry(page, personId, (personenuebersicht) =>
-      personenuebersicht.zuordnungen.map((zuordnung) => ({
-        personId,
-        organisationId: zuordnung.sskId,
-        rolleId: zuordnung.rolleId,
-        befristung:
-          zuordnung.sskId === organisationId && zuordnung.rolleId === rolleId
-            ? timeLimit
-            : (zuordnung.befristung ?? undefined),
-      })),
+    await commitPersonenkontexteWithRetry(
+      page,
+      personId,
+      (personenuebersicht) =>
+        personenuebersicht.zuordnungen.map((zuordnung) => ({
+          personId,
+          organisationId: zuordnung.sskId,
+          rolleId: zuordnung.rolleId,
+          befristung:
+            zuordnung.sskId === organisationId && zuordnung.rolleId === rolleId
+              ? timeLimit
+              : (zuordnung.befristung ?? undefined),
+        })),
+      undefined,
+      OperationContext.PersonBearbeiten,
     );
   } catch (error) {
     console.error('[ERROR] setTimeLimitPersonenkontext failed:', error);

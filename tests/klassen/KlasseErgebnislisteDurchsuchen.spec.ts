@@ -1,5 +1,6 @@
 import { PlaywrightTestArgs, test } from '@playwright/test';
 
+import { OperationContext } from '../../base/api/generated';
 import { createKlasse, getOrganisationId } from '../../base/api/organisationApi';
 import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from '../../base/api/personApi';
 import { getRolleId } from '../../base/api/rolleApi';
@@ -82,7 +83,13 @@ import { HeaderPage } from '../../pages/components/Header.page';
           const zweiteSchuleId: string = await getOrganisationId(page, zweiteSchule.name);
 
           const rolleId: string = await getRolleId(page, rolleName);
-          await addOrganisationenToPerson(page, admin.personId, [schuleId, zweiteSchuleId], rolleId);
+          await addOrganisationenToPerson(
+            page,
+            admin.personId,
+            [schuleId, zweiteSchuleId],
+            rolleId,
+            OperationContext.PersonBearbeiten,
+          );
         }
 
         generierteKlassenNamen = await Promise.all(

@@ -2,6 +2,7 @@ import { Page } from '@playwright/test';
 import {
   CreateServiceProviderBodyParamsKategorieEnum,
   CreateServiceProviderBodyParamsMerkmaleEnum,
+  OperationContext,
 } from '../../base/api/generated';
 import { createKlasse, createSchule } from '../../base/api/organisationApi';
 import {
@@ -74,7 +75,13 @@ test.describe('SPSH-3890: Rollenerweiterung für schulspezifisches Angebot bearb
     const zweiteSchuleName: string = generateSchulname();
     const zweiteSchuleId: string = await createSchule(page, zweiteSchuleName);
 
-    await addOrganisationenToPerson(page, user.personId, [ersteSchuleId, zweiteSchuleId], user.rolleId);
+    await addOrganisationenToPerson(
+      page,
+      user.personId,
+      [ersteSchuleId, zweiteSchuleId],
+      user.rolleId,
+      OperationContext.PersonBearbeiten,
+    );
   }
 
   async function getServiceProviderManagementPage(
