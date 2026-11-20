@@ -78,7 +78,7 @@ async function setupSchuladminAndLoginAndNavigate(
       schuladmin.personId,
       [primarySchuleId, secondSchuleId],
       rolleId,
-      OperationContext.LandesbedienstetenKontextErweitern,
+      OperationContext.PersonBearbeiten,
     );
   }
 
