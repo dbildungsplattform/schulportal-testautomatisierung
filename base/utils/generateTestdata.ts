@@ -5,7 +5,11 @@ import { CharacterSetType, generateRandomString } from 'ts-randomstring/lib/inde
 
 export function initializeTestRunId(): void {
   process.env.TEST_RUN_ID ??= randomUUID();
-  console.log(`TEST_RUN_ID: ${getTestDataPrefix()}`);
+  // The config is loaded by the runner and by every worker; log only once per run.
+  if (process.env.TEST_WORKER_INDEX === undefined) {
+    console.log(`TEST_RUN_ID: ${process.env.TEST_RUN_ID}`);
+    console.log(`Test data prefix: ${getTestDataPrefix()}`);
+  }
 }
 
 const namespaceTokenLength: number = 6;
