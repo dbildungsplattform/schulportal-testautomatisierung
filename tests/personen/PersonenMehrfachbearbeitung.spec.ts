@@ -21,7 +21,7 @@ import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
 import { createMany } from '../../base/utils/concurrency';
 import {
   generateDienststellenNr,
-  generateEmailAdress,
+  generateEmailAddress,
   generateKlassenname,
   generateRolleName,
   generateSchulname,
@@ -131,7 +131,7 @@ async function logoutAndFirstLoginWithAnotherUser(
         name: schule1Name,
         dienststellenNr: schule1Kennung,
         schulform: Schulform.Oeffentlich,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
       schuleId = await createSchule(page, schule1Name, schule1Kennung);
 
@@ -146,7 +146,7 @@ async function logoutAndFirstLoginWithAnotherUser(
           name: schule2Name,
           dienststellenNr: schule2Kennung,
           schulform: Schulform.Oeffentlich,
-          emailAdress: generateEmailAdress(),
+          emailAddress: generateEmailAddress(),
         };
         schuleId2 = await createSchule(page, schule2Name, schule2Kennung);
 
