@@ -8,43 +8,33 @@ export function initializeTestRunId(): void {
   console.log(`TEST_RUN_ID: ${getTestDataPrefix()}`);
 }
 
+const namespaceTokenLength: number = 6;
+
+// The token only has to separate runs (and shards) that are active against the same environment
+// at the same time; 26^6 values keep collisions unlikely while keeping names short (the person
+// details view truncates Schulnamen after 30 characters, privacyIDEA limits usernames to 40).
 export function getTestDataPrefix(): string {
-  const { runId, shardIndex }: { runId: string; shardIndex: string } = getRunIdentity();
-
-  // Keep 80 bits of the run hash, encoded as letters for Personen names.
-  const runToken: string = encodeHexAsLetters(createHash('sha256').update(runId).digest('hex').slice(0, 20));
-  const shardToken: string = encodeHexAsLetters(shardIndex);
-  return `TAuto-PW-${runToken}-S${shardToken}-`;
+  const hash: string = createHash('sha256').update(getTestRunId()).digest('hex');
+  return `TAuto-PW-${encodeAsLetters(Number.parseInt(hash.slice(0, 12), 16), namespaceTokenLength)}-`;
 }
 
-// The person details view truncates Schulnamen after 30 characters, so Schulen use a
-// compact 24-bit run-and-shard token instead of the full prefix.
-export function getSchulnamePrefix(): string {
-  const { runId, shardIndex }: { runId: string; shardIndex: string } = getRunIdentity();
-  const schulToken: string = encodeHexAsLetters(
-    createHash('sha256').update(`${runId}:${shardIndex}`).digest('hex').slice(0, 6),
-  );
-  return `TAuto-PW-${schulToken}-`;
-}
-
-function getRunIdentity(): { runId: string; shardIndex: string } {
+function getTestRunId(): string {
   const runId: string | undefined = process.env.TEST_RUN_ID;
   if (!runId || !/^[A-Za-z0-9_-]+$/.test(runId)) {
     throw new Error('TEST_RUN_ID must be initialized and contain only letters, digits, underscores, and hyphens.');
   }
-
-  const shardIndex: string = process.env.SHARD_INDEX ?? '0';
-  if (!/^(0|[1-9]\d*)$/.test(shardIndex) || !Number.isSafeInteger(Number(shardIndex))) {
-    throw new Error('SHARD_INDEX must be a non-negative safe integer without leading zeros.');
-  }
-
-  return { runId, shardIndex };
+  return runId;
 }
 
-function encodeHexAsLetters(value: string): string {
-  return value.replace(/[0-9a-f]/g, (character: string): string =>
-    String.fromCodePoint(65 + Number.parseInt(character, 16)),
-  );
+// Letters only, because the backend derives usernames from the ASCII letters of the name.
+function encodeAsLetters(value: number, length: number): string {
+  let letters: string = '';
+  let remaining: number = value;
+  for (let index = 0; index < length; index++) {
+    letters = String.fromCodePoint(65 + (remaining % 26)) + letters;
+    remaining = Math.floor(remaining / 26);
+  }
+  return letters;
 }
 
 export function generateVorname(): string {
@@ -95,7 +85,7 @@ export function generateKlassenname(): string {
 
 export function generateSchulname(): string {
   return (
-    `${getSchulnamePrefix()}S-` +
+    `${getTestDataPrefix()}S-` +
     faker.lorem.word({ length: { min: 8, max: 8 } }) +
     generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic })
   );

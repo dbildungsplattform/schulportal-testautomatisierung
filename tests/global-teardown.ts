@@ -22,7 +22,7 @@ import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
-import { getSchulnamePrefix, getTestDataPrefix } from '../base/utils/generateTestdata';
+import { getTestDataPrefix } from '../base/utils/generateTestdata';
 import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
@@ -67,7 +67,6 @@ const maxAttempts: number = 3;
 
 export default async function globalTeardown(): Promise<void> {
   const testDataPrefix: string = getTestDataPrefix();
-  const schulnamePrefix: string = getSchulnamePrefix();
   console.log('Global teardown started');
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -80,7 +79,7 @@ export default async function globalTeardown(): Promise<void> {
     const page: Page = await context.newPage();
 
     try {
-      await runCleanup(page, testDataPrefix, schulnamePrefix);
+      await runCleanup(page, testDataPrefix);
       console.log('Global teardown finished successfully');
       return;
     } catch (error) {
@@ -94,7 +93,7 @@ export default async function globalTeardown(): Promise<void> {
   }
 }
 
-async function runCleanup(page: Page, testDataPrefix: string, schulnamePrefix: string): Promise<void> {
+async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
@@ -220,7 +219,7 @@ async function runCleanup(page: Page, testDataPrefix: string, schulnamePrefix: s
       async () => {
         const wrappedResponse: ApiResponse<OrganisationResponse[]> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
-            searchString: schulnamePrefix,
+            searchString: testDataPrefix,
             typ: OrganisationsTyp.Schule,
             limit,
           });
