@@ -54,24 +54,43 @@ Alle Wrapper folgen demselben Muster: Sie konstruieren den passenden OpenAPI-Cli
 
 - `getServiceProviderId(page, name, schulstrukturknotenOfRolle, rollenArt)` und `getServiceProviderIds(page, names[])` – IDs für `email`, `kalender`, `adressbuch`, `Schulportal-Administration` etc. (Konstanten in [base/sp.ts](../base/sp.ts)).
 
+## Run and shard isolation
+
+[playwright.config.ts](../playwright.config.ts) calls `initializeTestRunId()` before setup or spec loading, including test-data generation at module scope. Setup, workers, and teardown share the same `TEST_RUN_ID` through the process environment.
+
+- Local runs generate a UUID once when `TEST_RUN_ID` is unset.
+- CI supplies `<repository_id>-<run_id>-<shard>`. The repository ID separates callers from different repositories (`schulportal-client`, `dbildungs-iam-server`, `dbildungs-iam-keycloak` and this repository), which may test against the same environment; the shard separates the parallel matrix jobs of one run. Rerun attempts share the namespace: they never run concurrently, and an attempt cleans up leftovers of a cancelled previous attempt. If a workflow run ever calls `run-playwright.yml` more than once, add the distinguishing inputs (e.g. browser, tag) to the ID.
+- Explicit IDs must contain only ASCII letters, digits, underscores, and hyphens. Never reuse an ID across independent runs; when running several shards in parallel with an explicit ID, include the shard in the ID.
+- `getTestDataPrefix()` in [generateTestdata.ts](../base/utils/generateTestdata.ts) is the single source for generation and cleanup of all entity types: `TAuto-PW-<token>-`.
+- The token encodes a SHA-256 hash of the run ID as 6 uppercase letters (26^6 ≈ 309 million values). It only has to separate runs and shards that are active against the same environment at the same time; with about 15 concurrent namespaces, the collision probability is about 1 in 3 million. Letters only, because usernames are derived from the ASCII letters of the name.
+- The short prefix keeps generated Schulnamen at 29 characters, below the 30-character truncation in the person details view, and leaves room for the surname within privacyIDEA's username limit.
+- Generators resolve the namespace when called, not when imported. Neither generators nor teardown create a missing run ID.
+
+Entity-specific markers and random suffixes remain part of generated names. Numeric fields such as KoPers-Nr and Dienststellen-Nr retain their existing formats. Email local parts stay within 64 characters, including the namespace. `generateNachname(suffix?)` reduces the Faker surname to ASCII letters and shortens it so the derived username (first letter of the Vorname plus the Nachname) stays within privacyIDEA's 40-character limit; an optional suffix is included in that budget.
+
+
 ## Generatoren ([base/utils/generateTestdata.ts](../base/utils/generateTestdata.ts))
 
-| Funktion                                                        | Beispiel-Output                        |
-| --------------------------------------------------------------- | -------------------------------------- |
-| `generateVorname()`                                             | `TAuto-PW-V-Lara_xYz`                  |
-| `generateNachname()`                                            | `TAuto-PW-N-Müller_aBc`                |
-| `generateRolleName()`                                           | `TAuto-PW-R-flumino_qwe`               |
-| `generateKlassenname()`                                         | `TAuto-PW-K-12a flumino_qwe`           |
-| `generateSchulname()`                                           | `TAuto-PW-S-flumino_qwe`               |
-| `generateKopersNr()`                                            | `081512345678`                         |
-| `generateDienststellenNr()`                                     | `012345678`                            |
-| `generateCurrentDate({ days, months })` / `formatDateDMY(date)` | Datums-Helfer (z. B. für Befristungen) |
+Examples below use the token `KQBXMD`; each run and shard gets its own token.
 
-Der Präfix `TAuto-PW-` ist Konvention und wird an mehreren Stellen verwendet (Suche, globales Aufräumen).
+| Function                                                    | Example output                                    |
+| ----------------------------------------------------------- | ------------------------------------------------- |
+| `generateVorname()`                                          | `TAuto-PW-KQBXMD-VLaraXyz`                           |
+| `generateNachname()`                                         | `TAuto-PW-KQBXMD-NMeyerAbc`                          |
+| `generateRolleName()`                                        | `TAuto-PW-KQBXMD-R-fluminoQwe`                       |
+| `generateKlassenname()`                                      | `TAuto-PW-KQBXMD-K-fluminorQwe`                      |
+| `generateSchulname()`                                        | `TAuto-PW-KQBXMD-S-fluminorQwe`                      |
+| `generateAngebotname()`                                      | `TAuto-PW-KQBXMD-A-fluminorQwe`                      |
+| `generateEmailAdress()`                                     | `TAuto-PW-KQBXMD-E-Lara@example.orgXyz`              |
+| `generateKopersNr()`                                         | `081512345678`                                    |
+| `generateDienststellenNr()`                                  | `012345678`                                       |
+| `generateCurrentDate({ days, months })` / `formatDateDMY(date)` | Date helpers (for example Befristung)              |
 
 ## Aufräumen
 
-Das in [tests/global-teardown.ts](../tests/global-teardown.ts) konfigurierte globale Teardown löscht nach dem Testlauf alle Testdaten mit dem Präfix `TAuto-PW` in der Reihenfolge Personen, Rollen, Klassen und Schulen. Neue Tests sollen daher keinen eigenen `afterEach`-Cleanup implementieren.
+[Global teardown](../tests/global-teardown.ts) searches all entity types only by the complete current prefix (`TAuto-PW-<token>-`), including its trailing separator. Search results are treated as owned by that namespace. Missing or invalid run IDs abort cleanup before a browser is opened; cleanup never falls back to a broad `TAuto-PW` search.
+
+Deletion order remains Personen, Rollen, Angebote (including their Rollenerweiterungen), Klassen, and Schulen. Unprefixed Klassen are deleted only beneath Schulen returned by the namespaced search. Renamed entities must retain the namespace; tests using other names must track and delete their own resource IDs. Cleanup of abandoned runs is separate and is not performed by normal teardown. New tests should not duplicate this lifecycle with an `afterEach` cleanup.
 
 Ein `afterEach`-Cleanup ist nur bei einer ausdrücklich begründeten Ausnahme erforderlich, wenn Daten noch innerhalb desselben Testlaufs entfernt werden müssen. Dann können die folgenden Hilfsfunktionen verwendet werden:
 
