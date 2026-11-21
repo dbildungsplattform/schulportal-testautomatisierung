@@ -67,7 +67,12 @@ export const DbiamOrganisationErrorI18nKeyEnum = {
     OrganisationHatRollenerweiterungen: 'ORGANISATION_HAT_ROLLENERWEITERUNGEN',
     OrganisationHatOrganisationsbeziehungen: 'ORGANISATION_HAT_ORGANISATIONSBEZIEHUNGEN',
     BehoerdeNameEindeutig: 'BEHOERDE_NAME_EINDEUTIG',
-    BehoerdeAdministriertVon: 'BEHOERDE_ADMINISTRIERT_VON'
+    BehoerdeAdministriertVon: 'BEHOERDE_ADMINISTRIERT_VON',
+    SchulaufsichtQuelleSchuleZielBehoerde: 'SCHULAUFSICHT_QUELLE_SCHULE_ZIEL_BEHOERDE',
+    SchulaufsichtSchuleUndAufsichtSelberBaum: 'SCHULAUFSICHT_SCHULE_UND_AUFSICHT_SELBER_BAUM',
+    SchultraegerQuelleSchuleZielTraeger: 'SCHULTRAEGER_QUELLE_SCHULE_ZIEL_TRAEGER',
+    SchultraegerSchuleHatExaktEinenTraeger: 'SCHULTRAEGER_SCHULE_HAT_EXAKT_EINEN_TRAEGER',
+    SchultraegerSchuleUndTraegerSelberBaum: 'SCHULTRAEGER_SCHULE_UND_TRAEGER_SELBER_BAUM'
 } as const;
 export type DbiamOrganisationErrorI18nKeyEnum = typeof DbiamOrganisationErrorI18nKeyEnum[keyof typeof DbiamOrganisationErrorI18nKeyEnum];
 

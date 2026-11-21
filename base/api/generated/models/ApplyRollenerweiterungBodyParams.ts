@@ -26,7 +26,7 @@ export interface ApplyRollenerweiterungBodyParams {
      */
     addErweiterungenForRolleIds: Array<string>;
     /**
-     * List of rolleIds to apply.
+     * List of rolleIds to remove.
      * @type {Array<string>}
      * @memberof ApplyRollenerweiterungBodyParams
      */
