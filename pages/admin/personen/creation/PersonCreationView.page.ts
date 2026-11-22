@@ -1,5 +1,4 @@
 import { expect, type Locator, Page } from '@playwright/test';
-import { waitForAPIResponse } from '../../../../base/api/baseApi';
 import { Autocomplete } from '../../../components/Autocomplete';
 import { PersonCreationSuccessPage } from './PersonCreationSuccess.page';
 
@@ -103,7 +102,6 @@ export class PersonCreationViewPage {
 
   public async clearOrganisation(): Promise<void> {
     await this.organisationAutocomplete.clear();
-    await waitForAPIResponse(this.page, PersonCreationViewPage.WORKFLOW_ENDPOINT);
   }
 
   public async submit(): Promise<PersonCreationSuccessPage> {
