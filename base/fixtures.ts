@@ -31,7 +31,12 @@ import { createKlasse, createSchule } from './api/organisationApi';
 import { addOrganisationenToPerson, createPersonWithPersonenkontext, UserInfo } from './api/personApi';
 import { schuladminOeffentlichRolle } from './rollen';
 import { loginAndNavigateToAdministration, switchToNewUserAndNavigateToAdministration } from './testHelperUtils';
-import { generateDienststellenNr, generateKlassenname, generateSchulname } from './utils/generateTestdata';
+import {
+  generateDienststellenNr,
+  generateEmailAddress,
+  generateKlassenname,
+  generateSchulname,
+} from './utils/generateTestdata';
 
 export interface TestSchule {
   id: string;
@@ -40,6 +45,10 @@ export interface TestSchule {
 
 export interface TestSchuleMitDstNr extends TestSchule {
   dstNr: string;
+}
+
+export interface TestSchuleMitDstNrUndEmail extends TestSchuleMitDstNr {
+  emailAddress: string;
 }
 
 export interface TestKlasse {
@@ -85,6 +94,8 @@ export const test = base.extend<{
   testSchule: TestSchule;
   /** Creates a school with a DstNr; Landesadmin stays logged in on PersonManagementView. */
   testSchuleMitDstNr: TestSchuleMitDstNr;
+  /** Creates a school with a DstNr and email; Landesadmin stays logged in on PersonManagementView. */
+  testSchuleMitDstNrUndEmail: TestSchuleMitDstNrUndEmail;
   /** Creates a class in testSchule; Landesadmin stays logged in on PersonManagementView. */
   testKlasse: TestKlasse;
   /** Creates a Schuladmin in testSchule; Landesadmin stays logged in on PersonManagementView. */
@@ -149,6 +160,14 @@ export const test = base.extend<{
     const dstNr: string = generateDienststellenNr();
     const id: string = await createSchule(page, name, dstNr);
     await use({ id, name, dstNr });
+  },
+
+  testSchuleMitDstNrUndEmail: async ({ page, asLandesadmin: _asLandesadmin }, use) => {
+    const name: string = generateSchulname();
+    const dstNr: string = generateDienststellenNr();
+    const emailAddress: string = generateEmailAddress();
+    const id: string = await createSchule(page, name, dstNr, emailAddress);
+    await use({ id, name, dstNr, emailAddress });
   },
 
   testKlasse: async ({ page, testSchule }, use) => {
