@@ -20,6 +20,7 @@ import type {
   CreateRolleBodyParams,
   DbiamApplyRollenerweiterungMultiError,
   DbiamRolleError,
+  RolleControllerFindRollen200Response,
   RolleControllerFindRollenAvailableForPersonAdministration200Response,
   RolleServiceProviderResponse,
   RolleWithServiceProvidersResponse,
@@ -41,6 +42,8 @@ import {
     DbiamApplyRollenerweiterungMultiErrorToJSON,
     DbiamRolleErrorFromJSON,
     DbiamRolleErrorToJSON,
+    RolleControllerFindRollen200ResponseFromJSON,
+    RolleControllerFindRollen200ResponseToJSON,
     RolleControllerFindRollenAvailableForPersonAdministration200ResponseFromJSON,
     RolleControllerFindRollenAvailableForPersonAdministration200ResponseToJSON,
     RolleServiceProviderResponseFromJSON,
@@ -280,13 +283,13 @@ export interface RolleApiInterface {
      * @throws {RequiredError}
      * @memberof RolleApiInterface
      */
-    rolleControllerFindRollenRaw(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>>;
+    rolleControllerFindRollenRaw(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>>;
 
     /**
      * List all rollen.
      * 
      */
-    rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>>;
+    rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response>;
 
     /**
      * List all rollen that are available for the Rollenerweiterung workflow.
@@ -301,13 +304,13 @@ export interface RolleApiInterface {
      * @throws {RequiredError}
      * @memberof RolleApiInterface
      */
-    rolleControllerFindRollenAvailableForErweiterungRaw(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>>;
+    rolleControllerFindRollenAvailableForErweiterungRaw(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>>;
 
     /**
      * List all rollen that are available for the Rollenerweiterung workflow.
      * 
      */
-    rolleControllerFindRollenAvailableForErweiterung(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>>;
+    rolleControllerFindRollenAvailableForErweiterung(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response>;
 
     /**
      * List all rollen that are available for the Personen-Import workflow.
@@ -321,13 +324,13 @@ export interface RolleApiInterface {
      * @throws {RequiredError}
      * @memberof RolleApiInterface
      */
-    rolleControllerFindRollenAvailableForImportRaw(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>>;
+    rolleControllerFindRollenAvailableForImportRaw(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>>;
 
     /**
      * List all rollen that are available for the Personen-Import workflow.
      * 
      */
-    rolleControllerFindRollenAvailableForImport(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>>;
+    rolleControllerFindRollenAvailableForImport(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response>;
 
     /**
      * List rollen available for person administration.
@@ -360,13 +363,13 @@ export interface RolleApiInterface {
      * @throws {RequiredError}
      * @memberof RolleApiInterface
      */
-    rolleControllerFindRollenForMptZuordnungRaw(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>>;
+    rolleControllerFindRollenForMptZuordnungRaw(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>>;
 
     /**
      * List all MPT rollen the user is allowed to administer.
      * 
      */
-    rolleControllerFindRollenForMptZuordnung(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>>;
+    rolleControllerFindRollenForMptZuordnung(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response>;
 
     /**
      * Get Erweiterte Angebote for a rolle.
@@ -773,7 +776,7 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      * List all rollen.
      * 
      */
-    async rolleControllerFindRollenRaw(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>> {
+    async rolleControllerFindRollenRaw(requestParameters: RolleControllerFindRollenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -826,14 +829,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(RolleWithServiceProvidersResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollen200ResponseFromJSON(jsonValue));
     }
 
     /**
      * List all rollen.
      * 
      */
-    async rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>> {
+    async rolleControllerFindRollen(requestParameters: RolleControllerFindRollenRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response> {
         const response = await this.rolleControllerFindRollenRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -842,7 +845,7 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      * List all rollen that are available for the Rollenerweiterung workflow.
      * 
      */
-    async rolleControllerFindRollenAvailableForErweiterungRaw(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>> {
+    async rolleControllerFindRollenAvailableForErweiterungRaw(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>> {
         if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
             throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling rolleControllerFindRollenAvailableForErweiterung.');
         }
@@ -895,14 +898,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(RolleWithServiceProvidersResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollen200ResponseFromJSON(jsonValue));
     }
 
     /**
      * List all rollen that are available for the Rollenerweiterung workflow.
      * 
      */
-    async rolleControllerFindRollenAvailableForErweiterung(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>> {
+    async rolleControllerFindRollenAvailableForErweiterung(requestParameters: RolleControllerFindRollenAvailableForErweiterungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response> {
         const response = await this.rolleControllerFindRollenAvailableForErweiterungRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -911,7 +914,7 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      * List all rollen that are available for the Personen-Import workflow.
      * 
      */
-    async rolleControllerFindRollenAvailableForImportRaw(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>> {
+    async rolleControllerFindRollenAvailableForImportRaw(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>> {
         if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
             throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling rolleControllerFindRollenAvailableForImport.');
         }
@@ -960,14 +963,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(RolleWithServiceProvidersResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollen200ResponseFromJSON(jsonValue));
     }
 
     /**
      * List all rollen that are available for the Personen-Import workflow.
      * 
      */
-    async rolleControllerFindRollenAvailableForImport(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>> {
+    async rolleControllerFindRollenAvailableForImport(requestParameters: RolleControllerFindRollenAvailableForImportRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response> {
         const response = await this.rolleControllerFindRollenAvailableForImportRaw(requestParameters, initOverrides);
         return await response.value();
     }
@@ -1037,7 +1040,7 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
      * List all MPT rollen the user is allowed to administer.
      * 
      */
-    async rolleControllerFindRollenForMptZuordnungRaw(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<RolleWithServiceProvidersResponse>>> {
+    async rolleControllerFindRollenForMptZuordnungRaw(requestParameters: RolleControllerFindRollenForMptZuordnungRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<RolleControllerFindRollen200Response>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -1078,14 +1081,14 @@ export class RolleApi extends runtime.BaseAPI implements RolleApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(RolleWithServiceProvidersResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => RolleControllerFindRollen200ResponseFromJSON(jsonValue));
     }
 
     /**
      * List all MPT rollen the user is allowed to administer.
      * 
      */
-    async rolleControllerFindRollenForMptZuordnung(requestParameters: RolleControllerFindRollenForMptZuordnungRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<RolleWithServiceProvidersResponse>> {
+    async rolleControllerFindRollenForMptZuordnung(requestParameters: RolleControllerFindRollenForMptZuordnungRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<RolleControllerFindRollen200Response> {
         const response = await this.rolleControllerFindRollenForMptZuordnungRaw(requestParameters, initOverrides);
         return await response.value();
     }

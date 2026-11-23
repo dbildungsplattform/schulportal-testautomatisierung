@@ -46,6 +46,12 @@ export interface ProviderControllerGetAvailableServiceProviders200Response {
     limit: number;
     /**
      * 
+     * @type {number}
+     * @memberof ProviderControllerGetAvailableServiceProviders200Response
+     */
+    pageTotal?: number;
+    /**
+     * 
      * @type {Array<ServiceProviderResponse>}
      * @memberof ProviderControllerGetAvailableServiceProviders200Response
      */
@@ -78,6 +84,7 @@ export function ProviderControllerGetAvailableServiceProviders200ResponseFromJSO
         'total': json['total'],
         'offset': json['offset'],
         'limit': json['limit'],
+        'pageTotal': !exists(json, 'pageTotal') ? undefined : json['pageTotal'],
         'items': ((json['items'] as Array<any>).map(ServiceProviderResponseFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function ProviderControllerGetAvailableServiceProviders200ResponseToJSON(
         'total': value.total,
         'offset': value.offset,
         'limit': value.limit,
+        'pageTotal': value.pageTotal,
         'items': ((value.items as Array<any>).map(ServiceProviderResponseToJSON)),
     };
 }

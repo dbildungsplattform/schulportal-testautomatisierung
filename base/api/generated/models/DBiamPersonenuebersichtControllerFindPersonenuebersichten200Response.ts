@@ -28,24 +28,6 @@ import {
 export interface DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response {
     /**
      * 
-     * @type {number}
-     * @memberof DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response
-     */
-    total: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response
-     */
-    offset: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response
-     */
-    limit: number;
-    /**
-     * 
      * @type {Array<DBiamPersonenuebersichtResponse>}
      * @memberof DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response
      */
@@ -57,9 +39,6 @@ export interface DBiamPersonenuebersichtControllerFindPersonenuebersichten200Res
  */
 export function instanceOfDBiamPersonenuebersichtControllerFindPersonenuebersichten200Response(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "total" in value;
-    isInstance = isInstance && "offset" in value;
-    isInstance = isInstance && "limit" in value;
     isInstance = isInstance && "items" in value;
 
     return isInstance;
@@ -75,9 +54,6 @@ export function DBiamPersonenuebersichtControllerFindPersonenuebersichten200Resp
     }
     return {
         
-        'total': json['total'],
-        'offset': json['offset'],
-        'limit': json['limit'],
         'items': ((json['items'] as Array<any>).map(DBiamPersonenuebersichtResponseFromJSON)),
     };
 }
@@ -91,9 +67,6 @@ export function DBiamPersonenuebersichtControllerFindPersonenuebersichten200Resp
     }
     return {
         
-        'total': value.total,
-        'offset': value.offset,
-        'limit': value.limit,
         'items': ((value.items as Array<any>).map(DBiamPersonenuebersichtResponseToJSON)),
     };
 }

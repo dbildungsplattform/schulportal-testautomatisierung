@@ -46,6 +46,12 @@ export interface ProviderControllerFindRollenerweiterungenByServiceProviderId200
     limit: number;
     /**
      * 
+     * @type {number}
+     * @memberof ProviderControllerFindRollenerweiterungenByServiceProviderId200Response
+     */
+    pageTotal?: number;
+    /**
+     * 
      * @type {Array<RollenerweiterungWithExtendedDataResponse>}
      * @memberof ProviderControllerFindRollenerweiterungenByServiceProviderId200Response
      */
@@ -78,6 +84,7 @@ export function ProviderControllerFindRollenerweiterungenByServiceProviderId200R
         'total': json['total'],
         'offset': json['offset'],
         'limit': json['limit'],
+        'pageTotal': !exists(json, 'pageTotal') ? undefined : json['pageTotal'],
         'items': ((json['items'] as Array<any>).map(RollenerweiterungWithExtendedDataResponseFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function ProviderControllerFindRollenerweiterungenByServiceProviderId200R
         'total': value.total,
         'offset': value.offset,
         'limit': value.limit,
+        'pageTotal': value.pageTotal,
         'items': ((value.items as Array<any>).map(RollenerweiterungWithExtendedDataResponseToJSON)),
     };
 }

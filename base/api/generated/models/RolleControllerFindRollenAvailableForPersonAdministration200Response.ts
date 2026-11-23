@@ -46,6 +46,12 @@ export interface RolleControllerFindRollenAvailableForPersonAdministration200Res
     limit: number;
     /**
      * 
+     * @type {number}
+     * @memberof RolleControllerFindRollenAvailableForPersonAdministration200Response
+     */
+    pageTotal?: number;
+    /**
+     * 
      * @type {Array<RolleResponse>}
      * @memberof RolleControllerFindRollenAvailableForPersonAdministration200Response
      */
@@ -78,6 +84,7 @@ export function RolleControllerFindRollenAvailableForPersonAdministration200Resp
         'total': json['total'],
         'offset': json['offset'],
         'limit': json['limit'],
+        'pageTotal': !exists(json, 'pageTotal') ? undefined : json['pageTotal'],
         'items': ((json['items'] as Array<any>).map(RolleResponseFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function RolleControllerFindRollenAvailableForPersonAdministration200Resp
         'total': value.total,
         'offset': value.offset,
         'limit': value.limit,
+        'pageTotal': value.pageTotal,
         'items': ((value.items as Array<any>).map(RolleResponseToJSON)),
     };
 }
