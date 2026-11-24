@@ -59,6 +59,7 @@ export class ServiceProviderEditViewPage {
   }
 
   public async selectKategorie(kategorie: ServiceProviderKategorie): Promise<void> {
+    await this.kategorieAutocomplete.openModal();
     await this.kategorieAutocomplete.selectByName(KATEGORIE_LABEL[kategorie]);
   }
 
