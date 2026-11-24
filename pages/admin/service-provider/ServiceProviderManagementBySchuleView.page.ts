@@ -63,6 +63,14 @@ export class ServiceProviderManagementBySchuleViewPage {
 
   public async filterBySchule(schuleName: string): Promise<void> {
     await this.schuleAutocomplete.searchByTitle(schuleName);
+    // Vuetify may refocus the filter after its menu closes. A focused filter wraps onto two lines and collapses
+    // on the next mousedown, shifting the table so that a following row click no longer hits the row.
+    const menuId: string | null = await this.schuleFilterInput.getAttribute('aria-controls');
+    if (menuId) {
+      await expect(this.page.locator(`#${menuId}`)).toBeHidden();
+    }
+    await this.schuleFilterInput.blur();
+    await expect(this.schuleFilterInput).not.toBeFocused();
     await this.waitForResultTableLoad();
     await expect(this.page.getByTestId('layout-card-headline')).toContainText(schuleName);
   }
