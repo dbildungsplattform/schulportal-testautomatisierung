@@ -16,24 +16,24 @@
 import * as runtime from '../runtime';
 import type {
   DbiamImportError,
+  ImportControllerFindImportTransactions200Response,
   ImportResultResponse,
   ImportStatus,
   ImportUploadResponse,
-  ImportVorgangResponse,
   ImportVorgangStatusResponse,
   ImportvorgangByIdBodyParams,
 } from '../models';
 import {
     DbiamImportErrorFromJSON,
     DbiamImportErrorToJSON,
+    ImportControllerFindImportTransactions200ResponseFromJSON,
+    ImportControllerFindImportTransactions200ResponseToJSON,
     ImportResultResponseFromJSON,
     ImportResultResponseToJSON,
     ImportStatusFromJSON,
     ImportStatusToJSON,
     ImportUploadResponseFromJSON,
     ImportUploadResponseToJSON,
-    ImportVorgangResponseFromJSON,
-    ImportVorgangResponseToJSON,
     ImportVorgangStatusResponseFromJSON,
     ImportVorgangStatusResponseToJSON,
     ImportvorgangByIdBodyParamsFromJSON,
@@ -141,13 +141,13 @@ export interface ImportApiInterface {
      * @throws {RequiredError}
      * @memberof ImportApiInterface
      */
-    importControllerFindImportTransactionsRaw(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ImportVorgangResponse>>>;
+    importControllerFindImportTransactionsRaw(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ImportControllerFindImportTransactions200Response>>;
 
     /**
      * Get the history of import.
      * 
      */
-    importControllerFindImportTransactions(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ImportVorgangResponse>>;
+    importControllerFindImportTransactions(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ImportControllerFindImportTransactions200Response>;
 
     /**
      * Get status for the import transaction by id.
@@ -341,7 +341,7 @@ export class ImportApi extends runtime.BaseAPI implements ImportApiInterface {
      * Get the history of import.
      * 
      */
-    async importControllerFindImportTransactionsRaw(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<ImportVorgangResponse>>> {
+    async importControllerFindImportTransactionsRaw(requestParameters: ImportControllerFindImportTransactionsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ImportControllerFindImportTransactions200Response>> {
         const queryParameters: any = {};
 
         if (requestParameters.offset !== undefined) {
@@ -386,14 +386,14 @@ export class ImportApi extends runtime.BaseAPI implements ImportApiInterface {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(ImportVorgangResponseFromJSON));
+        return new runtime.JSONApiResponse(response, (jsonValue) => ImportControllerFindImportTransactions200ResponseFromJSON(jsonValue));
     }
 
     /**
      * Get the history of import.
      * 
      */
-    async importControllerFindImportTransactions(requestParameters: ImportControllerFindImportTransactionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<ImportVorgangResponse>> {
+    async importControllerFindImportTransactions(requestParameters: ImportControllerFindImportTransactionsRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ImportControllerFindImportTransactions200Response> {
         const response = await this.importControllerFindImportTransactionsRaw(requestParameters, initOverrides);
         return await response.value();
     }

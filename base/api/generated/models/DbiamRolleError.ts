@@ -48,7 +48,8 @@ export const DbiamRolleErrorI18nKeyEnum = {
     ServiceProviderNichtNachtraeglichZuweisbar: 'SERVICE_PROVIDER_NICHT_NACHTRAEGLICH_ZUWEISBAR',
     ServiceProviderNichtVerfuegbarFuerRollenerweiterung: 'SERVICE_PROVIDER_NICHT_VERFUEGBAR_FUER_ROLLENERWEITERUNG',
     NoRedundantRollenerweiterung: 'NO_REDUNDANT_ROLLENERWEITERUNG',
-    ServiceProviderProvidedOutOfTree: 'SERVICE_PROVIDER_PROVIDED_OUT_OF_TREE'
+    ServiceProviderProvidedOutOfTree: 'SERVICE_PROVIDER_PROVIDED_OUT_OF_TREE',
+    RollenartNotAllowedForServiceProvider: 'ROLLENART_NOT_ALLOWED_FOR_SERVICE_PROVIDER'
 } as const;
 export type DbiamRolleErrorI18nKeyEnum = typeof DbiamRolleErrorI18nKeyEnum[keyof typeof DbiamRolleErrorI18nKeyEnum];
 
