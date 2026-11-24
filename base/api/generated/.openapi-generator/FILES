@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/AuthApi.ts
 apis/Class2FAApi.ts
 apis/ConfigApi.ts
@@ -34,7 +33,6 @@ models/CsrfTokenResponse.ts
 models/DBiamPersonResponse.ts
 models/DBiamPersonenkontextResponse.ts
 models/DBiamPersonenuebersichtControllerFindPersonenuebersichten200Response.ts
-models/DBiamPersonenuebersichtControllerFindPersonenuebersichten200ResponseAllOf.ts
 models/DBiamPersonenuebersichtResponse.ts
 models/DBiamPersonenzuordnungResponse.ts
 models/DbiamApplyRollenerweiterungMultiError.ts
@@ -53,6 +51,8 @@ models/DbiamUpdatePersonenkontexteBodyParams.ts
 models/EmailAddressStatus.ts
 models/EmailChangedBodyParams.ts
 models/FeatureFlagResponse.ts
+models/ImportControllerFindImportTransactions200Response.ts
+models/ImportControllerFindImportTransactions200ResponseAllOf.ts
 models/ImportDataItemResponse.ts
 models/ImportDataItemStatus.ts
 models/ImportResultResponse.ts
@@ -71,6 +71,8 @@ models/MeldungResponse.ts
 models/OperationContext.ts
 models/OrganisationByIdBodyParams.ts
 models/OrganisationByNameBodyParams.ts
+models/OrganisationControllerFindOrganizations200Response.ts
+models/OrganisationControllerFindOrganizations200ResponseAllOf.ts
 models/OrganisationRefResponse.ts
 models/OrganisationResponse.ts
 models/OrganisationResponseLegacy.ts
@@ -81,6 +83,7 @@ models/OrganisationsbeziehungOrganisationResponse.ts
 models/OrganisationsbeziehungResponse.ts
 models/OrganisationsbeziehungWithOrganisationenResponse.ts
 models/OrganisationsbeziehungsTyp.ts
+models/PagedResponse.ts
 models/ParentOrganisationenResponse.ts
 models/ParentOrganisationsByIdsBodyParams.ts
 models/PersonControllerFindPersonenkontexte200Response.ts
@@ -133,7 +136,8 @@ models/ProviderControllerGetManageableServiceProviders200Response.ts
 models/ProviderControllerGetManageableServiceProviders200ResponseAllOf.ts
 models/ProviderControllerGetManageableServiceProvidersForOrganisationId200Response.ts
 models/ProviderControllerGetManageableServiceProvidersForOrganisationId200ResponseAllOf.ts
-models/RawPagedResponse.ts
+models/RolleControllerFindRollen200Response.ts
+models/RolleControllerFindRollen200ResponseAllOf.ts
 models/RolleControllerFindRollenAvailableForPersonAdministration200Response.ts
 models/RolleControllerFindRollenAvailableForPersonAdministration200ResponseAllOf.ts
 models/RolleRefResponse.ts

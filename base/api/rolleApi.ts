@@ -10,6 +10,7 @@ import {
   CreateRolleBodyParams,
   RollenArt,
   RollenMerkmal,
+  RolleControllerFindRollen200Response,
   RolleResponse,
   RolleWithServiceProvidersResponse,
 } from './generated/models';
@@ -88,11 +89,11 @@ export async function getRolleId(page: Page, rollenname: string): Promise<string
     };
 
     const rolleApi: RolleApi = constructRolleApi(page);
-    const response: ApiResponse<RolleWithServiceProvidersResponse[]> =
+    const response: ApiResponse<RolleControllerFindRollen200Response> =
       await rolleApi.rolleControllerFindRollenRaw(requestParameters);
     expect(response.raw.status).toBe(200);
 
-    const fetchedRollen: RolleWithServiceProvidersResponse[] = await response.value();
+    const fetchedRollen: RolleWithServiceProvidersResponse[] = (await response.value()).items;
     let fetchedRolleId: string = '';
 
     for (const rolle of fetchedRollen) {
