@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import * as path from 'node:path';
 import { fileURLToPath } from 'url';
 
+import { initializeTestRunId } from './base/utils/generateTestdata';
+
 const filename: string = fileURLToPath(import.meta.url);
 const dirname: string = path.dirname(filename);
 
@@ -11,6 +13,8 @@ dotenv.config({
 });
 
 dotenv.config({ path: path.resolve(dirname, '.env'), override: true });
+
+initializeTestRunId();
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL || '';
 export const ignoreHTTPSErrors: boolean =

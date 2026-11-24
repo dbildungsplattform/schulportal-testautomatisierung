@@ -46,6 +46,12 @@ export interface ProviderControllerGetManageableServiceProviders200Response {
     limit: number;
     /**
      * 
+     * @type {number}
+     * @memberof ProviderControllerGetManageableServiceProviders200Response
+     */
+    pageTotal?: number;
+    /**
+     * 
      * @type {Array<ManageableServiceProviderSimpleListEntryResponse>}
      * @memberof ProviderControllerGetManageableServiceProviders200Response
      */
@@ -78,6 +84,7 @@ export function ProviderControllerGetManageableServiceProviders200ResponseFromJS
         'total': json['total'],
         'offset': json['offset'],
         'limit': json['limit'],
+        'pageTotal': !exists(json, 'pageTotal') ? undefined : json['pageTotal'],
         'items': ((json['items'] as Array<any>).map(ManageableServiceProviderSimpleListEntryResponseFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function ProviderControllerGetManageableServiceProviders200ResponseToJSON
         'total': value.total,
         'offset': value.offset,
         'limit': value.limit,
+        'pageTotal': value.pageTotal,
         'items': ((value.items as Array<any>).map(ManageableServiceProviderSimpleListEntryResponseToJSON)),
     };
 }

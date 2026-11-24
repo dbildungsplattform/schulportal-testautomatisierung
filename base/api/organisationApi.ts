@@ -8,7 +8,12 @@ import {
   OrganisationControllerFindOrganizationsRequest,
   OrganisationenApi,
 } from './generated/apis/OrganisationenApi';
-import { CreateOrganisationBodyParams, OrganisationResponse, OrganisationsTyp } from './generated/models';
+import {
+  CreateOrganisationBodyParams,
+  OrganisationControllerFindOrganizations200Response,
+  OrganisationResponse,
+  OrganisationsTyp,
+} from './generated/models';
 import { ApiResponse } from './generated/runtime';
 
 export function constructOrganisationApi(page: Page): OrganisationenApi {
@@ -41,10 +46,10 @@ export async function getOrganisations(
 ): Promise<OrganisationResponse[]> {
   try {
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
-    const response: ApiResponse<OrganisationResponse[]> =
+    const response: ApiResponse<OrganisationControllerFindOrganizations200Response> =
       await organisationApi.organisationControllerFindOrganizationsRaw(params);
     expect(response.raw.status).toBe(200);
-    return response.value();
+    return (await response.value()).items;
   } catch (error) {
     console.error('[ERROR] getOrganisations failed:', error);
     throw error;
@@ -83,11 +88,11 @@ export async function getKlasseId(page: Page, klassennname: string): Promise<str
     };
 
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
-    const response: ApiResponse<OrganisationResponse[]> =
+    const response: ApiResponse<OrganisationControllerFindOrganizations200Response> =
       await organisationApi.organisationControllerFindOrganizationsRaw(requestParameters);
     expect(response.raw.status).toBe(200);
 
-    const organisations: OrganisationResponse[] = await response.value();
+    const organisations: OrganisationResponse[] = (await response.value()).items;
     if (!organisations || organisations.length === 0) {
       return undefined;
     }
