@@ -1,6 +1,7 @@
 import { expect, Locator, Page } from '@playwright/test';
 import { DataTable } from '../../components/DataTable.page';
 import { FooterDataTablePage } from '../../components/FooterDataTable.page';
+import { ServiceProviderEditViewPage } from './ServiceProviderEditView.page';
 
 type ItemsPerPage = 5 | 30 | 50 | 100 | 300;
 
@@ -45,6 +46,11 @@ export class ServiceProviderDetailsViewPage {
 
   public async increaseItemsPerPage(value: ItemsPerPage): Promise<void> {
     await this.dataTable.setItemsPerPage(value);
+  }
+
+  public async clickServiceProviderBearbeiten(): Promise<ServiceProviderEditViewPage> {
+    await this.page.getByTestId('service-provider-bearbeiten-button').click();
+    return new ServiceProviderEditViewPage(this.page).waitForPageLoad();
   }
 
   /* assertions */
