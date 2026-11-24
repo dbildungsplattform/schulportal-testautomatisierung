@@ -75,11 +75,12 @@ export class StartViewPage {
   ): Promise<void> {
     const expectedText: string = `Hinweis: Die Zuordnung dieses Benutzerkontos zu der Schule "${textParameters.schulName}" mit der Rolle "${textParameters.rollenName}" ist bis zum ${formatDateDMY(textParameters.timeLimit)} befristet. Sollte dies nicht zutreffen, wenden Sie sich bitte an Ihre Schulleitung. Nach Ende der Zuordnung sind Funktionalitäten, die im Bezug zu dieser Schule und Rolle stehen, nicht mehr verfügbar.`;
     await expect(this.page.getByText(expectedText)).toBeVisible();
+    const newsbox: Locator = this.page.getByRole('alert').filter({ hasText: expectedText });
     if (expectedColor === 'red') {
-      await expect(this.page.getByRole('alert')).toHaveCSS('background-color', 'rgb(255, 85, 85)');
+      await expect(newsbox).toHaveCSS('background-color', 'rgb(255, 85, 85)');
     }
     if (expectedColor === 'orange') {
-      await expect(this.page.getByRole('alert')).toHaveCSS('background-color', 'rgb(255, 152, 37)');
+      await expect(newsbox).toHaveCSS('background-color', 'rgb(255, 152, 37)');
     }
   }
 }
