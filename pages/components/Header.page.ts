@@ -9,8 +9,6 @@ export class HeaderPage {
 
   constructor(protected readonly page: Page) {}
 
-  // Clearing cookies here to ensure logout works reliably because of observed issues with Playwright still keeping the session ID even after keycloak has deleted the session.
-  // Because of that the app shows a keycloak error on login.
   public async logout(): Promise<LandingViewPage> {
     const landingUrl: string = new URL('/', this.page.url()).href;
     await Promise.all([
@@ -25,6 +23,8 @@ export class HeaderPage {
       'Logout did not complete: expected the unauthenticated header on the landing page',
     ).toBeVisible();
 
+    // Defensive cleanup after a verified logout: Playwright was observed to keep a stale session cookie
+    // after Keycloak ended the session, which caused a Keycloak error on the next login.
     await this.page.context().clearCookies();
     invalidateCsrf(this.page);
     return landingPage;
