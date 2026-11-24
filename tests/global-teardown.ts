@@ -3,6 +3,7 @@ import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
 import {
   ApiResponse,
   ManageableServiceProviderSimpleListEntryResponse,
+  OrganisationControllerFindOrganizations200Response,
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
@@ -14,6 +15,7 @@ import {
   ProviderControllerGetManageableServiceProviders200Response,
   ResponseError,
   RolleApi,
+  RolleControllerFindRollen200Response,
   RollenerweiterungWithExtendedDataResponse,
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
@@ -128,13 +130,14 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<RolleWithServiceProvidersResponse[]> =
+        const wrappedResponse: ApiResponse<RolleControllerFindRollen200Response> =
           await rolleApi.rolleControllerFindRollenRaw({
             searchStr: testDataPrefix,
             limit,
           });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} rollen to delete`);
-        return wrappedResponse.value();
+        const response: RolleControllerFindRollen200Response = await wrappedResponse.value();
+        console.log(`${response.total} rollen to delete`);
+        return response.items;
       },
       async (item: RolleWithServiceProvidersResponse) =>
         await rolleApi.rolleControllerDeleteRolle({ rolleId: item.id }),
@@ -192,19 +195,19 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+        const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
             searchString: testDataPrefix,
             typ: OrganisationsTyp.Klasse,
             limit,
           });
-        const items: OrganisationResponse[] = await wrappedResponse.value();
+        const response: OrganisationControllerFindOrganizations200Response = await wrappedResponse.value();
         console.log(
           'Sample klassen found:',
-          items.slice(0, 10).map((i: OrganisationResponse) => i.name),
+          response.items.slice(0, 10).map((i: OrganisationResponse) => i.name),
         );
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} klassen to delete`);
-        return items;
+        console.log(`${response.total} klassen to delete`);
+        return response.items;
       },
       async (item: OrganisationResponse) =>
         organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),
@@ -217,26 +220,27 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+        const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
             searchString: testDataPrefix,
             typ: OrganisationsTyp.Schule,
             limit,
           });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} schulen to delete`);
-        return wrappedResponse.value();
+        const response: OrganisationControllerFindOrganizations200Response = await wrappedResponse.value();
+        console.log(`${response.total} schulen to delete`);
+        return response.items;
       },
       async (item: OrganisationResponse) => {
         // Klassen der Schule löschen (auch solche mit numerischen Namen ohne Testdaten-Präfix)
         await cleanup(
           async () => {
-            const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+            const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
               await organisationApi.organisationControllerFindOrganizationsRaw({
                 administriertVon: [item.id],
                 typ: OrganisationsTyp.Klasse,
                 limit,
               });
-            return wrappedResponse.value();
+            return (await wrappedResponse.value()).items;
           },
           async (klasse: OrganisationResponse) =>
             organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),

@@ -85,7 +85,7 @@ export interface DBiamPersonenzuordnungResponse {
      * @type {OrganisationsTyp}
      * @memberof DBiamPersonenzuordnungResponse
      */
-    typ: OrganisationsTyp | null;
+    typ: OrganisationsTyp;
     /**
      * 
      * @type {boolean}

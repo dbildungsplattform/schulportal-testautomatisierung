@@ -95,7 +95,7 @@ export function generateSchulname(): string {
   );
 }
 
-export function generateEmailAdress(): string {
+export function generateEmailAddress(): string {
   const prefix: string = `${getTestDataPrefix()}E-`;
   const [localPart, domain]: string[] = faker.internet.email().split('@');
   const suffix: string = generateRandomString({ length: 3, charSetType: CharacterSetType.Alphabetic });

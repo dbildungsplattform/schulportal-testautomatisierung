@@ -14,7 +14,7 @@
 
 
 /**
- * Typ der Organisationsbeziehung.
+ * 
  * @export
  */
 export const OrganisationsbeziehungsTyp = {
