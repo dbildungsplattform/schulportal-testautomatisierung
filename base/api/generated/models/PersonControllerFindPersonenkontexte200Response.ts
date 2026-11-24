@@ -46,6 +46,12 @@ export interface PersonControllerFindPersonenkontexte200Response {
     limit: number;
     /**
      * 
+     * @type {number}
+     * @memberof PersonControllerFindPersonenkontexte200Response
+     */
+    pageTotal?: number;
+    /**
+     * 
      * @type {Array<PersonenkontextResponse>}
      * @memberof PersonControllerFindPersonenkontexte200Response
      */
@@ -78,6 +84,7 @@ export function PersonControllerFindPersonenkontexte200ResponseFromJSONTyped(jso
         'total': json['total'],
         'offset': json['offset'],
         'limit': json['limit'],
+        'pageTotal': !exists(json, 'pageTotal') ? undefined : json['pageTotal'],
         'items': ((json['items'] as Array<any>).map(PersonenkontextResponseFromJSON)),
     };
 }
@@ -94,6 +101,7 @@ export function PersonControllerFindPersonenkontexte200ResponseToJSON(value?: Pe
         'total': value.total,
         'offset': value.offset,
         'limit': value.limit,
+        'pageTotal': value.pageTotal,
         'items': ((value.items as Array<any>).map(PersonenkontextResponseToJSON)),
     };
 }
