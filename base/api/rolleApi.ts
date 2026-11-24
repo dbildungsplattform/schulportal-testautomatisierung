@@ -9,6 +9,7 @@ import {
 import {
   CreateRolleBodyParams,
   RollenArt,
+  RolleControllerFindRollen200Response,
   RollenMerkmal,
   RolleControllerFindRollen200Response,
   RolleResponse,
