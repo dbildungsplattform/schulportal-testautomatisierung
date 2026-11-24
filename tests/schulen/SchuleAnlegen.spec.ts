@@ -5,7 +5,7 @@ import { landSH } from '../../base/organisation';
 import { landesadminRolle } from '../../base/rollen';
 import { DEV, STAGE } from '../../base/tags';
 import { loginAndNavigateToAdministration } from '../../base/testHelperUtils';
-import { generateDienststellenNr, generateEmailAdress, generateSchulname } from '../../base/utils/generateTestdata';
+import { generateDienststellenNr, generateEmailAddress, generateSchulname } from '../../base/utils/generateTestdata';
 import { LandingViewPage } from '../../pages/LandingView.page';
 import { LoginViewPage } from '../../pages/LoginView.page';
 import { StartViewPage } from '../../pages/StartView.page';
@@ -61,7 +61,7 @@ test.describe(`Testfälle für das Anlegen von Schulen als Landesadmin: Umgebung
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
     });
 
@@ -92,14 +92,14 @@ test.describe(`Testfälle für das Anlegen von Schulen als Landesadmin: Umgebung
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Oeffentlich,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
 
       schuleParams2 = {
         name: generateSchulname(),
         dienststellenNr: generateDienststellenNr(),
         schulform: Schulform.Ersatz,
-        emailAdress: generateEmailAdress(),
+        emailAddress: generateEmailAddress(),
       };
     });
 

@@ -3,34 +3,32 @@ import { Browser, BrowserContext, chromium, Page } from '@playwright/test';
 import {
   ApiResponse,
   ManageableServiceProviderSimpleListEntryResponse,
+  OrganisationControllerFindOrganizations200Response,
   OrganisationenApi,
   OrganisationResponse,
   OrganisationsTyp,
+  PersonControllerFindPersons200Response,
   PersonenApi,
   PersonendatensatzResponse,
-  PersonenFrontendApi,
-  PersonFrontendControllerFindPersons200Response,
   ProviderApi,
   ProviderControllerFindRollenerweiterungenByServiceProviderId200Response,
   ProviderControllerGetManageableServiceProviders200Response,
   ResponseError,
   RolleApi,
+  RolleControllerFindRollen200Response,
   RollenerweiterungWithExtendedDataResponse,
   RolleWithServiceProvidersResponse,
 } from '../base/api/generated';
 import { constructOrganisationApi } from '../base/api/organisationApi';
-import { constructPersonenApi, constructPersonenFrontendApi } from '../base/api/personApi';
+import { constructPersonenApi } from '../base/api/personApi';
 import { constructRolleApi } from '../base/api/rolleApi';
 import { constructProviderApi } from '../base/api/serviceProviderApi';
 import { loginAndNavigateToAdministration } from '../base/testHelperUtils';
+import { getTestDataPrefix } from '../base/utils/generateTestdata';
 import { ignoreHTTPSErrors } from '../playwright.config';
 
 const FRONTEND_URL: string = process.env.FRONTEND_URL ?? '';
-const shardIndex = process.env.SHARD_INDEX ?? '0';
-const shardLetter = String.fromCharCode(65 + parseInt(shardIndex, 10)); // 0→A, 1→B, 2→C
 
-const testDataPrefix: string = `TAuto-PW-S${shardIndex}`;
-const personDataPrefix = `TAuto-PW-S${shardLetter}`;
 const limit: number = 100;
 const batchSize: number = 20;
 
@@ -70,6 +68,7 @@ function* getBatchedDelPromise<T>(
 const maxAttempts: number = 3;
 
 export default async function globalTeardown(): Promise<void> {
+  const testDataPrefix: string = getTestDataPrefix();
   console.log('Global teardown started');
 
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
@@ -82,7 +81,7 @@ export default async function globalTeardown(): Promise<void> {
     const page: Page = await context.newPage();
 
     try {
-      await runCleanup(page);
+      await runCleanup(page, testDataPrefix);
       console.log('Global teardown finished successfully');
       return;
     } catch (error) {
@@ -96,10 +95,9 @@ export default async function globalTeardown(): Promise<void> {
   }
 }
 
-async function runCleanup(page: Page): Promise<void> {
+async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
   {
     const personApi: PersonenApi = constructPersonenApi(page);
-    const personFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
     const rolleApi: RolleApi = constructRolleApi(page);
     const organisationApi: OrganisationenApi = constructOrganisationApi(page);
     const providerApi: ProviderApi = constructProviderApi(page);
@@ -114,11 +112,10 @@ async function runCleanup(page: Page): Promise<void> {
 
     await cleanup(
       async () => {
-        const resp: PersonFrontendControllerFindPersons200Response =
-          await personFrontendApi.personFrontendControllerFindPersons({
-            suchFilter: personDataPrefix,
-            limit,
-          });
+        const resp: PersonControllerFindPersons200Response = await personApi.personControllerFindPersons({
+          suchFilter: testDataPrefix,
+          limit,
+        });
         console.log(`${resp.total} personen to delete`);
         return resp.items;
       },
@@ -133,13 +130,14 @@ async function runCleanup(page: Page): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<RolleWithServiceProvidersResponse[]> =
+        const wrappedResponse: ApiResponse<RolleControllerFindRollen200Response> =
           await rolleApi.rolleControllerFindRollenRaw({
             searchStr: testDataPrefix,
             limit,
           });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} rollen to delete`);
-        return wrappedResponse.value();
+        const response: RolleControllerFindRollen200Response = await wrappedResponse.value();
+        console.log(`${response.total} rollen to delete`);
+        return response.items;
       },
       async (item: RolleWithServiceProvidersResponse) =>
         await rolleApi.rolleControllerDeleteRolle({ rolleId: item.id }),
@@ -197,19 +195,19 @@ async function runCleanup(page: Page): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+        const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
             searchString: testDataPrefix,
             typ: OrganisationsTyp.Klasse,
             limit,
           });
-        const items: OrganisationResponse[] = await wrappedResponse.value();
+        const response: OrganisationControllerFindOrganizations200Response = await wrappedResponse.value();
         console.log(
           'Sample klassen found:',
-          items.slice(0, 10).map((i: OrganisationResponse) => i.name),
+          response.items.slice(0, 10).map((i: OrganisationResponse) => i.name),
         );
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} klassen to delete`);
-        return items;
+        console.log(`${response.total} klassen to delete`);
+        return response.items;
       },
       async (item: OrganisationResponse) =>
         organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),
@@ -222,26 +220,27 @@ async function runCleanup(page: Page): Promise<void> {
 
     await cleanup(
       async () => {
-        const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+        const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
           await organisationApi.organisationControllerFindOrganizationsRaw({
             searchString: testDataPrefix,
             typ: OrganisationsTyp.Schule,
             limit,
           });
-        console.log(`${wrappedResponse.raw.headers.get('X-Paging-Total')} schulen to delete`);
-        return wrappedResponse.value();
+        const response: OrganisationControllerFindOrganizations200Response = await wrappedResponse.value();
+        console.log(`${response.total} schulen to delete`);
+        return response.items;
       },
       async (item: OrganisationResponse) => {
         // Klassen der Schule löschen (auch solche mit numerischen Namen ohne Testdaten-Präfix)
         await cleanup(
           async () => {
-            const wrappedResponse: ApiResponse<OrganisationResponse[]> =
+            const wrappedResponse: ApiResponse<OrganisationControllerFindOrganizations200Response> =
               await organisationApi.organisationControllerFindOrganizationsRaw({
                 administriertVon: [item.id],
                 typ: OrganisationsTyp.Klasse,
                 limit,
               });
-            return wrappedResponse.value();
+            return (await wrappedResponse.value()).items;
           },
           async (klasse: OrganisationResponse) =>
             organisationApi.organisationControllerDeleteOrganisation({ organisationId: klasse.id }),

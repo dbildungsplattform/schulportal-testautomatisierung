@@ -17,11 +17,11 @@ import { Class2FAApi } from './generated';
 import { DbiamPersonenuebersichtApi } from './generated/apis/DbiamPersonenuebersichtApi';
 import {
   PersonControllerDeletePersonByIdRequest,
+  PersonControllerFindPersonsRequest,
   PersonControllerLockPersonRequest,
   PersonControllerResetUEMPasswordByPersonIdRequest,
   PersonenApi,
 } from './generated/apis/PersonenApi';
-import { PersonenFrontendApi, PersonFrontendControllerFindPersonsRequest } from './generated/apis/PersonenFrontendApi';
 import {
   DbiamPersonenkontextWorkflowControllerCreatePersonWithPersonenkontexteRequest,
   PersonenkontextApi,
@@ -32,9 +32,9 @@ import {
   DBiamPersonResponse,
   DbiamUpdatePersonenkontexteBodyParams,
   LockUserBodyParams,
+  PersonControllerFindPersons200Response,
   PersonendatensatzResponse,
   PersonenkontexteUpdateResponse,
-  PersonFrontendControllerFindPersons200Response,
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
@@ -62,10 +62,6 @@ export function constructPersonenkontextApi(page: Page): PersonenkontextApi {
 
 export function constructPersonenApi(page: Page): PersonenApi {
   return constructApi(page, PersonenApi);
-}
-
-export function constructPersonenFrontendApi(page: Page): PersonenFrontendApi {
-  return constructApi(page, PersonenFrontendApi);
 }
 
 export function construct2FAApi(page: Page): Class2FAApi {
@@ -428,17 +424,17 @@ export async function deletePerson(page: Page, personId: string): Promise<void> 
 
 export async function getPersonId(page: Page, searchString: string): Promise<string> {
   try {
-    const requestParameters: PersonFrontendControllerFindPersonsRequest = {
+    const requestParameters: PersonControllerFindPersonsRequest = {
       suchFilter: searchString,
       limit: 1,
     };
 
-    const personenFrontendApi: PersonenFrontendApi = constructPersonenFrontendApi(page);
-    const response: ApiResponse<PersonFrontendControllerFindPersons200Response> =
-      await personenFrontendApi.personFrontendControllerFindPersonsRaw(requestParameters);
+    const personenApi: PersonenApi = constructPersonenApi(page);
+    const response: ApiResponse<PersonControllerFindPersons200Response> =
+      await personenApi.personControllerFindPersonsRaw(requestParameters);
     expect(response.raw.status).toBe(200);
 
-    const fetchedPersonen: PersonFrontendControllerFindPersons200Response = await response.value();
+    const fetchedPersonen: PersonControllerFindPersons200Response = await response.value();
     return fetchedPersonen.items[0].person.id;
   } catch (error) {
     console.error('[ERROR] getPersonId failed:', error);

@@ -159,7 +159,7 @@ jobs:
           PW: '${{ secrets.PW }}'
           OTP_SEED_B32: '${{ secrets.OTP_SEED_B32 }}'
           NODE_OPTIONS: --no-experimental-strip-types
-          SHARD_INDEX: ${{ matrix.shard }}
+          TEST_RUN_ID: '${{ github.repository_id }}-${{ github.run_id }}-${{ matrix.shard }}'
         run: |
           npx playwright test \
             --config=playwright.config.ts \
