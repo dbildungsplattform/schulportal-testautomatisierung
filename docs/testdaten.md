@@ -81,7 +81,7 @@ Examples below use the token `KQBXMD`; each run and shard gets its own token.
 | `generateKlassenname()`                                      | `TAuto-PW-KQBXMD-K-fluminorQwe`                      |
 | `generateSchulname()`                                        | `TAuto-PW-KQBXMD-S-fluminorQwe`                      |
 | `generateAngebotname()`                                      | `TAuto-PW-KQBXMD-A-fluminorQwe`                      |
-| `generateEmailAdress()`                                     | `TAuto-PW-KQBXMD-E-Lara@example.orgXyz`              |
+| `generateEmailAddress()`                                    | `TAuto-PW-KQBXMD-E-Lara@example.orgXyz`              |
 | `generateKopersNr()`                                         | `081512345678`                                    |
 | `generateDienststellenNr()`                                  | `012345678`                                       |
 | `generateCurrentDate({ days, months })` / `formatDateDMY(date)` | Date helpers (for example Befristung)              |
