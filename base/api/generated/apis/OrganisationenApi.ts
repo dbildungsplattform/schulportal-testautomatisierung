@@ -146,6 +146,13 @@ export interface OrganisationControllerGetZugehoerigeOrganisationenRequest {
     organisationId: string;
 }
 
+export interface OrganisationControllerSearchOrganisationsForRelationshipsRequest {
+    organisationId: string;
+    offset?: number;
+    limit?: number;
+    searchString?: string;
+}
+
 export interface OrganisationControllerUpdateOrganisationRequest {
     organisationId: string;
     updateOrganisationBodyParams: UpdateOrganisationBodyParams;
@@ -388,6 +395,25 @@ export interface OrganisationenApiInterface {
     /**
      */
     organisationControllerGetZugehoerigeOrganisationen(requestParameters: OrganisationControllerGetZugehoerigeOrganisationenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganisationControllerFindOrganizations200Response>;
+
+    /**
+     * Search organisations that may be linked to the requested organisation.
+     * @summary 
+     * @param {string} organisationId The id of an organization
+     * @param {number} [offset] The offset of the paginated list.
+     * @param {number} [limit] The requested limit for the page size.
+     * @param {string} [searchString] Search string used to filter eligible organisations by name or Kennung.
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrganisationenApiInterface
+     */
+    organisationControllerSearchOrganisationsForRelationshipsRaw(requestParameters: OrganisationControllerSearchOrganisationsForRelationshipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OrganisationResponse>>>;
+
+    /**
+     * Search organisations that may be linked to the requested organisation.
+     * 
+     */
+    organisationControllerSearchOrganisationsForRelationships(requestParameters: OrganisationControllerSearchOrganisationsForRelationshipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OrganisationResponse>>;
 
     /**
      * 
@@ -1140,6 +1166,63 @@ export class OrganisationenApi extends runtime.BaseAPI implements Organisationen
      */
     async organisationControllerGetZugehoerigeOrganisationen(requestParameters: OrganisationControllerGetZugehoerigeOrganisationenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OrganisationControllerFindOrganizations200Response> {
         const response = await this.organisationControllerGetZugehoerigeOrganisationenRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Search organisations that may be linked to the requested organisation.
+     * 
+     */
+    async organisationControllerSearchOrganisationsForRelationshipsRaw(requestParameters: OrganisationControllerSearchOrganisationsForRelationshipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<OrganisationResponse>>> {
+        if (requestParameters.organisationId === null || requestParameters.organisationId === undefined) {
+            throw new runtime.RequiredError('organisationId','Required parameter requestParameters.organisationId was null or undefined when calling organisationControllerSearchOrganisationsForRelationships.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.offset !== undefined) {
+            queryParameters['offset'] = requestParameters.offset;
+        }
+
+        if (requestParameters.limit !== undefined) {
+            queryParameters['limit'] = requestParameters.limit;
+        }
+
+        if (requestParameters.searchString !== undefined) {
+            queryParameters['searchString'] = requestParameters.searchString;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/organisationen/{organisationId}/search-for-relationships`.replace(`{${"organisationId"}}`, encodeURIComponent(String(requestParameters.organisationId))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => jsonValue.map(OrganisationResponseFromJSON));
+    }
+
+    /**
+     * Search organisations that may be linked to the requested organisation.
+     * 
+     */
+    async organisationControllerSearchOrganisationsForRelationships(requestParameters: OrganisationControllerSearchOrganisationsForRelationshipsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<OrganisationResponse>> {
+        const response = await this.organisationControllerSearchOrganisationsForRelationshipsRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
