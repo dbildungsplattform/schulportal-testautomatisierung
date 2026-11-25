@@ -39,7 +39,6 @@ export interface DbiamRolleError {
  */
 export const DbiamRolleErrorI18nKeyEnum = {
     RolleError: 'ROLLE_ERROR',
-    AddSystemrechtError: 'ADD_SYSTEMRECHT_ERROR',
     RolleHatPersonenkontexteError: 'ROLLE_HAT_PERSONENKONTEXTE_ERROR',
     UpdateMerkmaleError: 'UPDATE_MERKMALE_ERROR',
     RollennameEnthaeltLeerzeichen: 'ROLLENNAME_ENTHAELT_LEERZEICHEN',

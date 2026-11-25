@@ -42,7 +42,6 @@ export const DbiamPersonenkontextErrorI18nKeyEnum = {
     NurLehrUndLernAnKlasse: 'NUR_LEHR_UND_LERN_AN_KLASSE',
     GleicheRolleAnKlasseWieSchule: 'GLEICHE_ROLLE_AN_KLASSE_WIE_SCHULE',
     OrganisationMatchesRollenart: 'ORGANISATION_MATCHES_ROLLENART',
-    PersonenkontextAnlageError: 'PERSONENKONTEXT_ANLAGE_ERROR',
     RolleNurAnPassendeOrganisation: 'ROLLE_NUR_AN_PASSENDE_ORGANISATION',
     PersonalnummerNichtEindeutig: 'PERSONALNUMMER_NICHT_EINDEUTIG',
     PersonHatKeineKoperspflichtigeRolle: 'PERSON_HAT_KEINE_KOPERSPFLICHTIGE_ROLLE'
