@@ -47,6 +47,11 @@ export class ServiceProviderEditViewPage {
     await expect(this.page.getByTestId('service-provider-edit-headline')).toContainText('Angebot bearbeiten');
     await expect(this.page.getByTestId('service-provider-edit-form')).toBeVisible();
     await expect(this.nameInput).not.toHaveValue('');
+    // The form renders from cached data first; the organisation is shown only after the view has finished reloading.
+    // Interacting earlier closes open menus when the reload re-renders the form.
+    await expect(
+      this.page.getByTestId('service-provider-edit-organisation-select').locator('.v-autocomplete__selection-text'),
+    ).toBeVisible();
     return this;
   }
 
