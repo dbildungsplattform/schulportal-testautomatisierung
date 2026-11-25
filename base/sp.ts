@@ -21,4 +21,10 @@ export const KATEGORIE_LABEL: Record<ServiceProviderKategorie, string> = {
   VERWALTUNG: 'Verwaltung',
   SCHULISCH: 'Schulische Angebote',
   HINWEISE: 'Hinweise',
+  UNTERRICHT_UND_LERNEN: 'Unterricht und Lernen',
+  KOMMUNIKATION_UND_ZUSAMMENARBEIT: 'Kommunikation und Zusammenarbeit',
+  SCHULORGANISATION_UND_VERWALTUNG: 'Schulorganisation und -verwaltung',
+  FORTBILDUNG_UND_QUALIFIZIERUNG: 'Fortbildung und Qualifizierung',
+  INFORMATIONEN_UND_PORTALE: 'Informationen und Portale',
+  HILFE_UND_UNTERSTUETZUNG: 'Hilfe & Unterstützung',
 };
