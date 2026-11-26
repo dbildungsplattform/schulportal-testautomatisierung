@@ -1,5 +1,6 @@
 import test, { Page, PlaywrightTestArgs } from '@playwright/test';
 
+import { OperationContext } from '../base/api/generated';
 import { getOrganisationId } from '../base/api/organisationApi';
 import {
   addOrganisationenToPerson,
@@ -72,7 +73,13 @@ async function setupSchuladminAndLoginAndNavigate(
     const primarySchuleId: string = await getOrganisationId(page, primarySchuleName);
     const secondSchuleId: string = await getOrganisationId(page, secondSchuleName);
     const rolleId: string = await getRolleId(page, rolle);
-    await addOrganisationenToPerson(page, schuladmin.personId, [primarySchuleId, secondSchuleId], rolleId);
+    await addOrganisationenToPerson(
+      page,
+      schuladmin.personId,
+      [primarySchuleId, secondSchuleId],
+      rolleId,
+      OperationContext.PersonBearbeiten,
+    );
   }
 
   const header: HeaderPage = new HeaderPage(page);

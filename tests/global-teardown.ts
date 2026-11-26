@@ -202,12 +202,13 @@ async function runCleanup(page: Page, testDataPrefix: string): Promise<void> {
             limit,
           });
         const response: OrganisationControllerFindOrganizations200Response = await wrappedResponse.value();
+        const items: OrganisationResponse[] = response.items;
         console.log(
           'Sample klassen found:',
           response.items.slice(0, 10).map((i: OrganisationResponse) => i.name),
         );
         console.log(`${response.total} klassen to delete`);
-        return response.items;
+        return items;
       },
       async (item: OrganisationResponse) =>
         organisationApi.organisationControllerDeleteOrganisation({ organisationId: item.id }),

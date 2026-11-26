@@ -18,8 +18,9 @@
  * @export
  */
 export const OperationContext = {
-    Anlegen: 'PERSON_ANLEGEN',
-    Bearbeiten: 'PERSON_BEARBEITEN'
+    PersonAnlegen: 'PERSON_ANLEGEN',
+    PersonBearbeiten: 'PERSON_BEARBEITEN',
+    LandesbedienstetenKontextErweitern: 'LANDESBEDIENSTETEN_KONTEXT_ERWEITERN'
 } as const;
 export type OperationContext = typeof OperationContext[keyof typeof OperationContext];
 

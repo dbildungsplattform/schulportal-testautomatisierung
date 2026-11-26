@@ -73,15 +73,13 @@ export class Autocomplete {
 
   public async closeModal(): Promise<void> {
     const overlayLocator: Locator = await this.getOverlayLocator();
-    // Escape nur drücken, wenn das Menü-Overlay noch offen ist – sonst
-    // würde Escape den umschließenden Dialog (falls vorhanden) schließen.
-    const menuOpen: boolean = await overlayLocator
-      .first()
-      .isVisible()
-      .catch((): boolean => false);
-    if (menuOpen) {
+    // A closing overlay is still visible, but Escape would target the enclosing dialog.
+    if ((await this.inputLocator.getAttribute('aria-expanded')) === 'true') {
       await this.page.keyboard.press('Escape');
     }
+    // Vuetify can restore focus to this input when the closing transition finishes.
+    await expect(overlayLocator).toBeHidden();
+
     // Innerhalb eines Vuetify-Dialogs liegt admin-headline hinter dem Dialog-Scrim
     // und ist nicht klickbar. Den Klick deshalb nur außerhalb von Dialogen ausführen.
     const dialogOpen: boolean = await this.page
@@ -92,8 +90,6 @@ export class Autocomplete {
     if (!dialogOpen) {
       await this.page.getByTestId('admin-headline').click();
     }
-    // Sicherstellen, dass Autocomplete geschlossen ist
-    await overlayLocator.first().isHidden();
   }
 
   public async toggleModal(): Promise<void> {

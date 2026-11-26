@@ -8,8 +8,8 @@ import {
 } from './generated/apis/RolleApi';
 import {
   CreateRolleBodyParams,
-  RollenArt,
   RolleControllerFindRollen200Response,
+  RollenArt,
   RollenMerkmal,
   RolleResponse,
   RolleWithServiceProvidersResponse,

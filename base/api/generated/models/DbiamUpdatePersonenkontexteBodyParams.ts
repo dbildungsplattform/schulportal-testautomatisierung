@@ -19,6 +19,12 @@ import {
     DbiamPersonenkontextBodyParamsFromJSONTyped,
     DbiamPersonenkontextBodyParamsToJSON,
 } from './DbiamPersonenkontextBodyParams';
+import type { OperationContext } from './OperationContext';
+import {
+    OperationContextFromJSON,
+    OperationContextFromJSONTyped,
+    OperationContextToJSON,
+} from './OperationContext';
 
 /**
  * 
@@ -44,6 +50,12 @@ export interface DbiamUpdatePersonenkontexteBodyParams {
      * @memberof DbiamUpdatePersonenkontexteBodyParams
      */
     personenkontexte: Array<DbiamPersonenkontextBodyParams>;
+    /**
+     * 
+     * @type {OperationContext}
+     * @memberof DbiamUpdatePersonenkontexteBodyParams
+     */
+    operationContext: OperationContext;
 }
 
 /**
@@ -53,6 +65,7 @@ export function instanceOfDbiamUpdatePersonenkontexteBodyParams(value: object): 
     let isInstance = true;
     isInstance = isInstance && "count" in value;
     isInstance = isInstance && "personenkontexte" in value;
+    isInstance = isInstance && "operationContext" in value;
 
     return isInstance;
 }
@@ -70,6 +83,7 @@ export function DbiamUpdatePersonenkontexteBodyParamsFromJSONTyped(json: any, ig
         'lastModified': !exists(json, 'lastModified') ? undefined : (json['lastModified'] === null ? null : new Date(json['lastModified'])),
         'count': json['count'],
         'personenkontexte': ((json['personenkontexte'] as Array<any>).map(DbiamPersonenkontextBodyParamsFromJSON)),
+        'operationContext': OperationContextFromJSON(json['operationContext']),
     };
 }
 
@@ -85,6 +99,7 @@ export function DbiamUpdatePersonenkontexteBodyParamsToJSON(value?: DbiamUpdateP
         'lastModified': value.lastModified === undefined ? undefined : (value.lastModified === null ? null : value.lastModified.toISOString()),
         'count': value.count,
         'personenkontexte': ((value.personenkontexte as Array<any>).map(DbiamPersonenkontextBodyParamsToJSON)),
+        'operationContext': OperationContextToJSON(value.operationContext),
     };
 }
 
