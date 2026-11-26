@@ -6,7 +6,6 @@ apis/DbiamPersonenuebersichtApi.ts
 apis/EmailWebhookApi.ts
 apis/ImportApi.ts
 apis/KeycloakinternalApi.ts
-apis/LandesbediensteterApi.ts
 apis/MeldungApi.ts
 apis/MetricsApi.ts
 apis/OrganisationenApi.ts
@@ -63,8 +62,6 @@ models/ImportVorgangResponse.ts
 models/ImportVorgangStatusResponse.ts
 models/ImportedUserResponse.ts
 models/ImportvorgangByIdBodyParams.ts
-models/LandesbediensteterWorkflowCommitBodyParams.ts
-models/LandesbediensteterWorkflowStepResponse.ts
 models/LockUserBodyParams.ts
 models/LoeschungResponse.ts
 models/ManageableServiceProviderListEntryResponse.ts

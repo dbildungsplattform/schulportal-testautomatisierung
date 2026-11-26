@@ -8,7 +8,6 @@ export * from './DbiamPersonenuebersichtApi';
 export * from './EmailWebhookApi';
 export * from './ImportApi';
 export * from './KeycloakinternalApi';
-export * from './LandesbediensteterApi';
 export * from './MeldungApi';
 export * from './MetricsApi';
 export * from './OrganisationenApi';
