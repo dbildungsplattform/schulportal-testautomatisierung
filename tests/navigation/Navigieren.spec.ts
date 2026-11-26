@@ -15,19 +15,20 @@ ROLLEN_CASES.forEach((rolle: RolleCase) => {
     let userInfo: UserInfo | undefined;
 
     test.beforeEach(async ({ page }: { page: Page }) => {
+      userInfo = undefined;
       await loginAndNavigateToAdministration(page);
       userInfo = await prepareAndLoginUserWithPermissions(page, rolle);
     });
 
     test.afterEach(async ({ page }: { page: Page }) => {
+      if (!userInfo) {
+        return;
+      }
+
       const header: HeaderPage = new HeaderPage(page);
 
       await test.step('Als Testnutzer abmelden', async () => {
-        try {
-          await header.logout();
-        } catch {
-          // ignore — beforeEach may have failed before login
-        }
+        await header.logout();
       });
 
       await test.step('Als Admin anmelden und Testdaten löschen', async () => {

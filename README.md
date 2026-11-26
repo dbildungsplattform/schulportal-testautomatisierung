@@ -33,6 +33,40 @@ Das doc dann in die Datei base/api/openapispec.json einfügen (alles kopieren un
 
 ### Tests lokal ausführen
 
+#### Gegen das lokal gestartete Entwicklungssystem testen
+
+Nach der Installation der npm-Abhängigkeiten und Playwright-Browser (siehe oben):
+
+1. Das lokale Entwicklungssystem muss bereits laufen: Client unter `https://localhost:8099/`, Backend, Keycloak und die benötigten Dienste. Die Tests starten diese Dienste nicht selbst.
+2. Auch privacyIDEA muss erreichbar und eingerichtet sein: Das globale Setup legt Test-Admins an und richtet für diese automatisch 2FA ein, auch bei Auswahl der Dev-Tests.
+3. Lege im Root dieses Testprojekts eine `.env` mit folgenden Werten an:
+
+```env
+FRONTEND_URL=https://localhost:8099/
+USER=ssuperadmin
+PW="<Passwort des lokalen Dev-Seed-Benutzers>"
+```
+
+Das Passwort für `ssuperadmin` steht im Backend-Projekt in [02_person.json](https://github.com/dbildungsplattform/dbildungs-iam-server/blob/main/seeding/dev/01/02_person.json).
+Die `.env` ist von Git ausgeschlossen. Falls der initiale Login-Benutzer bereits 2FA verwendet, ergänze dessen `OTP_SEED_B32`.
+
+Die Konfiguration lädt zuerst `.env.dev` und danach `.env`. Werte aus `.env` überschreiben auch bereits gesetzte Umgebungsvariablen.
+Eine `.env.local` wird **nicht automatisch geladen**; übernimm benötigte lokale Werte in `.env`.
+Für `localhost` und `127.0.0.1` ignoriert Playwright HTTPS-Zertifikatsfehler automatisch. Eine Zertifikatsausnahme in Safari ist dafür nicht nötig.
+
+Starte im Root dieses Testprojekts zunächst die Dev-Tests mit Chromium:
+
+```bash
+npx playwright test --project chromium -g "@dev" --headed
+npx playwright test tests/navigation/Navigieren.spec.ts --project firefox --repeat-each=10 --max-failures=0
+```
+
+Mit `--headed` sind die Browserfenster sichtbar; ohne diese Option laufen die Tests im Hintergrund.
+Für Safari-nahe Tests kannst du `--project webkit` verwenden. Das ist Playwrights WebKit, nicht die installierte Safari-Version; das globale Setup benötigt weiterhin Chromium.
+
+Die Tests verändern lokale Daten. Das globale Teardown versucht anschließend, die angelegten Testdaten zu entfernen.
+Den letzten Ergebnisbericht öffnest du mit `npx playwright show-report`.
+
 #### Alle Tests mit einer beliebigen URL ausführen
 ```
 USER='xxx' PW='xxx' FRONTEND_URL='https://main.dev.spsh.dbildungsplattform.de/' npx playwright test
@@ -147,15 +181,13 @@ Since the .vscode folder is ignored by Git, an example for the MCP config lies i
 
 ## Umgebungen
 
-Die Default-Umgebung ist in der playwright.config.ts konfiguriert (dotenv.config)
+Die Ladereihenfolge ist in `playwright.config.ts` konfiguriert:
 
-### .env.dev(Default, main)
+1. `.env.dev` als Standardwerte, soweit die Variablen nicht bereits gesetzt sind.
+2. `.env` als optionale lokale Konfiguration mit Vorrang vor allen bereits gesetzten Werten.
 
-### .env.devTest
-
-### .env.local
-
-### .env.staging
+Andere Umgebungsdateien, etwa `.env.local` oder `.env.stage`, werden nicht automatisch geladen.
+Prüfe vor jedem Lauf die Ziel-URL und Zugangsdaten, damit die Tests nur die beabsichtigte Umgebung verändern.
 
 ## ESLint ausführen
 

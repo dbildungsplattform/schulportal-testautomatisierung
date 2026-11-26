@@ -9,30 +9,23 @@ export class HeaderPage {
 
   constructor(protected readonly page: Page) {}
 
-  // Clearing cookies here to ensure logout works reliably because of observed issues with Playwright still keeping the session ID even after keycloak has deleted the session.
-  // Because of that the app shows a keycloak error on login.
   public async logout(): Promise<LandingViewPage> {
-    await this.page.getByTestId('nav-logout-button').click();
-
-    // Wait for page to finish loading
-    await this.page.waitForLoadState('load', { timeout: 15000 });
-
-    // Clear any storage/cookies that might be causing issues
-    await this.page.context().clearCookies();
-
-    // Navigate to root with a clean slate
-    try {
-      await this.page.goto('/', { waitUntil: 'load' });
-    } catch (error) {
-      console.log('Error navigating to root after logout:');
-      console.log(error);
-
-      console.log('Attempting again');
-      await this.page.goto('/', { waitUntil: 'load' });
-    }
+    const landingUrl: string = new URL('/', this.page.url()).href;
+    await Promise.all([
+      this.page.waitForURL(landingUrl, { waitUntil: 'load', timeout: 15000 }),
+      this.page.getByTestId('nav-logout-button').click(),
+    ]);
 
     const landingPage: LandingViewPage = new LandingViewPage(this.page);
     await landingPage.waitForPageLoad();
+    await expect(
+      this.page.getByTestId('nav-login-button'),
+      'Logout did not complete: expected the unauthenticated header on the landing page',
+    ).toBeVisible();
+
+    // Defensive cleanup after a verified logout: Playwright was observed to keep a stale session cookie
+    // after Keycloak ended the session, which caused a Keycloak error on the next login.
+    await this.page.context().clearCookies();
     invalidateCsrf(this.page);
     return landingPage;
   }
