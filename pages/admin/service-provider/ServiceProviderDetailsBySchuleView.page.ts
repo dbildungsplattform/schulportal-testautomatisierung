@@ -3,6 +3,7 @@ import { ServiceProviderKategorie } from '../../../base/api/generated';
 import { KATEGORIE_LABEL } from '../../../base/sp';
 import { MenuBarPage } from '../../components/MenuBar.page';
 import { RollenArt } from '../../../base/api/rolleApi';
+import { ServiceProviderEditViewPage } from './ServiceProviderEditView.page';
 
 interface GroupCounter {
   selected: number;
@@ -40,6 +41,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
   private readonly rollenerweiterungBaumGruppeCheckboxLEIT: Locator;
   private readonly rollenerweiterungCancelButton: Locator;
   private readonly rollenerweiterungSaveButton: Locator;
+  private readonly serviceProviderBearbeitenButton: Locator;
 
   public readonly menu: MenuBarPage;
 
@@ -76,6 +78,7 @@ export class ServiceProviderDetailsBySchuleViewPage {
     this.rollenerweiterungBaumGruppeCheckboxLEIT = this.page.getByTestId('treeview-group-checkbox-LEIT');
     this.rollenerweiterungCancelButton = this.page.getByTestId('rollenerweiterung-cancel-button');
     this.rollenerweiterungSaveButton = this.page.getByTestId('rollenerweiterung-save-button');
+    this.serviceProviderBearbeitenButton = this.page.getByTestId('service-provider-bearbeiten-button');
     this.menu = new MenuBarPage(this.page);
   }
 
@@ -133,6 +136,11 @@ export class ServiceProviderDetailsBySchuleViewPage {
 
   public async clickRollenerweiterungBearbeiten(): Promise<void> {
     await this.rollenerweiterungBearbeitenButton.click();
+  }
+
+  public async clickServiceProviderBearbeiten(): Promise<ServiceProviderEditViewPage> {
+    await this.serviceProviderBearbeitenButton.click();
+    return new ServiceProviderEditViewPage(this.page).waitForPageLoad();
   }
 
   public async cancelRollenerweiterung(): Promise<void> {
@@ -303,6 +311,11 @@ export class ServiceProviderDetailsBySchuleViewPage {
 
   public async assertUrlContainsOrganisationId(organisationId: string): Promise<void> {
     await expect(this.page).toHaveURL((url: URL): boolean => url.searchParams.get('orga') === organisationId);
+  }
+
+  public async assertServiceProviderBearbeitenDisabled(): Promise<void> {
+    await expect(this.serviceProviderBearbeitenButton).toBeVisible();
+    await expect(this.serviceProviderBearbeitenButton).toBeDisabled();
   }
 
   public async assertCanEditRollenerweiterung(): Promise<void> {
