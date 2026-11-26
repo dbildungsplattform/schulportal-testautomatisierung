@@ -2,7 +2,7 @@ import { expect, Locator, Page } from '@playwright/test';
 import { ServiceProviderKategorie } from '../../../base/api/generated';
 import { KATEGORIE_LABEL } from '../../../base/sp';
 import { Autocomplete } from '../../components/Autocomplete';
-import { ServiceProviderManagementBySchuleViewPage } from './ServiceProviderManagementBySchuleView.page';
+import type { ServiceProviderManagementBySchuleViewPage } from './ServiceProviderManagementBySchuleView.page';
 
 const EDIT_URL: RegExp = /\/admin\/angebote\/[^/]+\/edit(?:\?.*)?$/;
 
@@ -90,11 +90,13 @@ export class ServiceProviderEditViewPage {
   }
 
   public async confirmUnsavedChangesAndNavigateToSchulspezifischeAngeboteList(): Promise<ServiceProviderManagementBySchuleViewPage> {
+    const { ServiceProviderManagementBySchuleViewPage } = await import('./ServiceProviderManagementBySchuleView.page');
     await this.confirmUnsavedChangesButton.click();
     return new ServiceProviderManagementBySchuleViewPage(this.page).waitForPageLoad();
   }
 
   public async navigateFromSuccessToSchulspezifischeAngeboteList(): Promise<ServiceProviderManagementBySchuleViewPage> {
+    const { ServiceProviderManagementBySchuleViewPage } = await import('./ServiceProviderManagementBySchuleView.page');
     await this.page.getByTestId('to-service-provider-list-button').click();
     return new ServiceProviderManagementBySchuleViewPage(this.page).waitForPageLoad();
   }

@@ -37,7 +37,6 @@ interface DuplikatFixture extends SchulspezifischesAngebotFixture {
 
 interface GlobalAngebotFixture {
   managementPage: ServiceProviderManagementViewPage;
-  angebotId: string;
   angebotName: string;
 }
 
@@ -119,7 +118,7 @@ const test = base.extend<{
   asLandesadminGlobal: async ({ page, asLandesadmin }, use) => {
     const organisationId: string = await getOrganisationId(page, landSH);
     const angebotName: string = generateAngebotname();
-    const angebotId: string = await createServiceProvider(page, {
+    await createServiceProvider(page, {
       organisationId,
       name: angebotName,
       url: page.url(),
@@ -133,7 +132,7 @@ const test = base.extend<{
     const managementPage: ServiceProviderManagementViewPage = await asLandesadmin.personManagementViewPage
       .getMenu()
       .navigateToAngebotManagement();
-    await use({ managementPage, angebotId, angebotName });
+    await use({ managementPage, angebotName });
   },
 });
 
@@ -219,13 +218,12 @@ test.describe('Angebot bearbeiten', () => {
     'SPSH-3580: Als Landesadmin ein Angebot aus der globalen Angebotsliste bearbeiten',
     { tag: [DEV, STAGE] },
     async ({ asLandesadminGlobal }) => {
-      const { managementPage, angebotId, angebotName } = asLandesadminGlobal;
+      const { managementPage, angebotName } = asLandesadminGlobal;
       const neuerName: string = generateAngebotname();
 
       const editPage: ServiceProviderEditViewPage = await test.step('Bearbeitung öffnen', async () => {
         await managementPage.searchByName(angebotName);
-        const detailsPage: ServiceProviderDetailsViewPage =
-          await managementPage.openServiceProviderDetailsById(angebotId);
+        const detailsPage: ServiceProviderDetailsViewPage = await managementPage.openServiceProviderByName(angebotName);
         return detailsPage.clickServiceProviderBearbeiten();
       });
 

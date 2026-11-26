@@ -44,8 +44,19 @@ export class ServiceProviderManagementViewPage {
     await expect(this.errorAlertTitle).toBeHidden();
   }
 
+  public async openServiceProviderByName(angebotName: string): Promise<ServiceProviderDetailsViewPage> {
+    const row: Locator = this.getServiceProviderRow(angebotName);
+    await expect(row).toHaveCount(1);
+    await expect(row).toBeVisible();
+    await row.click();
+
+    const detailsViewPage: ServiceProviderDetailsViewPage = new ServiceProviderDetailsViewPage(this.page);
+    await detailsViewPage.waitForPageLoad();
+    return detailsViewPage;
+  }
+
   public async openServiceProviderDetailsById(angebotId: string): Promise<ServiceProviderDetailsViewPage> {
-    // Navigate by id: the full Angebote list is paginated and lacks a name filter, so a row click is unreliable.
+    // Deep link by id for tests whose use case starts at the Angebot details, not at list navigation.
     await this.page.goto(`/admin/angebote/${encodeURIComponent(angebotId)}`);
 
     const detailsViewPage: ServiceProviderDetailsViewPage = new ServiceProviderDetailsViewPage(this.page);
