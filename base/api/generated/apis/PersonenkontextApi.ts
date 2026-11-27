@@ -19,10 +19,9 @@ import type {
   DbiamCreatePersonWithPersonenkontexteBodyParams,
   DbiamPersonenkontextError,
   DbiamPersonenkontexteUpdateError,
-  DbiamUpdatePersonenkontexteBodyParams,
-  OperationContext,
-  PersonenkontextWorkflowResponse,
+  LandesbedienstetenzuordnungHinzufuegenBodyParams,
   PersonenkontexteUpdateResponse,
+  PersonenzuordnungenBearbeitenBodyParams,
 } from '../models';
 import {
     DBiamPersonResponseFromJSON,
@@ -33,33 +32,28 @@ import {
     DbiamPersonenkontextErrorToJSON,
     DbiamPersonenkontexteUpdateErrorFromJSON,
     DbiamPersonenkontexteUpdateErrorToJSON,
-    DbiamUpdatePersonenkontexteBodyParamsFromJSON,
-    DbiamUpdatePersonenkontexteBodyParamsToJSON,
-    OperationContextFromJSON,
-    OperationContextToJSON,
-    PersonenkontextWorkflowResponseFromJSON,
-    PersonenkontextWorkflowResponseToJSON,
+    LandesbedienstetenzuordnungHinzufuegenBodyParamsFromJSON,
+    LandesbedienstetenzuordnungHinzufuegenBodyParamsToJSON,
     PersonenkontexteUpdateResponseFromJSON,
     PersonenkontexteUpdateResponseToJSON,
+    PersonenzuordnungenBearbeitenBodyParamsFromJSON,
+    PersonenzuordnungenBearbeitenBodyParamsToJSON,
 } from '../models';
-
-export interface DbiamPersonenkontextWorkflowControllerCommitRequest {
-    personId: string;
-    dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams;
-    personalnummer?: string;
-}
 
 export interface DbiamPersonenkontextWorkflowControllerCreatePersonWithPersonenkontexteRequest {
     dbiamCreatePersonWithPersonenkontexteBodyParams: DbiamCreatePersonWithPersonenkontexteBodyParams;
 }
 
-export interface DbiamPersonenkontextWorkflowControllerProcessStepRequest {
-    operationContext: OperationContext;
-    personId?: string | null;
-    organisationId?: string | null;
-    rollenIds?: Array<string>;
-    organisationName?: string | null;
-    limit?: number;
+export interface PersonenkontextControllerBearbeitePersonenzuordnungenRequest {
+    personId: string;
+    personenzuordnungenBearbeitenBodyParams: PersonenzuordnungenBearbeitenBodyParams;
+    personalnummer?: string;
+}
+
+export interface PersonenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRequest {
+    personId: string;
+    landesbedienstetenzuordnungHinzufuegenBodyParams: LandesbedienstetenzuordnungHinzufuegenBodyParams;
+    personalnummer?: string;
 }
 
 /**
@@ -69,21 +63,6 @@ export interface DbiamPersonenkontextWorkflowControllerProcessStepRequest {
  * @interface PersonenkontextApiInterface
  */
 export interface PersonenkontextApiInterface {
-    /**
-     * 
-     * @param {string} personId The ID for the person.
-     * @param {DbiamUpdatePersonenkontexteBodyParams} dbiamUpdatePersonenkontexteBodyParams 
-     * @param {string} [personalnummer] 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof PersonenkontextApiInterface
-     */
-    dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>>;
-
-    /**
-     */
-    dbiamPersonenkontextWorkflowControllerCommit(requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse>;
-
     /**
      * 
      * @param {DbiamCreatePersonWithPersonenkontexteBodyParams} dbiamCreatePersonWithPersonenkontexteBodyParams 
@@ -99,21 +78,33 @@ export interface PersonenkontextApiInterface {
 
     /**
      * 
-     * @param {OperationContext} operationContext The context in which this request happens. Affects permission checks.
-     * @param {string} [personId] ID of the person to be modified
-     * @param {string} [organisationId] ID of the organisation where the Personenkontexte should be created
-     * @param {Array<string>} [rollenIds] IDs of the selected rollen.
-     * @param {string} [organisationName] Organisation/SSK name used to filter for schulstrukturknoten in personenkontext.
-     * @param {number} [limit] The limit for the returned organisations.
+     * @param {string} personId The ID for the person.
+     * @param {PersonenzuordnungenBearbeitenBodyParams} personenzuordnungenBearbeitenBodyParams 
+     * @param {string} [personalnummer] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof PersonenkontextApiInterface
      */
-    dbiamPersonenkontextWorkflowControllerProcessStepRaw(requestParameters: DbiamPersonenkontextWorkflowControllerProcessStepRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontextWorkflowResponse>>;
+    personenkontextControllerBearbeitePersonenzuordnungenRaw(requestParameters: PersonenkontextControllerBearbeitePersonenzuordnungenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>>;
 
     /**
      */
-    dbiamPersonenkontextWorkflowControllerProcessStep(requestParameters: DbiamPersonenkontextWorkflowControllerProcessStepRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontextWorkflowResponse>;
+    personenkontextControllerBearbeitePersonenzuordnungen(requestParameters: PersonenkontextControllerBearbeitePersonenzuordnungenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse>;
+
+    /**
+     * 
+     * @param {string} personId The ID for the person.
+     * @param {LandesbedienstetenzuordnungHinzufuegenBodyParams} landesbedienstetenzuordnungHinzufuegenBodyParams 
+     * @param {string} [personalnummer] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof PersonenkontextApiInterface
+     */
+    personenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRaw(requestParameters: PersonenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>>;
+
+    /**
+     */
+    personenkontextControllerFuegeLandesbedienstetenzuordnungHinzu(requestParameters: PersonenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse>;
 
 }
 
@@ -121,58 +112,6 @@ export interface PersonenkontextApiInterface {
  * 
  */
 export class PersonenkontextApi extends runtime.BaseAPI implements PersonenkontextApiInterface {
-
-    /**
-     */
-    async dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>> {
-        if (requestParameters.personId === null || requestParameters.personId === undefined) {
-            throw new runtime.RequiredError('personId','Required parameter requestParameters.personId was null or undefined when calling dbiamPersonenkontextWorkflowControllerCommit.');
-        }
-
-        if (requestParameters.dbiamUpdatePersonenkontexteBodyParams === null || requestParameters.dbiamUpdatePersonenkontexteBodyParams === undefined) {
-            throw new runtime.RequiredError('dbiamUpdatePersonenkontexteBodyParams','Required parameter requestParameters.dbiamUpdatePersonenkontexteBodyParams was null or undefined when calling dbiamPersonenkontextWorkflowControllerCommit.');
-        }
-
-        const queryParameters: any = {};
-
-        if (requestParameters.personalnummer !== undefined) {
-            queryParameters['personalnummer'] = requestParameters.personalnummer;
-        }
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        if (this.configuration && this.configuration.accessToken) {
-            const token = this.configuration.accessToken;
-            const tokenString = await token("bearer", []);
-
-            if (tokenString) {
-                headerParameters["Authorization"] = `Bearer ${tokenString}`;
-            }
-        }
-        if (this.configuration && this.configuration.accessToken) {
-            // oauth required
-            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
-        }
-
-        const response = await this.request({
-            path: `/api/personenkontext-workflow/{personId}`.replace(`{${"personId"}}`, encodeURIComponent(String(requestParameters.personId))),
-            method: 'PUT',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DbiamUpdatePersonenkontexteBodyParamsToJSON(requestParameters.dbiamUpdatePersonenkontexteBodyParams),
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => PersonenkontexteUpdateResponseFromJSON(jsonValue));
-    }
-
-    /**
-     */
-    async dbiamPersonenkontextWorkflowControllerCommit(requestParameters: DbiamPersonenkontextWorkflowControllerCommitRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse> {
-        const response = await this.dbiamPersonenkontextWorkflowControllerCommitRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
 
     /**
      */
@@ -220,38 +159,24 @@ export class PersonenkontextApi extends runtime.BaseAPI implements Personenkonte
 
     /**
      */
-    async dbiamPersonenkontextWorkflowControllerProcessStepRaw(requestParameters: DbiamPersonenkontextWorkflowControllerProcessStepRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontextWorkflowResponse>> {
-        if (requestParameters.operationContext === null || requestParameters.operationContext === undefined) {
-            throw new runtime.RequiredError('operationContext','Required parameter requestParameters.operationContext was null or undefined when calling dbiamPersonenkontextWorkflowControllerProcessStep.');
+    async personenkontextControllerBearbeitePersonenzuordnungenRaw(requestParameters: PersonenkontextControllerBearbeitePersonenzuordnungenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>> {
+        if (requestParameters.personId === null || requestParameters.personId === undefined) {
+            throw new runtime.RequiredError('personId','Required parameter requestParameters.personId was null or undefined when calling personenkontextControllerBearbeitePersonenzuordnungen.');
+        }
+
+        if (requestParameters.personenzuordnungenBearbeitenBodyParams === null || requestParameters.personenzuordnungenBearbeitenBodyParams === undefined) {
+            throw new runtime.RequiredError('personenzuordnungenBearbeitenBodyParams','Required parameter requestParameters.personenzuordnungenBearbeitenBodyParams was null or undefined when calling personenkontextControllerBearbeitePersonenzuordnungen.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.operationContext !== undefined) {
-            queryParameters['operationContext'] = requestParameters.operationContext;
-        }
-
-        if (requestParameters.personId !== undefined) {
-            queryParameters['personId'] = requestParameters.personId;
-        }
-
-        if (requestParameters.organisationId !== undefined) {
-            queryParameters['organisationId'] = requestParameters.organisationId;
-        }
-
-        if (requestParameters.rollenIds) {
-            queryParameters['rollenIds'] = requestParameters.rollenIds;
-        }
-
-        if (requestParameters.organisationName !== undefined) {
-            queryParameters['organisationName'] = requestParameters.organisationName;
-        }
-
-        if (requestParameters.limit !== undefined) {
-            queryParameters['limit'] = requestParameters.limit;
+        if (requestParameters.personalnummer !== undefined) {
+            queryParameters['personalnummer'] = requestParameters.personalnummer;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
 
         if (this.configuration && this.configuration.accessToken) {
             const token = this.configuration.accessToken;
@@ -267,19 +192,72 @@ export class PersonenkontextApi extends runtime.BaseAPI implements Personenkonte
         }
 
         const response = await this.request({
-            path: `/api/personenkontext-workflow/step`,
-            method: 'GET',
+            path: `/api/personenkontexte/person/{personId}`.replace(`{${"personId"}}`, encodeURIComponent(String(requestParameters.personId))),
+            method: 'PUT',
             headers: headerParameters,
             query: queryParameters,
+            body: PersonenzuordnungenBearbeitenBodyParamsToJSON(requestParameters.personenzuordnungenBearbeitenBodyParams),
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => PersonenkontextWorkflowResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonenkontexteUpdateResponseFromJSON(jsonValue));
     }
 
     /**
      */
-    async dbiamPersonenkontextWorkflowControllerProcessStep(requestParameters: DbiamPersonenkontextWorkflowControllerProcessStepRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontextWorkflowResponse> {
-        const response = await this.dbiamPersonenkontextWorkflowControllerProcessStepRaw(requestParameters, initOverrides);
+    async personenkontextControllerBearbeitePersonenzuordnungen(requestParameters: PersonenkontextControllerBearbeitePersonenzuordnungenRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse> {
+        const response = await this.personenkontextControllerBearbeitePersonenzuordnungenRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async personenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRaw(requestParameters: PersonenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<PersonenkontexteUpdateResponse>> {
+        if (requestParameters.personId === null || requestParameters.personId === undefined) {
+            throw new runtime.RequiredError('personId','Required parameter requestParameters.personId was null or undefined when calling personenkontextControllerFuegeLandesbedienstetenzuordnungHinzu.');
+        }
+
+        if (requestParameters.landesbedienstetenzuordnungHinzufuegenBodyParams === null || requestParameters.landesbedienstetenzuordnungHinzufuegenBodyParams === undefined) {
+            throw new runtime.RequiredError('landesbedienstetenzuordnungHinzufuegenBodyParams','Required parameter requestParameters.landesbedienstetenzuordnungHinzufuegenBodyParams was null or undefined when calling personenkontextControllerFuegeLandesbedienstetenzuordnungHinzu.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.personalnummer !== undefined) {
+            queryParameters['personalnummer'] = requestParameters.personalnummer;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        if (this.configuration && this.configuration.accessToken) {
+            const token = this.configuration.accessToken;
+            const tokenString = await token("bearer", []);
+
+            if (tokenString) {
+                headerParameters["Authorization"] = `Bearer ${tokenString}`;
+            }
+        }
+        if (this.configuration && this.configuration.accessToken) {
+            // oauth required
+            headerParameters["Authorization"] = await this.configuration.accessToken("oauth2", []);
+        }
+
+        const response = await this.request({
+            path: `/api/personenkontexte/person/{personId}/landesbedienstetenzuordnungen`.replace(`{${"personId"}}`, encodeURIComponent(String(requestParameters.personId))),
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: LandesbedienstetenzuordnungHinzufuegenBodyParamsToJSON(requestParameters.landesbedienstetenzuordnungHinzufuegenBodyParams),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => PersonenkontexteUpdateResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async personenkontextControllerFuegeLandesbedienstetenzuordnungHinzu(requestParameters: PersonenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<PersonenkontexteUpdateResponse> {
+        const response = await this.personenkontextControllerFuegeLandesbedienstetenzuordnungHinzuRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
