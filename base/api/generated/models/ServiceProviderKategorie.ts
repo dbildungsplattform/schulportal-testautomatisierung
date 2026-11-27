@@ -21,8 +21,14 @@ export const ServiceProviderKategorie = {
     Email: 'EMAIL',
     Unterricht: 'UNTERRICHT',
     Verwaltung: 'VERWALTUNG',
+    Hinweise: 'HINWEISE',
+    KommunikationUndZusammenarbeit: 'KOMMUNIKATION_UND_ZUSAMMENARBEIT',
+    UnterrichtUndLernen: 'UNTERRICHT_UND_LERNEN',
+    SchulorganisationUndVerwaltung: 'SCHULORGANISATION_UND_VERWALTUNG',
     Schulisch: 'SCHULISCH',
-    Hinweise: 'HINWEISE'
+    FortbildungUndQualifizierung: 'FORTBILDUNG_UND_QUALIFIZIERUNG',
+    InformationenUndPortale: 'INFORMATIONEN_UND_PORTALE',
+    HilfeUndUnterstuetzung: 'HILFE_UND_UNTERSTUETZUNG'
 } as const;
 export type ServiceProviderKategorie = typeof ServiceProviderKategorie[keyof typeof ServiceProviderKategorie];
 
