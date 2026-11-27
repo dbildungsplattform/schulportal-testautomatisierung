@@ -100,11 +100,11 @@ export const CreateServiceProviderBodyParamsKategorieEnum = {
     Email: 'EMAIL',
     Unterricht: 'UNTERRICHT',
     Verwaltung: 'VERWALTUNG',
-    Schulisch: 'SCHULISCH',
     Hinweise: 'HINWEISE',
     KommunikationUndZusammenarbeit: 'KOMMUNIKATION_UND_ZUSAMMENARBEIT',
     UnterrichtUndLernen: 'UNTERRICHT_UND_LERNEN',
     SchulorganisationUndVerwaltung: 'SCHULORGANISATION_UND_VERWALTUNG',
+    Schulisch: 'SCHULISCH',
     FortbildungUndQualifizierung: 'FORTBILDUNG_UND_QUALIFIZIERUNG',
     InformationenUndPortale: 'INFORMATIONEN_UND_PORTALE',
     HilfeUndUnterstuetzung: 'HILFE_UND_UNTERSTUETZUNG'
