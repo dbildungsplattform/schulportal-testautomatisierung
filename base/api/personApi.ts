@@ -30,12 +30,11 @@ import {
   DbiamCreatePersonWithPersonenkontexteBodyParams,
   DBiamPersonenuebersichtResponse,
   DBiamPersonResponse,
-  DbiamUpdatePersonenkontexteBodyParams,
   LockUserBodyParams,
-  OperationContext,
   PersonControllerFindPersons200Response,
   PersonendatensatzResponse,
   PersonenkontexteUpdateResponse,
+  PersonenzuordnungenBearbeitenBodyParams,
   PersonLockResponse,
   RollenArt,
   RollenMerkmal,
@@ -91,14 +90,13 @@ function toUserInfo(createdPerson: DBiamPersonResponse): UserInfo {
   };
 }
 
-async function commitPersonenkontexteWithRetry(
+async function updatePersonenkontexteWithRetry(
   page: Page,
   personId: string,
   buildPersonenkontexte: (
     personenuebersicht: DBiamPersonenuebersichtResponse,
-  ) => DbiamUpdatePersonenkontexteBodyParams['personenkontexte'] | null,
+  ) => PersonenzuordnungenBearbeitenBodyParams['personenkontexte'] | null,
   validate?: (result: PersonenkontexteUpdateResponse) => void,
-  operationContext?: OperationContext,
 ): Promise<void> {
   const personenuebersichtApi: DbiamPersonenuebersichtApi = constructPersonenuebersichtApi(page);
   const personenkontextApi: PersonenkontextApi = constructPersonenkontextApi(page);
@@ -108,24 +106,23 @@ async function commitPersonenkontexteWithRetry(
       .dBiamPersonenuebersichtControllerFindPersonenuebersichtenByPersonRaw({ personId })
       .then((response) => response.value());
 
-    const personenkontexte: DbiamUpdatePersonenkontexteBodyParams['personenkontexte'] | null =
+    const personenkontexte: PersonenzuordnungenBearbeitenBodyParams['personenkontexte'] | null =
       buildPersonenkontexte(personenuebersicht);
     if (personenkontexte === null) {
       continue;
     }
 
-    const dbiamUpdatePersonenkontexteBodyParams: DbiamUpdatePersonenkontexteBodyParams = {
+    const personenzuordnungenBearbeitenBodyParams: PersonenzuordnungenBearbeitenBodyParams = {
       lastModified: personenuebersicht.lastModifiedZuordnungen ?? undefined,
       count: personenuebersicht.zuordnungen.length,
       personenkontexte,
-      operationContext: operationContext ?? OperationContext.PersonAnlegen,
     };
 
     try {
       const response: ApiResponse<PersonenkontexteUpdateResponse> =
-        await personenkontextApi.dbiamPersonenkontextWorkflowControllerCommitRaw({
+        await personenkontextApi.personenkontextControllerBearbeitePersonenzuordnungenRaw({
           personId,
-          dbiamUpdatePersonenkontexteBodyParams,
+          personenzuordnungenBearbeitenBodyParams,
         });
       expect(response.raw.status).toBe(200);
       validate?.(await response.value());
@@ -140,7 +137,7 @@ async function commitPersonenkontexteWithRetry(
   }
 
   throw new Error(
-    `Unable to commit personenkontexte for person ${personId} after 3 attempts because required source data was not available.`,
+    `Unable to update personenkontexte for person ${personId} after 3 attempts because required source data was not available.`,
   );
 }
 
@@ -347,7 +344,7 @@ export async function createRolleAndPersonWithPersonenkontext(
 
 export async function removeAllPersonenkontexte(page: Page, personId: string): Promise<void> {
   try {
-    await commitPersonenkontexteWithRetry(page, personId, () => [], undefined, OperationContext.PersonBearbeiten);
+    await updatePersonenkontexteWithRetry(page, personId, () => []);
   } catch (error) {
     console.error('[ERROR] removeAllPersonenkontexte failed:', error);
     throw error;
@@ -385,10 +382,9 @@ export async function addOrganisationenToPerson(
   personId: string,
   organisationIds: string[],
   rolleId: string,
-  operationContext?: OperationContext,
 ): Promise<void> {
   try {
-    await commitPersonenkontexteWithRetry(
+    await updatePersonenkontexteWithRetry(
       page,
       personId,
       (personenuebersicht) => {
@@ -396,7 +392,6 @@ export async function addOrganisationenToPerson(
           return null;
         }
         return organisationIds.map((organisationId) => ({
-          personId,
           organisationId,
           rolleId,
         }));
@@ -404,7 +399,6 @@ export async function addOrganisationenToPerson(
       (result) => {
         expect(result.dBiamPersonenkontextResponses.length).toBe(organisationIds.length);
       },
-      operationContext,
     );
   } catch (error) {
     console.error('[ERROR] addOrganisationenToPerson failed:', error);
@@ -496,21 +490,15 @@ export async function setTimeLimitPersonenkontext(
   timeLimit: Date,
 ): Promise<void> {
   try {
-    await commitPersonenkontexteWithRetry(
-      page,
-      personId,
-      (personenuebersicht) =>
-        personenuebersicht.zuordnungen.map((zuordnung) => ({
-          personId,
-          organisationId: zuordnung.sskId,
-          rolleId: zuordnung.rolleId,
-          befristung:
-            zuordnung.sskId === organisationId && zuordnung.rolleId === rolleId
-              ? timeLimit
-              : (zuordnung.befristung ?? undefined),
-        })),
-      undefined,
-      OperationContext.PersonBearbeiten,
+    await updatePersonenkontexteWithRetry(page, personId, (personenuebersicht) =>
+      personenuebersicht.zuordnungen.map((zuordnung) => ({
+        organisationId: zuordnung.sskId,
+        rolleId: zuordnung.rolleId,
+        befristung:
+          zuordnung.sskId === organisationId && zuordnung.rolleId === rolleId
+            ? timeLimit
+            : (zuordnung.befristung ?? undefined),
+      })),
     );
   } catch (error) {
     console.error('[ERROR] setTimeLimitPersonenkontext failed:', error);
